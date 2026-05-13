@@ -158,3 +158,38 @@ Verification:
 Risks:
 
 - Prompt-pack consumers must use the updated baseline; old assumptions about Astro scripts in Autopilot are no longer valid.
+
+## 2026-05-13 Connector Snapshot And Runtime Deferral Governance
+
+Date: 2026-05-13
+Request or trigger: user asked to continue the Autopilot workflow modification.
+Mode: WRITE_ALLOWED for Autopilot control-plane documentation.
+Scope: add connector snapshot governance and execution-engine deferral evidence to the multi-agent delivery workflow.
+Files changed:
+
+- `docs/autopilot/delivery-system-connector-snapshots.md`
+- `docs/autopilot/delivery-system-execution-engine-options.md`
+- `docs/autopilot/v3-prompt-pack.md`
+- `docs/autopilot/project-architecture-registry.md`
+- `docs/projects/multi-agent-autonomous-delivery-system/architecture.md`
+- `docs/projects/multi-agent-autonomous-delivery-system/work-log.md`
+- `docs/projects/autopilot-control-plane/work-log.md`
+- `docs/autopilot/2026-05-10-autopilot-run-log.md`
+
+Architecture impact: Autopilot control-plane governance now has a connector snapshot evidence procedure and an explicit execution-engine deferral record.
+Decisions:
+
+- Connector snapshots are read-only evidence artifacts.
+- Runtime execution, workflow automation, connector mutation, and deployments remain blocked until a later architecture decision and approval.
+
+Verification:
+
+- Required-term search found the multi-agent delivery architecture, connector snapshot procedure, execution-engine deferral record, prompt-pack rejection rules, ledger impact, and architecture impact across `docs/`.
+- Placeholder-token scan returned no matches.
+- Autopilot runtime-file scan returned no matches for `src`, `functions`, `migrations`, `public`, `tests`, `scripts`, `package.json`, or related runtime files.
+- `git diff --check` passed with only LF/CRLF normalization warnings.
+
+Risks:
+
+- The snapshot procedure is documented but not yet dry-run against live connector evidence.
+- There is still no typed registry or runtime enforcement layer.

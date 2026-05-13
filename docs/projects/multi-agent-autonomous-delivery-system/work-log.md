@@ -112,4 +112,43 @@ Verification:
 Risks:
 
 - No typed registry or runtime enforcement exists yet.
-- Connector snapshot procedure and execution-engine decision record remain future tasks.
+- Connector snapshot procedure and execution-engine decision record now exist; they have not been exercised in a full dry run.
+
+## 2026-05-13 Connector Snapshots And Execution Engine Deferral
+
+Date: 2026-05-13
+Request or trigger: user asked to continue the workflow modification after the phase-0 governance baseline.
+Mode: WRITE_ALLOWED for Autopilot control-plane documentation.
+Scope: complete the connector snapshot procedure, execution-engine options decision record, and prompt-pack integration without adding runtime code.
+Files changed:
+
+- `docs/autopilot/delivery-system-connector-snapshots.md`
+- `docs/autopilot/delivery-system-execution-engine-options.md`
+- `docs/autopilot/v3-prompt-pack.md`
+- `docs/superpowers/plans/2026-05-13-multi-agent-autonomous-delivery-system.md`
+- `docs/projects/multi-agent-autonomous-delivery-system/architecture.md`
+- `docs/autopilot/project-architecture-registry.md`
+- `docs/projects/multi-agent-autonomous-delivery-system/work-log.md`
+- `docs/projects/autopilot-control-plane/work-log.md`
+- `docs/autopilot/2026-05-10-autopilot-run-log.md`
+
+Architecture impact: the workflow now has a connector evidence snapshot procedure and a runtime decision record; execution remains deferred.
+Decisions:
+
+- Connector snapshots are reviewed evidence only, not a source of truth or approval.
+- No durable execution runtime is selected in phase 0.
+- Phase-5 trigger criteria are recorded before any workflow engine implementation can start.
+- Prompt-pack rejection rules now block self-approval, unlogged issues, missing ledger impact, missing architecture impact, unverified plugin facts, and treating the architecture as permission for autonomous execution.
+
+Verification:
+
+- Required-term search found the multi-agent delivery architecture, ledger schemas, gate result, connector snapshot, execution-engine deferral decision, phase-5 trigger criteria, self-approval rejection, ledger impact, and architecture impact across `docs/`.
+- Placeholder-token scan returned no matches.
+- Autopilot runtime-file scan returned no matches for `src`, `functions`, `migrations`, `public`, `tests`, `scripts`, `package.json`, or related runtime files.
+- `git diff --check` passed with only LF/CRLF normalization warnings.
+
+Risks:
+
+- No typed enforcement exists yet.
+- Connector snapshots have not been exercised in a full dry run.
+- Workflow runtime and model facts must be rechecked against current official docs before implementation.

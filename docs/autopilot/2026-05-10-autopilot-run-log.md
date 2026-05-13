@@ -876,3 +876,48 @@ Verification:
 - Placeholder-token scan returned no matches.
 - Autopilot runtime-file scan returned no matches for `src`, `functions`, `migrations`, `public`, `tests`, `scripts`, `package.json`, `astro.config.mjs`, or related runtime files.
 - `git diff --check` passed with only LF/CRLF normalization warnings.
+
+### delivery-system-connector-runtime-governance-2026-05-13
+
+Role: Supervisor and execution-engine research worker
+Mode: Autopilot control-plane documentation update
+Status: completed and verified
+
+User request:
+
+- Continue the workflow modification.
+
+Files created:
+
+- `docs/autopilot/delivery-system-connector-snapshots.md`
+- `docs/autopilot/delivery-system-execution-engine-options.md`
+
+Files modified:
+
+- `docs/autopilot/v3-prompt-pack.md`
+- `docs/superpowers/plans/2026-05-13-multi-agent-autonomous-delivery-system.md`
+- `docs/projects/multi-agent-autonomous-delivery-system/architecture.md`
+- `docs/autopilot/project-architecture-registry.md`
+- `docs/projects/multi-agent-autonomous-delivery-system/work-log.md`
+- `docs/projects/autopilot-control-plane/work-log.md`
+- `docs/autopilot/2026-05-10-autopilot-run-log.md`
+
+Architecture impact:
+
+- Added a connector snapshot procedure for GitHub, Linear, Vercel, Cloudflare, Docket, and local repository evidence.
+- Added an execution-engine options decision record comparing Vercel Workflow, Cloudflare Workflows, Cloudflare Durable Objects, Cloudflare Queues, Cloudflare Agents, GitHub Actions, Codex Automations, and a local queue/state-machine option.
+- Updated the prompt pack so the future multi-agent architecture cannot be treated as permission for autonomous execution.
+
+Current decision:
+
+- No runtime execution engine is selected in phase 0.
+- Connector snapshots are reviewed evidence only, not approval or source of truth.
+- Phase-5 trigger criteria must be satisfied before workflow runtime implementation starts.
+- Self-approval, unlogged issues, missing ledgers, missing architecture impact, and unverified connector/platform facts are rejection conditions.
+
+Verification:
+
+- Required-term search found the multi-agent delivery architecture, ledger schemas, gate result, connector snapshot, execution-engine deferral decision, phase-5 trigger criteria, self-approval rejection, ledger impact, and architecture impact across `docs/`.
+- Placeholder-token scan returned no matches.
+- Autopilot runtime-file scan returned no matches for `src`, `functions`, `migrations`, `public`, `tests`, `scripts`, `package.json`, `astro.config.mjs`, or related runtime files.
+- `git diff --check` passed with only LF/CRLF normalization warnings.

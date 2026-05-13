@@ -87,6 +87,28 @@ Current exception:
 - Use `public-cat-reference` for public or external workflows.
 - Do not expose the original iCloud path or unrelated photo metadata.
 
+## Multi-Agent Delivery Future Architecture
+
+The Multi-Agent Autonomous Delivery System is an Autopilot-governed future architecture, not an active execution runtime.
+
+Authoritative phase-0 records:
+
+- `docs/projects/multi-agent-autonomous-delivery-system/architecture.md`
+- `docs/projects/multi-agent-autonomous-delivery-system/work-log.md`
+- `docs/autopilot/delivery-system-governance.md`
+- `docs/autopilot/delivery-system-ledgers.md`
+- `docs/autopilot/delivery-system-model-policy.md`
+- `docs/autopilot/delivery-system-connector-snapshots.md`
+- `docs/autopilot/delivery-system-execution-engine-options.md`
+
+Rules:
+
+- No worker may start durable execution from this architecture.
+- No worker may add runtime code, workflows, automations, credentials, connectors, or deployments without a later architecture decision and explicit approval.
+- Every worker output related to this architecture must include role, mode, scope, architecture impact, ledger impact, tests or verification evidence, and next action.
+- Connector snapshots are reviewed evidence only, not automatic source of truth.
+- Autopilot monitors and proposes recovery; it does not approve delivery or steer product scope.
+
 ### Assignment Flow
 
 1. Select one role from this prompt pack.
@@ -287,6 +309,12 @@ Reject or re-run the bot if it:
 - Depends on Qwen or an unavailable Gemini model.
 - Treats Gemini output as authoritative without verification.
 - Omits facts, assumptions, risks, or output contract fields.
+- Attempts self-approval or reviewer/implementer collapse.
+- Leaves found issues unlogged.
+- Omits required ledger updates or an explicit no-ledger-change statement.
+- Omits architecture impact for a meaningful change.
+- Uses unverified plugin, connector, SDK, cloud, model, or CLI facts for decisions.
+- Treats multi-agent delivery architecture as permission to run autonomous execution.
 
 ### Supervisor Run Log Template
 

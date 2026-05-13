@@ -33,10 +33,11 @@ In this project:
 - architecture record and work log
 - design spec and implementation plan
 - delivery-system governance, ledgers, and model-policy docs
+- connector snapshot procedure for reviewed external evidence
+- execution-engine options decision record
 - governance contracts
 - future typed registries for roles, gates, workflows, ledgers, and model policy after an Autopilot runtime/package decision
 - future read-only command-center views after a UI architecture decision
-- future execution-engine decision record
 
 External to this project:
 
@@ -296,8 +297,8 @@ Required before delivery:
 
 - No typed registries exist yet.
 - No runtime/package decision exists for typed contracts or read-only UI in the post-split Autopilot repository.
-- No execution engine has been selected.
-- No connector snapshot process exists yet.
+- No execution engine has been selected; the phase-0 execution-engine decision record currently defers selection.
+- Connector snapshot procedure exists, but it has not been exercised in a full dry run yet.
 - No recurring review automation exists yet.
 - Docket callable tooling is not available in this session.
 - Linear tooling requires workspace identifiers and OAuth connectivity before use.

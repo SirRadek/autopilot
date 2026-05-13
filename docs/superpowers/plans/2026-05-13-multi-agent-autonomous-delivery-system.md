@@ -30,6 +30,7 @@ Create:
 - `docs/autopilot/delivery-system-governance.md`
 - `docs/autopilot/delivery-system-ledgers.md`
 - `docs/autopilot/delivery-system-model-policy.md`
+- `docs/autopilot/delivery-system-connector-snapshots.md`
 - `docs/autopilot/delivery-system-execution-engine-options.md`
 
 Future typed-contract files require a runtime/package decision first:
@@ -66,11 +67,11 @@ Later, after typed contracts pass:
 - Modify: `docs/autopilot/project-architecture-registry.md`
 - Modify: `docs/autopilot/2026-05-10-autopilot-run-log.md`
 
-- [ ] Add registry row for `multi-agent-autonomous-delivery-system`.
-- [ ] Write architecture record with system boundary, repository boundary, phase boundaries, plugin usage, data contracts, and forbidden actions.
-- [ ] Write work-log entry with architecture impact and verification plan.
-- [ ] Record the governance baseline in the main Autopilot run log.
-- [ ] Run:
+- [x] Add registry row for `multi-agent-autonomous-delivery-system`.
+- [x] Write architecture record with system boundary, repository boundary, phase boundaries, plugin usage, data contracts, and forbidden actions.
+- [x] Write work-log entry with architecture impact and verification plan.
+- [x] Record the governance baseline in the main Autopilot run log.
+- [x] Run:
 
 ```powershell
 rg -n "multi-agent-autonomous-delivery-system|Multi-Agent Autonomous Delivery System" docs
@@ -78,6 +79,8 @@ git diff --check
 ```
 
 Expected: project appears in registry, architecture, work log, spec, plan, and run log; `git diff --check` has no whitespace errors.
+
+Actual: completed on 2026-05-13. The project appears in the registry, architecture record, work log, spec, plan, and run log; `git diff --check` passed with only LF/CRLF normalization warnings.
 
 ## Task 1A: Repository Separation Policy
 
@@ -225,12 +228,14 @@ Expected: new smoke test passes.
 - Create: `docs/autopilot/delivery-system-connector-snapshots.md`
 - Modify: `docs/projects/multi-agent-autonomous-delivery-system/work-log.md`
 
-- [ ] Document GitHub read-only snapshot procedure for repositories, issues, PRs, branches, and CI.
-- [ ] Document Linear snapshot procedure that requires workspace/team/project identifiers before reading or writing.
-- [ ] Document Vercel snapshot procedure for projects, deployments, environment names, and logs without exposing secrets.
-- [ ] Document Cloudflare snapshot procedure for Pages, Workers, D1, and bindings without account IDs or tokens.
-- [ ] Document Docket as future product knowledge source when callable tools are available.
-- [ ] State that connector snapshots are reviewed evidence, not automatic source of truth.
+- [x] Document GitHub read-only snapshot procedure for repositories, issues, PRs, branches, and CI.
+- [x] Document Linear snapshot procedure that requires workspace/team/project identifiers before reading or writing.
+- [x] Document Vercel snapshot procedure for projects, deployments, environment names, and logs without exposing secrets.
+- [x] Document Cloudflare snapshot procedure for Pages, Workers, D1, and bindings without account IDs or tokens.
+- [x] Document Docket as future product knowledge source when callable tools are available.
+- [x] State that connector snapshots are reviewed evidence, not automatic source of truth.
+
+Actual: completed on 2026-05-13 in `docs/autopilot/delivery-system-connector-snapshots.md`.
 
 ## Task 8: Execution Engine Decision Record
 
@@ -238,11 +243,13 @@ Expected: new smoke test passes.
 - Create: `docs/autopilot/delivery-system-execution-engine-options.md`
 - Modify: `docs/projects/multi-agent-autonomous-delivery-system/work-log.md`
 
-- [ ] Compare Vercel Workflow DevKit, Cloudflare Workflows/Agents/Durable Objects, GitHub Actions, Codex automations, and local queue/state-machine options.
-- [ ] Recheck current official docs before recording API, pricing, or stability claims.
-- [ ] Score each option on durability, human approval, retries, logs, local development, security, cost, vendor lock-in, and fit with Astro/Cloudflare.
-- [ ] Recommend no execution runtime until typed contracts and read-only UI are stable.
-- [ ] Define phase-5 trigger criteria for bounded execution MVP.
+- [x] Compare Vercel Workflow DevKit, Cloudflare Workflows/Agents/Durable Objects, GitHub Actions, Codex automations, and local queue/state-machine options.
+- [x] Recheck current official docs before recording API, pricing, or stability claims.
+- [x] Score each option on durability, human approval, retries, logs, local development, security, cost, vendor lock-in, and fit with Astro/Cloudflare.
+- [x] Recommend no execution runtime until typed contracts and read-only UI are stable.
+- [x] Define phase-5 trigger criteria for bounded execution MVP.
+
+Actual: completed on 2026-05-13 in `docs/autopilot/delivery-system-execution-engine-options.md`. Official/current docs were checked for Vercel Workflow, Workflow DevKit, Cloudflare Workflows, Durable Objects, Queues, Agents, GitHub Actions, and Codex Automations. No pricing commitment was recorded.
 
 ## Task 9: Governance Integration Into Prompt Pack
 
@@ -250,10 +257,10 @@ Expected: new smoke test passes.
 - Modify: `docs/autopilot/v3-prompt-pack.md`
 - Modify: `docs/projects/multi-agent-autonomous-delivery-system/work-log.md`
 
-- [ ] Add the multi-agent delivery system as an explicit future architecture under Autopilot governance.
+- [x] Add the multi-agent delivery system as an explicit future architecture under Autopilot governance.
 - [x] Add gate that every worker output must include role, mode, scope, architecture impact, ledger impact, tests, and next action.
-- [ ] Add rejection rule for self-approval, unlogged issues, missing ledger updates, missing architecture impact, and unverified plugin facts.
-- [ ] Run:
+- [x] Add rejection rule for self-approval, unlogged issues, missing ledger updates, missing architecture impact, and unverified plugin facts.
+- [x] Run:
 
 ```powershell
 rg -n "self-approval|ledger impact|architecture impact|multi-agent delivery" docs/autopilot/v3-prompt-pack.md
@@ -262,7 +269,7 @@ git diff --check
 
 Expected: prompt pack contains governance rules and no whitespace errors.
 
-Partial actual: ledger-impact and worker-output handoff gate added on 2026-05-13 during phase-0 workflow governance. Remaining Task 9 items stay open.
+Actual: completed on 2026-05-13. Prompt pack now names the multi-agent delivery future architecture, requires ledger-impact handoff evidence, and rejects self-approval, unlogged issues, missing ledger updates, missing architecture impact, and unverified plugin facts.
 
 ## Task 10: Full Documentation Gate
 
@@ -270,7 +277,7 @@ Partial actual: ledger-impact and worker-output handoff gate added on 2026-05-13
 - Modify: `docs/projects/multi-agent-autonomous-delivery-system/work-log.md`
 - Modify: `docs/autopilot/2026-05-10-autopilot-run-log.md`
 
-- [ ] Run:
+- [x] Run:
 
 ```powershell
 rg -n "Multi-Agent Autonomous Delivery System|decision_id|issue_id|gate_result|Autopilot monitors|Nobody approves" docs
@@ -280,6 +287,8 @@ git diff --check
 ```
 
 Expected: first search finds all core concepts, placeholder search has no matches, diff check has no whitespace errors.
+
+Actual: completed on 2026-05-13. Required-term search found the multi-agent delivery architecture, ledger schemas, gate result, connector snapshot, execution-engine deferral decision, phase-5 trigger criteria, self-approval rejection, ledger impact, and architecture impact across `docs/`. Placeholder-token scan and Autopilot runtime-file scan returned no matches. `git diff --check` passed with only LF/CRLF normalization warnings.
 
 ## Acceptance Criteria
 
