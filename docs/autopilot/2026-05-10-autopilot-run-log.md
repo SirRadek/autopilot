@@ -828,3 +828,51 @@ Verification:
 - Post-merge Radeq default-branch scans found no `docs/autopilot` or `docs/superpowers` tree.
 - Post-merge Radeq default-branch verification passed: `npm test` passed 7 test files and 40 tests.
 - Post-merge Radeq default-branch verification passed: `npm run build` built 2 Astro pages, with the existing chunk-size warning.
+
+## Delivery System Workflow Governance
+
+### delivery-system-phase-0-workflow-governance-2026-05-13
+
+Role: Supervisor and workflow governance worker
+Mode: Autopilot control-plane documentation update
+Status: completed and verified
+
+User request:
+
+- Proceed with the workflow modification after repository separation.
+
+Files created:
+
+- `docs/autopilot/delivery-system-governance.md`
+- `docs/autopilot/delivery-system-ledgers.md`
+- `docs/autopilot/delivery-system-model-policy.md`
+
+Files modified:
+
+- `docs/superpowers/plans/2026-05-13-multi-agent-autonomous-delivery-system.md`
+- `docs/superpowers/specs/2026-05-13-multi-agent-autonomous-delivery-system-design.md`
+- `docs/projects/multi-agent-autonomous-delivery-system/architecture.md`
+- `docs/autopilot/project-architecture-registry.md`
+- `docs/autopilot/v3-prompt-pack.md`
+- `docs/projects/multi-agent-autonomous-delivery-system/work-log.md`
+- `docs/projects/autopilot-control-plane/work-log.md`
+- `docs/autopilot/2026-05-10-autopilot-run-log.md`
+
+Architecture impact:
+
+- Delivery-system workflow is now formalized as phase-0 governance contracts.
+- Prompt-pack baseline now reflects the post-split docs-first `SirRadek/autopilot` repository.
+- Ledger impact is now a required workflow gate.
+- Typed contracts, UI, and execution runtime remain deferred until explicit architecture decisions exist.
+
+Current decision:
+
+- Do not add `src`, `tests`, package scripts, durable workflows, connector mutation, or runtime execution in this phase.
+- Use Markdown governance contracts as the source of truth for the next workflow iteration.
+
+Verification:
+
+- Required-term search found `Nobody approves their own work`, `decision_id`, `issue_id`, `gate_result`, `Qwen2.5`, `Autopilot monitors`, and ledger-impact gate language across the governance docs, plan, spec, architecture, and work logs.
+- Placeholder-token scan returned no matches.
+- Autopilot runtime-file scan returned no matches for `src`, `functions`, `migrations`, `public`, `tests`, `scripts`, `package.json`, `astro.config.mjs`, or related runtime files.
+- `git diff --check` passed with only LF/CRLF normalization warnings.

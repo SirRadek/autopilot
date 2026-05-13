@@ -74,3 +74,42 @@ Risks:
 Follow-up:
 
 - Implement repository-boundary checks in typed contracts after governance docs are accepted.
+
+## 2026-05-13 Phase 0 Workflow Governance
+
+Date: 2026-05-13
+Request or trigger: user asked to proceed with the workflow modification after the Autopilot/Radeq repository split.
+Mode: WRITE_ALLOWED for Autopilot control-plane documentation.
+Scope: create the phase-0 delivery-system workflow, governance, ledger, and model-policy contracts without adding runtime code.
+Files changed:
+
+- `docs/autopilot/delivery-system-governance.md`
+- `docs/autopilot/delivery-system-ledgers.md`
+- `docs/autopilot/delivery-system-model-policy.md`
+- `docs/superpowers/plans/2026-05-13-multi-agent-autonomous-delivery-system.md`
+- `docs/superpowers/specs/2026-05-13-multi-agent-autonomous-delivery-system-design.md`
+- `docs/projects/multi-agent-autonomous-delivery-system/architecture.md`
+- `docs/autopilot/project-architecture-registry.md`
+- `docs/autopilot/v3-prompt-pack.md`
+- `docs/projects/multi-agent-autonomous-delivery-system/work-log.md`
+- `docs/autopilot/2026-05-10-autopilot-run-log.md`
+
+Architecture impact: the delivery system is now defined as a phase-0 governance workflow with explicit layers, gates, ledgers, rework flows, model boundaries, and no runtime execution.
+Decisions:
+
+- Keep the post-split Autopilot repository docs-first for this workflow phase.
+- Defer typed contracts, tests, and UI until an Autopilot runtime/package decision exists.
+- Add ledger-impact checks to the prompt-pack gate model.
+- Treat Qwen2.5-Coder 7B/14B as optional bounded worker candidates only, not governance or architecture authorities.
+
+Verification:
+
+- Required-term search found `Nobody approves their own work`, `decision_id`, `issue_id`, `gate_result`, `Qwen2.5`, `Autopilot monitors`, and ledger-impact gate language across the governance docs, plan, spec, architecture, and work logs.
+- Placeholder-token scan returned no matches.
+- Autopilot runtime-file scan returned no matches for `src`, `functions`, `migrations`, `public`, `tests`, `scripts`, `package.json`, or related runtime files.
+- `git diff --check` passed with only LF/CRLF normalization warnings.
+
+Risks:
+
+- No typed registry or runtime enforcement exists yet.
+- Connector snapshot procedure and execution-engine decision record remain future tasks.

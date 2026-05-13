@@ -2,7 +2,7 @@
 
 Last updated: 2026-05-13
 Next review: 2026-05-20
-Status: planned
+Status: phase-0 governance contract
 Slug: `multi-agent-autonomous-delivery-system`
 Canonical remote repository: `SirRadek/autopilot`
 Local workspace: `C:\Users\sirok\Documents\Autopilot`
@@ -32,9 +32,10 @@ In this project:
 
 - architecture record and work log
 - design spec and implementation plan
+- delivery-system governance, ledgers, and model-policy docs
 - governance contracts
-- future typed registries for roles, gates, workflows, ledgers, and model policy
-- future read-only `/autopilot` command-center views
+- future typed registries for roles, gates, workflows, ledgers, and model policy after an Autopilot runtime/package decision
+- future read-only command-center views after a UI architecture decision
 - future execution-engine decision record
 
 External to this project:
@@ -174,6 +175,12 @@ Memory Layer:
 
 ## Data Contracts
 
+Detailed contracts are now split into:
+
+- `docs/autopilot/delivery-system-governance.md`
+- `docs/autopilot/delivery-system-ledgers.md`
+- `docs/autopilot/delivery-system-model-policy.md`
+
 Decision ledger entries must include:
 
 - `decision_id`
@@ -288,7 +295,7 @@ Required before delivery:
 ## Known Gaps And Risks
 
 - No typed registries exist yet.
-- No read-only UI exists yet.
+- No runtime/package decision exists for typed contracts or read-only UI in the post-split Autopilot repository.
 - No execution engine has been selected.
 - No connector snapshot process exists yet.
 - No recurring review automation exists yet.

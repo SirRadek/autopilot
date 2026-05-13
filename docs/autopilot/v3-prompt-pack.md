@@ -12,13 +12,15 @@ This is a read-only prompt pack phase. Bots may inspect, critique, and validate 
 
 ## Current Baseline
 
-Facts checked locally on 2026-05-10:
+Facts checked locally on 2026-05-13 after repository separation:
 
 - Project path: `C:\Users\sirok\Documents\Autopilot`
-- App stack: Astro, React, Tailwind, TypeScript, Vitest, Playwright.
-- Existing scripts: `npm run test`, `npm run typecheck`, `npm run build`, `npm run test:e2e`.
-- Cloudflare Pages function exists at `functions/api/leads.ts`.
-- Workspace is not a Git repository.
+- Repository: `SirRadek/autopilot`
+- Default branch: `main`
+- Repository role: docs-first Autopilot control plane.
+- Top-level files: `.gitignore`, `README.md`, and `docs`.
+- No Autopilot app runtime, `package.json`, `src`, `tests`, `functions`, `migrations`, or `public` tree exists in this repository.
+- Radeq product runtime lives separately at `C:\Users\sirok\Documents\Projects\radeq` and `SirRadek/radeq`.
 - Gemini CLI exists locally.
 - Hardcoded `gemini-3.1-pro` failed locally with `ModelNotFoundError`.
 
@@ -53,7 +55,8 @@ Global rules:
 - Every supervised project must have a registry row, an architecture record, and a work log under `docs/projects/` before implementation starts.
 - Autopilot is a standalone control-plane project. Product projects must have separate local roots and separate remote repositories.
 - Autopilot may store governance, registry metadata, templates, ledgers, and sanitized snapshots; product runtime code belongs in the product repository.
-- Every final handoff must state architecture impact and confirm the affected project work log was updated or explicitly reviewed.
+- Every worker output and final handoff must state role, mode, scope, architecture impact, ledger impact, tests or verification evidence, and next action.
+- Every final handoff must confirm the affected project work log was updated or explicitly reviewed.
 - If a named skill, plugin, MCP tool, CLI, or model is unavailable, report that limitation and use the safest available fallback.
 ```
 
@@ -313,6 +316,7 @@ Each gate has an owner and minimum evidence. Required gates must be passed or ex
 | Synthesis checked | Supervisor | Selected approach, rejected alternatives, files, risks, tests, and write scope |
 | Project architecture checked | Supervisor | Registry row, architecture record path, work log path, currentness decision, and architecture impact statement |
 | Repository boundary checked | Supervisor | Canonical local root, canonical remote repository, separation status, and proof that Autopilot changes do not silently modify product runtime code |
+| Ledger impact checked | Supervisor | Decision, issue, gate, incident, lesson, or explicit no-ledger-change statement |
 | Prompt completeness checked | Supervisor | Every role has goal, scope, forbidden actions, skills, verification, output format |
 | Handoff packaged | Supervisor | Handoff package includes source role, target role, mode, allowed files, forbidden actions, facts, assumptions, risks, and required verification |
 | Security reviewed | Security Reviewer | Finding list or explicit no-actionable-findings result |
@@ -321,7 +325,7 @@ Each gate has an owner and minimum evidence. Required gates must be passed or ex
 | Future app safety checked | Supervisor | If app implementation is unlocked, hydration, i18n, environment, validation, migration, and Tailwind safety rules are assigned |
 | 3D mascot safety checked | 3D Mascot Specialist and QA/Browser Verifier | Asset license, performance budget, reduced-motion fallback, non-overlap, cleanup, and browser evidence |
 | Markdown quality checked | Supervisor | No placeholder markers, no missing role sections, consistent terminology |
-| Final handoff checked | QA/Browser Verifier or Supervisor | File path, summary, residual risks, architecture impact, work-log update, and verification commands/results |
+| Final handoff checked | QA/Browser Verifier or Supervisor | File path, summary, residual risks, architecture impact, ledger impact, work-log update, and verification commands/results |
 
 Allowed gate statuses:
 
@@ -919,7 +923,7 @@ The prompt pack is complete when:
 - Synthesis gate requires selected approach, rejected alternatives, file scope, tests, risks, and write unlock.
 - Each role prompt includes goal, allowed scope, forbidden actions, expected skills/tools, verification, and output format.
 - Intake Triage Bot, GPT Researcher, and 3D Mascot Specialist roles are present.
-- Verification gates include local context, docs/source, scope, project architecture, repository boundary, prompt completeness, security, Gemini critique, Markdown quality, and final handoff.
+- Verification gates include local context, docs/source, scope, project architecture, repository boundary, ledger impact, prompt completeness, security, Gemini critique, Markdown quality, and final handoff.
 - Verification gates include intake triage, independent research, synthesis, and 3D mascot safety when relevant.
 - Gemini section says `gemini -m auto --skip-trust --approval-mode plan`, advisory only, no file edits.
 - Gemini external-disclosure rules require redaction and approved aliases.

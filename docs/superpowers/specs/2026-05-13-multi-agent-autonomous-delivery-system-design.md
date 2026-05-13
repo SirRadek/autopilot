@@ -18,7 +18,7 @@ Autopilot is a separate control-plane project. It can create and supervise other
 Use a phased governance-first architecture:
 
 1. **Foundation:** project architecture records, work logs, decision ledger, issue ledger, role catalog, gate catalog, and workflow contracts.
-2. **Read-only command center:** typed registries rendered in the existing Astro app, showing project state, gates, ledgers, and run history without executing remote mutations.
+2. **Read-only command center:** future typed registries and a read-only UI may show project state, gates, ledgers, and run history without executing remote mutations, but this requires a separate Autopilot runtime decision because the repository is now docs-first.
 3. **Plugin-assisted inventory:** GitHub, Linear, Vercel, Cloudflare, Docket, and local docs can feed reviewed snapshots, but no connector output becomes source of truth without supervisor review.
 4. **Execution engine research:** compare Vercel Workflow DevKit, Cloudflare Workflows/Agents/Durable Objects, GitHub Actions, Codex automations, and local queues before implementing durable execution.
 5. **Controlled execution MVP:** allow only bounded local tasks with explicit `WRITE_ALLOWED`, separate review, test evidence, and governance gate approval.
@@ -218,9 +218,9 @@ Gemini CLI:
 
 Phase 0 is documentation and contracts only.
 
-Phase 1 is typed read-only data and tests.
+Phase 1 is typed read-only data and tests only after an Autopilot runtime/package decision exists.
 
-Phase 2 is read-only UI.
+Phase 2 is read-only UI only after the runtime decision and typed contracts are stable.
 
 Phase 3 is connector/import research and reviewed snapshots.
 

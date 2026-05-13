@@ -126,3 +126,35 @@ Verification:
 Risks:
 
 - Repository separation risk for Autopilot and Radeq is closed. The mixed checkout backup remains local for audit and recovery until a retention decision is made.
+
+## 2026-05-13 Workflow Governance Baseline Update
+
+Date: 2026-05-13
+Request or trigger: user asked to proceed with the Autopilot workflow modification.
+Mode: WRITE_ALLOWED for Autopilot control-plane documentation.
+Scope: align the prompt pack and registry with the post-split docs-first Autopilot repository and add workflow governance contracts.
+Files changed:
+
+- `docs/autopilot/delivery-system-governance.md`
+- `docs/autopilot/delivery-system-ledgers.md`
+- `docs/autopilot/delivery-system-model-policy.md`
+- `docs/autopilot/v3-prompt-pack.md`
+- `docs/autopilot/project-architecture-registry.md`
+- `docs/projects/autopilot-control-plane/work-log.md`
+
+Architecture impact: Autopilot's operating workflow now requires ledger impact, workflow governance evidence, and the post-split docs-first baseline before worker outputs can be accepted.
+Decisions:
+
+- Replace the stale pre-split prompt-pack baseline with the current `SirRadek/autopilot` docs-first repository baseline.
+- Keep runtime, UI, and typed-contract work deferred until explicit architecture decisions exist.
+
+Verification:
+
+- Required-term search found workflow governance, ledger, gate, and model-policy terms across the Autopilot docs.
+- Placeholder-token scan returned no matches.
+- Autopilot runtime-file scan returned no matches for product or app runtime files.
+- `git diff --check` passed with only LF/CRLF normalization warnings.
+
+Risks:
+
+- Prompt-pack consumers must use the updated baseline; old assumptions about Astro scripts in Autopilot are no longer valid.

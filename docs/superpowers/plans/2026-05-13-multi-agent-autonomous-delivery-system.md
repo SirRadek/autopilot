@@ -4,19 +4,20 @@
 
 **Goal:** Build a governed, auditable, multi-agent delivery system that starts with architecture, memory, ledgers, gates, and read-only supervision before any autonomous execution is enabled.
 
-**Architecture:** Keep the existing Astro repository static-first. Model the delivery system as typed contracts, Markdown architecture records, ledgers, and read-only command-center views before choosing a durable workflow runtime. Execution engines, remote mutation, and credentials remain locked behind later decision records and explicit approvals.
+**Architecture:** After repository separation, Autopilot is a docs-first control-plane repository. Model the delivery system as Markdown governance contracts, architecture records, ledgers, and audited workflow rules before adding any runtime app, typed registry package, or durable workflow engine. Execution engines, remote mutation, and credentials remain locked behind later decision records and explicit approvals.
 
-**Tech Stack:** Astro 6, TypeScript, Markdown docs, Vitest for contract tests, Playwright for future dashboard checks, GitHub/Linear/Vercel/Cloudflare/Docket plugins as supervised context sources, Superpowers process skills.
+**Tech Stack:** Markdown docs for phase 0, Git for evidence, GitHub/Linear/Vercel/Cloudflare/Docket plugins as supervised context sources, Superpowers process skills. A future TypeScript/Astro or other read-only runtime requires a separate architecture decision because the Autopilot repository no longer contains product runtime code.
 
 ---
 
 ## Phase Rules
 
-- Phase 0 and Phase 1 are required before any UI or execution runtime work.
-- No remote mutation is allowed in this plan.
+- Phase 0 documentation is required before any typed contracts, UI, or execution runtime work.
+- Phase 1 typed contracts require a runtime/package decision for the Autopilot repository.
+- No delivery-system remote mutation is allowed in this plan.
 - No credentials, tokens, database IDs, private issue bodies, or private Docket/Linear/GitHub content may be committed.
 - Autopilot is a standalone control-plane project; product projects must live in separate local roots and separate Git repositories.
-- Planning records in the current checkout are transitional until the dedicated Autopilot repository split is completed.
+- The dedicated Autopilot repository split is completed; product runtime files must not be reintroduced into Autopilot.
 - Every task must update the affected project work log.
 - Every implementation task must state architecture impact.
 
@@ -30,6 +31,9 @@ Create:
 - `docs/autopilot/delivery-system-ledgers.md`
 - `docs/autopilot/delivery-system-model-policy.md`
 - `docs/autopilot/delivery-system-execution-engine-options.md`
+
+Future typed-contract files require a runtime/package decision first:
+
 - `src/data/delivery-system/roles.ts`
 - `src/data/delivery-system/gates.ts`
 - `src/data/delivery-system/workflows.ts`
@@ -107,13 +111,13 @@ Actual: completed on 2026-05-13. Repository-boundary search passed; placeholder-
 - Create: `docs/autopilot/delivery-system-model-policy.md`
 - Modify: `docs/projects/multi-agent-autonomous-delivery-system/work-log.md`
 
-- [ ] Define Business, Orchestrator, Architecture, Analysis, Execution, Testing, Review, Copywriting, Governance, Autopilot, and Memory layers.
-- [ ] Define role permissions and explicit "must not" rules.
-- [ ] Define decision matrix for blocker, major issue, minor issue, cosmetic issue, and pass.
-- [ ] Define inline-fix rules, scope-drift flow, architecture-violation flow, and failed-test flow.
-- [ ] Define decision ledger, issue ledger, analysis output, and gate result schemas.
-- [ ] Define model policy that treats Qwen2.5-Coder 7B/14B as optional bounded worker candidates, not architecture or governance authorities.
-- [ ] Run:
+- [x] Define Business, Orchestrator, Architecture, Analysis, Execution, Testing, Review, Copywriting, Governance, Autopilot, and Memory layers.
+- [x] Define role permissions and explicit "must not" rules.
+- [x] Define decision matrix for blocker, major issue, minor issue, cosmetic issue, and pass.
+- [x] Define inline-fix rules, scope-drift flow, architecture-violation flow, and failed-test flow.
+- [x] Define decision ledger, issue ledger, analysis output, and gate result schemas.
+- [x] Define model policy that treats Qwen2.5-Coder 7B/14B as optional bounded worker candidates, not architecture or governance authorities.
+- [x] Run:
 
 ```powershell
 rg -n "Nobody approves their own work|decision_id|issue_id|gate_result|Qwen2.5" docs/autopilot docs/projects
@@ -122,7 +126,11 @@ git diff --check
 
 Expected: governance docs contain explicit rules and ledgers; no whitespace errors.
 
+Actual: completed on 2026-05-13. Governance, ledger, and model-policy docs were created in `docs/autopilot/`; searches found the required workflow, ledger, gate, and Qwen policy terms; `git diff --check` passed with only LF/CRLF normalization warnings.
+
 ## Task 3: Typed Contract Tests First
+
+Status: deferred until an Autopilot runtime/package decision exists. The post-split Autopilot repository is intentionally docs-only and has no `package.json`, `src`, or `tests` tree.
 
 **Files:**
 - Create: `tests/delivery-system/governance.test.ts`
@@ -142,6 +150,8 @@ npm run test -- tests/delivery-system/governance.test.ts tests/delivery-system/l
 Expected: fail because delivery-system modules do not exist yet.
 
 ## Task 4: Typed Registries And Pure Helpers
+
+Status: deferred until an Autopilot runtime/package decision exists. Typed registries must not reintroduce product runtime code into the control-plane repository.
 
 **Files:**
 - Create: `src/data/delivery-system/roles.ts`
@@ -168,6 +178,8 @@ npm run typecheck
 Expected: tests pass and typecheck exits 0.
 
 ## Task 5: Read-Only Command Center UI
+
+Status: deferred until a read-only Autopilot UI architecture decision exists.
 
 **Files:**
 - Create or modify: `src/pages/autopilot.astro`
@@ -239,7 +251,7 @@ Expected: new smoke test passes.
 - Modify: `docs/projects/multi-agent-autonomous-delivery-system/work-log.md`
 
 - [ ] Add the multi-agent delivery system as an explicit future architecture under Autopilot governance.
-- [ ] Add gate that every worker output must include role, mode, scope, architecture impact, ledger impact, tests, and next action.
+- [x] Add gate that every worker output must include role, mode, scope, architecture impact, ledger impact, tests, and next action.
 - [ ] Add rejection rule for self-approval, unlogged issues, missing ledger updates, missing architecture impact, and unverified plugin facts.
 - [ ] Run:
 
@@ -249,6 +261,8 @@ git diff --check
 ```
 
 Expected: prompt pack contains governance rules and no whitespace errors.
+
+Partial actual: ledger-impact and worker-output handoff gate added on 2026-05-13 during phase-0 workflow governance. Remaining Task 9 items stay open.
 
 ## Task 10: Full Documentation Gate
 
