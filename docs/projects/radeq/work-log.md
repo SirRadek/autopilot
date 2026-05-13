@@ -96,6 +96,8 @@ Verification:
 
 - Radeq cleanup branch `codex/separate-autopilot-docs` was committed and pushed.
 - Radeq cleanup PR opened: `https://github.com/SirRadek/radeq/pull/1`.
+- After explicit user approval, Radeq cleanup PR `https://github.com/SirRadek/radeq/pull/1` was squash-merged into `new` as `ef7053c`.
+- Local Radeq checkout was fast-forwarded to `ef7053c` on branch `new`.
 - `rg -n "docs/autopilot|docs\\autopilot|docs/superpowers|docs\\superpowers" . -g '!node_modules/**' -g '!.git/**'` returned no matches on the cleanup branch.
 - `git diff --check` passed.
 - `npm ci` passed with 0 vulnerabilities.
@@ -104,4 +106,4 @@ Verification:
 
 Risks:
 
-- Radeq default branch still contains legacy Autopilot docs until cleanup PR `https://github.com/SirRadek/radeq/pull/1` is reviewed and merged.
+- Repository separation risk for Radeq is closed. Product runtime risk remains unchanged and should be handled by normal Radeq verification gates.

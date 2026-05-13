@@ -807,12 +807,14 @@ Actions:
 - Preserved the existing `C:\Users\sirok\Documents\Autopilot-v2` worktree by redirecting its git metadata to the mixed-checkout backup.
 - Committed and pushed Radeq cleanup branch `codex/separate-autopilot-docs`.
 - Opened Radeq cleanup PR `https://github.com/SirRadek/radeq/pull/1`.
+- After explicit user approval, squash-merged Radeq cleanup PR `https://github.com/SirRadek/radeq/pull/1` into `new` as `ef7053c`.
+- Fast-forwarded the local Radeq checkout to `ef7053c` on branch `new`.
 
 Architecture impact:
 
 - Autopilot is now physically separated from the Radeq product runtime locally.
 - Radeq has a canonical local product checkout under `C:\Users\sirok\Documents\Projects\radeq`.
-- Remaining separation work is review and merge of cleanup PR `https://github.com/SirRadek/radeq/pull/1`.
+- Radeq default branch is now cleaned of legacy Autopilot governance files.
 
 Verification:
 
@@ -822,3 +824,5 @@ Verification:
 - Autopilot root scan found only `.gitignore`, `README.md`, and `docs` at the top level.
 - Autopilot runtime-file scan returned no matches for product runtime files or directories.
 - Radeq cleanup branch verification passed: no legacy docs references, `git diff --check`, `npm ci`, `npm test`, and `npm run build`.
+- Post-merge `gh pr view 1 --repo SirRadek/radeq` confirmed PR state `MERGED`, merge commit `ef7053c`, base `new`, and head `codex/separate-autopilot-docs`.
+- Post-merge Radeq default-branch scans found no `docs/autopilot` or `docs/superpowers` tree.

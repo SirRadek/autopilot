@@ -119,8 +119,9 @@ Verification:
 - Autopilot root scan found no product runtime directories or files such as `src`, `functions`, `migrations`, `public`, `tests`, `package.json`, or `astro.config.mjs`.
 - Radeq cleanup branch `codex/separate-autopilot-docs` was committed and pushed.
 - Radeq cleanup PR opened: `https://github.com/SirRadek/radeq/pull/1`.
+- After explicit user approval, Radeq cleanup PR `https://github.com/SirRadek/radeq/pull/1` was squash-merged into `new` as `ef7053c`.
 - Radeq cleanup verification passed: `git diff --check`, `npm ci`, `npm test`, and `npm run build`.
 
 Risks:
 
-- Radeq default branch still contains legacy Autopilot docs until cleanup PR `https://github.com/SirRadek/radeq/pull/1` is reviewed and merged.
+- Repository separation risk for Autopilot and Radeq is closed. The mixed checkout backup remains local for audit and recovery until a retention decision is made.

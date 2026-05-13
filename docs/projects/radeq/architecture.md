@@ -6,7 +6,7 @@ Status: active
 Slug: `radeq`
 Primary repository: `SirRadek/radeq`
 Canonical local root: `C:\Users\sirok\Documents\Projects\radeq`
-Separation status: `local_split_complete; remote_cleanup_pr_open`
+Separation status: `separated`
 Visibility: public repository, with private reference assets excluded by policy
 
 ## Purpose And Scope
@@ -52,7 +52,7 @@ SirRadek/radeq
 
 Autopilot may track Radeq through registry rows, architecture mirrors, sanitized snapshots, and work-log summaries. Autopilot must not become the canonical home for Radeq runtime code, migrations, deployment configuration, or assets.
 
-Current state: the local Radeq product checkout exists separately at `C:\Users\sirok\Documents\Projects\radeq`. Legacy Autopilot governance files still exist on the Radeq default branch until cleanup PR `https://github.com/SirRadek/radeq/pull/1` is reviewed and merged.
+Current state: the local Radeq product checkout exists separately at `C:\Users\sirok\Documents\Projects\radeq`. Cleanup PR `https://github.com/SirRadek/radeq/pull/1` was merged into `new` as `ef7053c`, so legacy Autopilot governance files are no longer present on the Radeq default branch.
 
 ## Runtime Architecture
 

@@ -115,10 +115,10 @@ Before implementation starts on any project, the supervisor must check:
 
 ## Current Migration State
 
-The local split is established: `C:\Users\sirok\Documents\Autopilot` is the Autopilot control-plane root and `C:\Users\sirok\Documents\Projects\radeq` is the Radeq product root.
+The local and remote split is established for Autopilot and Radeq: `C:\Users\sirok\Documents\Autopilot` is the Autopilot control-plane root, `C:\Users\sirok\Documents\Projects\radeq` is the Radeq product root, `SirRadek/autopilot` is the Autopilot repository, and `SirRadek/radeq` is the Radeq repository.
 
-The remaining migration work is:
+Completed migration evidence:
 
-- Push and maintain Autopilot governance in the dedicated `SirRadek/autopilot` repository.
-- Remove legacy Autopilot governance files from the Radeq repository through reviewed cleanup PR `https://github.com/SirRadek/radeq/pull/1`.
+- Autopilot governance was pushed to the dedicated `SirRadek/autopilot` repository.
+- Legacy Autopilot governance files were removed from the Radeq default branch through reviewed cleanup PR `https://github.com/SirRadek/radeq/pull/1`, merged as `ef7053c`.
 - Each future product/project gets its own repository and root directory.
