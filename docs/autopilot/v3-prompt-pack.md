@@ -17,9 +17,10 @@ Facts checked locally on 2026-05-13 after repository separation:
 - Project path: `C:\Users\sirok\Documents\Autopilot`
 - Repository: `SirRadek/autopilot`
 - Default branch: `main`
-- Repository role: docs-first Autopilot control plane.
-- Top-level files: `.gitignore`, `README.md`, and `docs`.
-- No Autopilot app runtime, `package.json`, `src`, `tests`, `functions`, `migrations`, or `public` tree exists in this repository.
+- Repository role: Autopilot control plane with Markdown governance, typed governance contracts, and a static read-only command center.
+- Top-level files include `.gitignore`, `README.md`, `docs`, `package.json`, `package-lock.json`, `src`, `tests`, `astro.config.mjs`, `playwright.config.ts`, `tsconfig.json`, and `vitest.config.ts`.
+- Static UI route: `/autopilot`.
+- No connector client, durable workflow engine, server API route, `functions`, `migrations`, or `public` tree exists in this repository.
 - Radeq product runtime lives separately at `C:\Users\sirok\Documents\Projects\radeq` and `SirRadek/radeq`.
 - Gemini CLI exists locally.
 - Hardcoded `gemini-3.1-pro` failed locally with `ModelNotFoundError`.
@@ -100,11 +101,15 @@ Authoritative phase-0 records:
 - `docs/autopilot/delivery-system-model-policy.md`
 - `docs/autopilot/delivery-system-connector-snapshots.md`
 - `docs/autopilot/delivery-system-execution-engine-options.md`
+- `docs/autopilot/delivery-system-runtime-package-decision.md`
+- `docs/autopilot/delivery-system-read-only-ui-decision.md`
 
 Rules:
 
 - No worker may start durable execution from this architecture.
-- No worker may add runtime code, workflows, automations, credentials, connectors, or deployments without a later architecture decision and explicit approval.
+- No worker may add more app runtime code, workflows, automations, credentials, connectors, or deployments without a later architecture decision and explicit approval.
+- The current TypeScript package is limited to typed governance contracts and pure validators.
+- The current Astro route is limited to static read-only reporting.
 - Every worker output related to this architecture must include role, mode, scope, architecture impact, ledger impact, tests or verification evidence, and next action.
 - Connector snapshots are reviewed evidence only, not automatic source of truth.
 - Autopilot monitors and proposes recovery; it does not approve delivery or steer product scope.

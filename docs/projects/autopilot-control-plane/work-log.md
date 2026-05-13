@@ -193,3 +193,90 @@ Risks:
 
 - The snapshot procedure is documented but not yet dry-run against live connector evidence.
 - There is still no typed registry or runtime enforcement layer.
+
+## 2026-05-13 Typed Governance Contract Package
+
+Date: 2026-05-13
+Request or trigger: user asked to run the large workflow plan and allowed multiagent assistance.
+Mode: WRITE_ALLOWED for minimal TypeScript/Vitest governance-contract tooling.
+Scope: change the Autopilot control-plane repository surface from Markdown-only to Markdown plus pure typed governance validation.
+Files changed:
+
+- `package.json`
+- `package-lock.json`
+- `tsconfig.json`
+- `vitest.config.ts`
+- `src/data/delivery-system/*.ts`
+- `src/lib/delivery-system/*.ts`
+- `tests/delivery-system/*.test.ts`
+- `docs/autopilot/delivery-system-runtime-package-decision.md`
+- `docs/autopilot/delivery-system-snapshots/2026-05-13-autopilot-read-only-dry-run.md`
+- `docs/autopilot/v3-prompt-pack.md`
+- `docs/autopilot/project-architecture-registry.md`
+- `docs/projects/autopilot-control-plane/architecture.md`
+- `docs/projects/autopilot-control-plane/work-log.md`
+
+Architecture impact: Autopilot now has a minimal local TypeScript/Vitest package for governance contracts and tests. This does not create an app runtime, UI route, connector client, durable workflow, background job, or deployment surface.
+Decisions:
+
+- Keep package scripts limited to `test`, `typecheck`, and `verify`.
+- Keep runtime dependencies empty.
+- Keep source files side-effect free and local-only.
+- Require a separate architecture decision before adding read-only UI or any execution runtime.
+
+Verification:
+
+- `npm run test -- tests/delivery-system/governance.test.ts tests/delivery-system/ledger.test.ts tests/delivery-system/boundary.test.ts`: passed 3 files and 10 tests.
+- `npm run typecheck`: passed.
+- `npm run verify`: passed.
+- Forbidden source/package scan returned no matches for process, network, connector, and cloud SDK usage in `src` and `package.json`.
+- Forbidden product-runtime path scan returned no matches for app runtime or deployment paths.
+- Placeholder-token scan returned no matches.
+- `git diff --check` passed with only LF/CRLF normalization warnings.
+
+Risks:
+
+- Future package changes could accidentally add connector clients, deployment scripts, or product runtime folders; boundary tests now guard the first version of this risk.
+- External project inventory remains unnormalized.
+
+## 2026-05-13 Static Read-Only Command Center
+
+Date: 2026-05-13
+Request or trigger: continue executing the large Autopilot workflow plan.
+Mode: WRITE_ALLOWED for static UI and local browser verification.
+Scope: add a read-only `/autopilot` command center backed by local typed governance contracts.
+Files changed:
+
+- `astro.config.mjs`
+- `playwright.config.ts`
+- `package.json`
+- `package-lock.json`
+- `src/env.d.ts`
+- `src/pages/autopilot.astro`
+- `tests/autopilot-delivery-system.spec.ts`
+- `tests/delivery-system/boundary.test.ts`
+- `docs/autopilot/delivery-system-read-only-ui-decision.md`
+- `docs/autopilot/v3-prompt-pack.md`
+- `docs/autopilot/project-architecture-registry.md`
+- `docs/projects/autopilot-control-plane/architecture.md`
+- `docs/projects/autopilot-control-plane/work-log.md`
+
+Architecture impact: the control plane now has a local static command-center route for reviewing governance state. It is not a production dashboard, connector client, execution console, or deployment surface.
+Decisions:
+
+- Use Astro for static route rendering.
+- Use Playwright for local smoke and overflow verification.
+- Keep connector and execution behavior out of the UI.
+
+Verification:
+
+- `npm run typecheck`: passed.
+- `npm run test`: passed 3 files and 10 tests.
+- `npm run build`: passed, one page built.
+- `npm run test:e2e`: passed after installing Playwright Chromium.
+- Final `npm run verify`: passed typecheck, Vitest, Astro build, and Playwright e2e.
+
+Risks:
+
+- The UI has no live connector data yet by design.
+- Read-only scope must be preserved before any future dashboard expansion.

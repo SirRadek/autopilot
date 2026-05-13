@@ -172,22 +172,22 @@ Deferral reasons:
 
 ## Recommendation
 
-Do not implement an execution engine now.
+Do not implement an execution engine now. The phase-1 runtime/package decision only approves a local TypeScript/Vitest package for typed governance contracts and pure validators.
 
 Next safe order:
 
-1. Finish phase-0 documentation and governance contracts.
-2. Exercise the connector snapshot procedure in at least one reviewed dry run.
-3. Decide whether Autopilot gets a runtime/package at all.
-4. Implement typed contracts and pure validation helpers.
-5. Add read-only UI or reports.
+1. Keep phase-0 documentation and governance contracts current.
+2. Keep connector snapshots read-only and expand dry-run coverage before external integrations.
+3. Keep the TypeScript/Vitest package limited to pure governance contracts.
+4. Keep the Astro command center limited to static read-only reporting.
+5. Expand connector snapshot dry runs and architecture review automation before re-evaluating execution runtime.
 6. Re-evaluate execution runtime with current official docs and a concrete bounded execution MVP.
 
 ## Phase-5 Trigger Criteria
 
 Bounded execution MVP may start only when all conditions are true:
 
-- Autopilot architecture record explicitly approves a runtime/package.
+- Autopilot architecture record explicitly approves an execution runtime/package beyond the current typed-contract package.
 - Decision ledger records selected runtime and rejected alternatives.
 - Role, gate, ledger, and workflow contracts are typed and tested.
 - Connector snapshot procedure is implemented and used in at least one dry run.

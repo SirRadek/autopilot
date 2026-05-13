@@ -1,0 +1,403 @@
+---
+import { governanceGates } from "../data/delivery-system/gates";
+import { requiredDecisionLedgerFields, requiredIssueLedgerFields } from "../data/delivery-system/ledgers";
+import { modelPolicyRules } from "../data/delivery-system/modelPolicy";
+import { deliveryRoles } from "../data/delivery-system/roles";
+import { workflowStates, workflowTransitions } from "../data/delivery-system/workflows";
+
+const layerCounts = deliveryRoles.reduce<Record<string, number>>((counts, role) => {
+  counts[role.layer] = (counts[role.layer] ?? 0) + 1;
+  return counts;
+}, {});
+
+const rolePreview = deliveryRoles.slice(0, 12);
+const workflowPreview = workflowTransitions.slice(0, 9);
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Autopilot Command Center</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: #f6f3ee;
+        color: #17201d;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-width: 320px;
+        background:
+          linear-gradient(180deg, rgba(246, 243, 238, 0.96), rgba(231, 238, 235, 0.96)),
+          repeating-linear-gradient(90deg, rgba(23, 32, 29, 0.05) 0 1px, transparent 1px 112px);
+      }
+
+      main {
+        width: min(1180px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 28px 0 44px;
+      }
+
+      .topbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 12px 0 24px;
+        border-bottom: 1px solid rgba(23, 32, 29, 0.18);
+      }
+
+      .brand {
+        display: grid;
+        gap: 4px;
+      }
+
+      .brand strong {
+        font-size: 1.05rem;
+      }
+
+      .brand span,
+      .status span,
+      .meta {
+        color: #5a655f;
+        font-size: 0.9rem;
+      }
+
+      .status {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .pill {
+        border: 1px solid rgba(23, 32, 29, 0.18);
+        border-radius: 999px;
+        padding: 6px 10px;
+        background: #fffaf0;
+        white-space: nowrap;
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1.1fr) minmax(280px, 0.9fr);
+        gap: 28px;
+        padding: 34px 0 26px;
+        align-items: start;
+      }
+
+      h1 {
+        margin: 0;
+        max-width: 760px;
+        font-size: clamp(2rem, 7vw, 4.9rem);
+        line-height: 0.98;
+        letter-spacing: 0;
+      }
+
+      h2 {
+        margin: 0 0 14px;
+        font-size: 1rem;
+        letter-spacing: 0;
+      }
+
+      p {
+        margin: 0;
+      }
+
+      .summary {
+        display: grid;
+        gap: 12px;
+      }
+
+      .summary p {
+        max-width: 680px;
+        color: #3e4943;
+        font-size: 1.02rem;
+        line-height: 1.55;
+      }
+
+      .read-only {
+        display: grid;
+        gap: 12px;
+        padding: 18px;
+        border: 1px solid rgba(23, 32, 29, 0.16);
+        background: #dfeee8;
+      }
+
+      .read-only strong {
+        font-size: 1.1rem;
+      }
+
+      .metric-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+        margin: 10px 0 28px;
+      }
+
+      .metric {
+        min-height: 96px;
+        padding: 14px;
+        border: 1px solid rgba(23, 32, 29, 0.14);
+        background: #fffaf0;
+      }
+
+      .metric b {
+        display: block;
+        margin-bottom: 10px;
+        font-size: 1.7rem;
+      }
+
+      .section {
+        padding: 28px 0;
+        border-top: 1px solid rgba(23, 32, 29, 0.16);
+      }
+
+      .grid-two {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 18px;
+      }
+
+      .panel {
+        padding: 18px;
+        border: 1px solid rgba(23, 32, 29, 0.16);
+        background: rgba(255, 250, 240, 0.82);
+      }
+
+      .list {
+        display: grid;
+        gap: 8px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .list li {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        min-height: 36px;
+        border-bottom: 1px solid rgba(23, 32, 29, 0.1);
+        color: #293630;
+      }
+
+      .list code {
+        color: #705124;
+      }
+
+      .workflow {
+        display: grid;
+        gap: 8px;
+      }
+
+      .flow-step {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        border: 1px solid rgba(23, 32, 29, 0.14);
+        background: #eef4f2;
+      }
+
+      .arrow {
+        color: #8f5f24;
+        font-weight: 700;
+      }
+
+      .roles {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .role-card {
+        min-height: 112px;
+        padding: 13px;
+        border: 1px solid rgba(23, 32, 29, 0.14);
+        background: #ffffff;
+      }
+
+      .role-card strong {
+        display: block;
+        margin-bottom: 6px;
+      }
+
+      .role-card span {
+        color: #5a655f;
+        font-size: 0.86rem;
+      }
+
+      .footer-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      @media (max-width: 860px) {
+        main {
+          width: min(100% - 22px, 680px);
+        }
+
+        .hero,
+        .grid-two,
+        .footer-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .metric-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .roles {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 520px) {
+        main {
+          width: min(100% - 18px, 430px);
+        }
+
+        .metric-grid,
+        .roles {
+          grid-template-columns: 1fr;
+        }
+
+        .flow-step {
+          grid-template-columns: 1fr;
+        }
+
+        .arrow {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header class="topbar">
+        <div class="brand">
+          <strong>Autopilot Control Plane</strong>
+          <span>Multi-Agent Autonomous Delivery System</span>
+        </div>
+        <div class="status" data-testid="read-only-status">
+          <span class="pill">Read-only</span>
+          <span class="pill">Non-executing</span>
+          <span class="pill">No connector calls</span>
+        </div>
+      </header>
+
+      <section class="hero">
+        <div class="summary">
+          <p class="meta">Phase 2 command center</p>
+          <h1>Autopilot Command Center</h1>
+          <p>
+            Static governance view over typed contracts, ledgers, workflow rules, and current
+            architecture evidence. This surface reports state only.
+          </p>
+        </div>
+        <aside class="read-only">
+          <strong>Execution remains locked</strong>
+          <p>
+            No deployments, workflow runs, connector mutation, credentials, or product runtime
+            actions are exposed from this page.
+          </p>
+          <p class="meta">Next architecture review: 2026-05-20</p>
+        </aside>
+      </section>
+
+      <section class="metric-grid" aria-label="Delivery system metrics">
+        <div class="metric">
+          <b>{Object.keys(layerCounts).length}</b>
+          <span>governance layers</span>
+        </div>
+        <div class="metric">
+          <b>{deliveryRoles.length}</b>
+          <span>typed roles</span>
+        </div>
+        <div class="metric">
+          <b>{governanceGates.length}</b>
+          <span>governance gates</span>
+        </div>
+        <div class="metric">
+          <b>{workflowStates.length}</b>
+          <span>workflow states</span>
+        </div>
+      </section>
+
+      <section class="section grid-two" data-testid="governance-gates">
+        <div class="panel">
+          <h2>Governance Gates</h2>
+          <ul class="list">
+            {governanceGates.map((gate) => <li><span>{gate.replaceAll("_", " ")}</span><code>required</code></li>)}
+          </ul>
+        </div>
+        <div class="panel" data-testid="ledger-summary">
+          <h2>Ledger Summary</h2>
+          <ul class="list">
+            <li><span>Decision fields</span><code>{requiredDecisionLedgerFields.length}</code></li>
+            <li><span>Issue fields</span><code>{requiredIssueLedgerFields.length}</code></li>
+            <li><span>Architecture record</span><code>current</code></li>
+            <li><span>Work log</span><code>current</code></li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="section" data-testid="workflow-map">
+        <h2>Workflow Map</h2>
+        <div class="workflow">
+          {
+            workflowPreview.map((transition) => (
+              <div class="flow-step">
+                <span>{transition.from.replaceAll("_", " ")}</span>
+                <span class="arrow">to</span>
+                <span>{transition.to.replaceAll("_", " ")}</span>
+              </div>
+            ))
+          }
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>Role Catalog</h2>
+        <div class="roles">
+          {
+            rolePreview.map((role) => (
+              <article class="role-card">
+                <strong>{role.title}</strong>
+                <span>{role.layer}</span>
+              </article>
+            ))
+          }
+        </div>
+      </section>
+
+      <section class="section footer-grid">
+        <div class="panel">
+          <h2>Architecture Record</h2>
+          <p class="meta">docs/projects/multi-agent-autonomous-delivery-system/architecture.md</p>
+        </div>
+        <div class="panel">
+          <h2>Work Log</h2>
+          <p class="meta">docs/projects/multi-agent-autonomous-delivery-system/work-log.md</p>
+        </div>
+        <div class="panel">
+          <h2>Model Policy</h2>
+          <p class="meta">{modelPolicyRules.length} model policy rows mirrored locally</p>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

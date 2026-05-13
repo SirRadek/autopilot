@@ -215,13 +215,13 @@ git remote -v
 rg --files
 ```
 
-For Autopilot, also verify that product runtime files are not reintroduced:
+For Autopilot, verify that product runtime, deployment, and connector-execution files are not reintroduced. A minimal TypeScript/Vitest governance-contract package is allowed only when covered by `docs/autopilot/delivery-system-runtime-package-decision.md`.
 
 ```powershell
-git ls-tree -r --name-only HEAD | rg "^(src|functions|migrations|public|tests|scripts|node_modules|dist|package(-lock)?\.json|astro\.config\.mjs|wrangler\.example\.toml|playwright\.config\.ts|vitest\.config\.ts|tsconfig\.json)(/|$)"
+git ls-tree -r --name-only HEAD | rg "^(functions|migrations|public|scripts|node_modules|dist|astro\.config\.mjs|wrangler(\.example)?\.toml|playwright\.config\.ts)(/|$)"
 ```
 
-Expected: no matches unless a runtime decision record explicitly changes the Autopilot architecture.
+Expected: no matches unless a later architecture decision explicitly changes the Autopilot deployment/runtime surface.
 
 ## Review And Adoption
 

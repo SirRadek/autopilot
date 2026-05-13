@@ -1,0 +1,23 @@
+{
+  "name": "autopilot-control-plane",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Typed governance contracts for the Autopilot control plane.",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "verify": "npm run typecheck && npm run test && npm run build && npm run test:e2e"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.60.0",
+    "@types/node": "25.7.0",
+    "astro": "6.3.2",
+    "typescript": "6.0.3",
+    "vitest": "4.1.6"
+  }
+}
