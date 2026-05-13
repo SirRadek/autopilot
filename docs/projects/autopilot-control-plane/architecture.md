@@ -12,7 +12,7 @@ Visibility: dedicated control-plane repository, with private inventory redacted 
 
 ## Purpose And Scope
 
-The Autopilot control plane defines how project work is received, researched, scoped, delegated, verified, logged, and handed off. It is currently a documentation and supervision layer, not an autonomous execution engine.
+The Autopilot control plane defines how project work is received, researched, scoped, delegated, verified, logged, and handed off. It is currently a documentation, typed-governance-contract, static read-only command-center, and supervision layer, not an autonomous execution engine.
 
 Autopilot is its own project. It makes, supervises, and audits other projects, but it must not be treated as the same project as Radeq or any other product runtime.
 
@@ -23,7 +23,7 @@ Out of scope for the current architecture:
 - stored credentials
 - real GitHub, Cloudflare, Vercel, Linear, or Docket mutation from UI
 - multi-provider LLM gateway
-- production dashboard runtime
+- production dashboard runtime with connector mutation
 
 ## System Boundary
 
@@ -35,7 +35,12 @@ In this project:
 - `docs/autopilot/project-architecture-registry.md`
 - `docs/autopilot/repository-separation-policy.md`
 - per-project architecture records under `docs/projects/`
-- future `/autopilot` route and typed registries, when implemented
+- minimal TypeScript/Vitest governance-contract package
+- typed registries under `src/data/delivery-system/`
+- pure validators under `src/lib/delivery-system/`
+- static read-only command center at `src/pages/autopilot.astro`
+- tests under `tests/delivery-system/`
+- local Playwright smoke test at `tests/autopilot-delivery-system.spec.ts`
 
 External to this project:
 
@@ -99,7 +104,7 @@ Modes:
 
 ## Data Model
 
-Current data is Markdown-based:
+Current data is Markdown-first with a minimal typed governance mirror:
 
 - prompt pack
 - run logs
@@ -107,6 +112,11 @@ Current data is Markdown-based:
 - project architecture records
 - project work logs
 - plans and specs under `docs/superpowers/`
+- typed delivery-system contracts under `src/data/delivery-system/`
+- pure delivery-system validators under `src/lib/delivery-system/`
+- Vitest contract tests under `tests/delivery-system/`
+- static `/autopilot` command-center page under `src/pages/`
+- Playwright browser smoke test under `tests/`
 
 Planned typed data:
 
@@ -119,6 +129,8 @@ Planned typed data:
 - `src/lib/autopilot/prompts.ts`
 
 These planned files do not exist yet.
+
+The current `package.json`, `tsconfig.json`, `vitest.config.ts`, `astro.config.mjs`, and `playwright.config.ts` are approved only for governance-contract validation and a local static read-only command center. They do not approve connector clients, background jobs, workflow engines, product runtime code, remote mutation, or deployment configuration.
 
 ## Integrations
 
@@ -191,14 +203,13 @@ Application verification is delegated to the affected project architecture recor
 
 ## Known Gaps And Risks
 
-- `/autopilot` dashboard route is planned but not implemented.
-- Typed project, skill, agent, provider, and verification registries are planned but not implemented.
+- `/autopilot` static read-only command center exists; it is not an execution console.
+- Delivery-system typed governance contracts exist; project, skill, agent, provider, and verification registries are still planned but not implemented.
 - Architecture records for external/private projects are not normalized yet.
-- Dedicated Autopilot remote repository is not created or confirmed yet.
-- Current documentation was introduced from a product checkout and must be split into the dedicated control-plane repository.
 - Regular review cadence is documented but not automated.
 - No recurring Codex automation has been created for weekly architecture review.
 - Vercel, Linear, and Docket are not integrated into the architecture registry.
+- The TypeScript package and Astro route must stay limited to pure governance validation and static read-only reporting until a later architecture decision changes the boundary.
 
 ## Architecture Change Triggers
 

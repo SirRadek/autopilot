@@ -2,7 +2,7 @@
 
 Last updated: 2026-05-13
 Next review: 2026-05-20
-Status: phase-0 governance contract
+Status: phase-2 read-only command center
 Slug: `multi-agent-autonomous-delivery-system`
 Canonical remote repository: `SirRadek/autopilot`
 Local workspace: `C:\Users\sirok\Documents\Autopilot`
@@ -35,9 +35,12 @@ In this project:
 - delivery-system governance, ledgers, and model-policy docs
 - connector snapshot procedure for reviewed external evidence
 - execution-engine options decision record
+- runtime/package decision for typed governance contracts
 - governance contracts
-- future typed registries for roles, gates, workflows, ledgers, and model policy after an Autopilot runtime/package decision
-- future read-only command-center views after a UI architecture decision
+- typed registries for roles, gates, workflows, ledgers, and model policy
+- pure validators for gate results, role permissions, and ledger completeness
+- static read-only command-center view at `/autopilot`
+- local browser/e2e smoke tests for the command center
 
 External to this project:
 
@@ -181,6 +184,10 @@ Detailed contracts are now split into:
 - `docs/autopilot/delivery-system-governance.md`
 - `docs/autopilot/delivery-system-ledgers.md`
 - `docs/autopilot/delivery-system-model-policy.md`
+- `src/data/delivery-system/*.ts`
+- `src/lib/delivery-system/*.ts`
+
+Markdown governance remains the human-readable policy source. TypeScript contracts are the executable mirror. If they disagree, work must stop until a decision ledger entry resolves the mismatch.
 
 Decision ledger entries must include:
 
@@ -295,10 +302,10 @@ Required before delivery:
 
 ## Known Gaps And Risks
 
-- No typed registries exist yet.
-- No runtime/package decision exists for typed contracts or read-only UI in the post-split Autopilot repository.
+- Initial typed registries and pure validators exist for governance contracts.
+- Runtime/package approval is limited to TypeScript/Vitest contract validation and a static Astro read-only command center; no connector client or execution runtime is approved.
 - No execution engine has been selected; the phase-0 execution-engine decision record currently defers selection.
-- Connector snapshot procedure exists, but it has not been exercised in a full dry run yet.
+- Connector snapshot procedure exists and has been exercised for local repository plus GitHub metadata; Linear, Vercel, Cloudflare, and Docket snapshots remain unexercised.
 - No recurring review automation exists yet.
 - Docket callable tooling is not available in this session.
 - Linear tooling requires workspace identifiers and OAuth connectivity before use.

@@ -921,3 +921,138 @@ Verification:
 - Placeholder-token scan returned no matches.
 - Autopilot runtime-file scan returned no matches for `src`, `functions`, `migrations`, `public`, `tests`, `scripts`, `package.json`, `astro.config.mjs`, or related runtime files.
 - `git diff --check` passed with only LF/CRLF normalization warnings.
+
+### delivery-system-typed-governance-contracts-2026-05-13
+
+Role: Supervisor, TDD worker, architecture reviewer, dependency boundary reviewer
+Mode: Autopilot control-plane implementation with no remote mutation
+Status: completed and verified
+
+User request:
+
+- Run the larger multi-agent delivery plan.
+- Proceed gradually and check work.
+- Use Gemini, Context7, Caveman skill, and multiagent assistance where useful.
+
+Files created:
+
+- `package.json`
+- `package-lock.json`
+- `tsconfig.json`
+- `vitest.config.ts`
+- `src/data/delivery-system/roles.ts`
+- `src/data/delivery-system/gates.ts`
+- `src/data/delivery-system/workflows.ts`
+- `src/data/delivery-system/ledgers.ts`
+- `src/data/delivery-system/modelPolicy.ts`
+- `src/lib/delivery-system/validation.ts`
+- `src/lib/delivery-system/governance.ts`
+- `src/lib/delivery-system/ledger.ts`
+- `tests/delivery-system/governance.test.ts`
+- `tests/delivery-system/ledger.test.ts`
+- `tests/delivery-system/boundary.test.ts`
+- `docs/autopilot/delivery-system-runtime-package-decision.md`
+- `docs/autopilot/delivery-system-snapshots/2026-05-13-autopilot-read-only-dry-run.md`
+
+Files modified:
+
+- `docs/autopilot/delivery-system-connector-snapshots.md`
+- `docs/autopilot/delivery-system-execution-engine-options.md`
+- `docs/autopilot/v3-prompt-pack.md`
+- `docs/autopilot/project-architecture-registry.md`
+- `docs/projects/multi-agent-autonomous-delivery-system/architecture.md`
+- `docs/projects/multi-agent-autonomous-delivery-system/work-log.md`
+- `docs/projects/autopilot-control-plane/architecture.md`
+- `docs/projects/autopilot-control-plane/work-log.md`
+- `docs/autopilot/2026-05-10-autopilot-run-log.md`
+- `docs/superpowers/plans/2026-05-13-multi-agent-autonomous-delivery-system.md`
+
+Architecture impact:
+
+- Autopilot moved from Markdown-only governance to Markdown plus a minimal TypeScript/Vitest typed governance contract package.
+- The package is local-only and non-executing.
+- Execution runtime, connector clients, UI route, background jobs, deployment configuration, credentials, and remote mutation remain blocked.
+
+Current decision:
+
+- `docs/autopilot/delivery-system-runtime-package-decision.md` approves TypeScript/Vitest only for typed governance contracts and pure validators.
+- `docs/autopilot/delivery-system-snapshots/2026-05-13-autopilot-read-only-dry-run.md` is the first accepted connector snapshot dry run, covering local repository and GitHub metadata only.
+
+Verification:
+
+- Context7 checked Vitest setup guidance.
+- Gemini advisory returned PASS with dependency and boundary concerns; accepted controls were recorded in the runtime/package decision.
+- Inspect-only subagents reviewed architecture updates and dependency/no-side-effect guardrails.
+- Red TDD run failed because `src/lib/delivery-system/governance` and `src/lib/delivery-system/ledger` did not exist.
+- `npm run test -- tests/delivery-system/governance.test.ts tests/delivery-system/ledger.test.ts tests/delivery-system/boundary.test.ts`: passed 3 files and 11 tests after review fixes.
+- `npm run typecheck`: passed.
+- `npm run verify`: passed.
+- Forbidden source/package scan returned no matches for process, network, connector, and cloud SDK usage in `src` and `package.json`.
+- Forbidden product-runtime path scan returned no matches for app runtime or deployment paths.
+- Placeholder-token scan returned no matches.
+- `git diff --check` passed with only LF/CRLF normalization warnings.
+
+Risks:
+
+- Typed contracts can drift from Markdown governance unless future changes update both or record a decision.
+- Boundary tests must be expanded if package scope grows.
+- Linear, Vercel, Cloudflare, and Docket snapshot dry runs remain uncollected.
+
+### delivery-system-read-only-command-center-2026-05-13
+
+Role: Supervisor, frontend implementation worker, browser verification worker
+Mode: Autopilot control-plane static UI implementation
+Status: completed and verified
+
+User request:
+
+- Continue executing the large workflow plan after typed contracts.
+
+Files created:
+
+- `astro.config.mjs`
+- `playwright.config.ts`
+- `src/env.d.ts`
+- `src/pages/autopilot.astro`
+- `tests/autopilot-delivery-system.spec.ts`
+- `docs/autopilot/delivery-system-read-only-ui-decision.md`
+
+Files modified:
+
+- `package.json`
+- `package-lock.json`
+- `tests/delivery-system/boundary.test.ts`
+- `docs/autopilot/v3-prompt-pack.md`
+- `docs/autopilot/project-architecture-registry.md`
+- `docs/projects/multi-agent-autonomous-delivery-system/architecture.md`
+- `docs/projects/autopilot-control-plane/architecture.md`
+- `docs/projects/multi-agent-autonomous-delivery-system/work-log.md`
+- `docs/projects/autopilot-control-plane/work-log.md`
+- `docs/autopilot/2026-05-10-autopilot-run-log.md`
+- `docs/superpowers/plans/2026-05-13-multi-agent-autonomous-delivery-system.md`
+
+Architecture impact:
+
+- Added a static read-only Astro command center at `/autopilot`.
+- Added local Playwright smoke coverage for visibility and horizontal overflow.
+- No connector client, server route, execution runtime, credentials, deployment config, or remote mutation was added.
+
+Current decision:
+
+- `docs/autopilot/delivery-system-read-only-ui-decision.md` approves Astro only for static read-only reporting and Playwright only for local verification.
+
+Verification:
+
+- Context7 checked current Astro route/config guidance and Playwright webServer/baseURL guidance.
+- `npm run typecheck`: passed.
+- `npm run test`: passed 3 files and 11 tests after review fixes.
+- `npm run build`: passed, building one static page at `/autopilot/index.html`.
+- Initial `npm run test:e2e` failed because Playwright Chromium was not installed.
+- `npx playwright install chromium`: completed.
+- Final `npm run test:e2e`: passed 3 Chromium tests.
+- Final `npm run verify`: passed typecheck, Vitest, Astro build, and Playwright e2e.
+
+Risks:
+
+- The Browser plugin tool did not surface through tool search, so local browser verification used Playwright.
+- Future UI work must stay read-only unless a later architecture decision explicitly changes scope.

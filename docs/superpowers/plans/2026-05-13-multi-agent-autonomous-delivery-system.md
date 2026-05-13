@@ -4,16 +4,16 @@
 
 **Goal:** Build a governed, auditable, multi-agent delivery system that starts with architecture, memory, ledgers, gates, and read-only supervision before any autonomous execution is enabled.
 
-**Architecture:** After repository separation, Autopilot is a docs-first control-plane repository. Model the delivery system as Markdown governance contracts, architecture records, ledgers, and audited workflow rules before adding any runtime app, typed registry package, or durable workflow engine. Execution engines, remote mutation, and credentials remain locked behind later decision records and explicit approvals.
+**Architecture:** After repository separation, Autopilot is a control-plane repository with Markdown governance, a minimal TypeScript/Vitest typed-contract package, and a static read-only Astro command center. Model the delivery system as governance contracts, architecture records, ledgers, audited workflow rules, pure validators, and read-only reporting before adding any durable workflow engine. Execution engines, remote mutation, and credentials remain locked behind later decision records and explicit approvals.
 
-**Tech Stack:** Markdown docs for phase 0, Git for evidence, GitHub/Linear/Vercel/Cloudflare/Docket plugins as supervised context sources, Superpowers process skills. A future TypeScript/Astro or other read-only runtime requires a separate architecture decision because the Autopilot repository no longer contains product runtime code.
+**Tech Stack:** Markdown docs for phase 0, TypeScript/Vitest for phase-1 governance contracts, Astro static UI and Playwright smoke tests for phase 2, Git for evidence, GitHub/Linear/Vercel/Cloudflare/Docket plugins as supervised context sources, Superpowers process skills. Any execution runtime still requires a separate architecture decision because the Autopilot repository must not become product runtime code.
 
 ---
 
 ## Phase Rules
 
 - Phase 0 documentation is required before any typed contracts, UI, or execution runtime work.
-- Phase 1 typed contracts require a runtime/package decision for the Autopilot repository.
+- Phase 1 typed contracts require and now have a runtime/package decision for pure governance contracts only.
 - No delivery-system remote mutation is allowed in this plan.
 - No credentials, tokens, database IDs, private issue bodies, or private Docket/Linear/GitHub content may be committed.
 - Autopilot is a standalone control-plane project; product projects must live in separate local roots and separate Git repositories.
@@ -32,8 +32,11 @@ Create:
 - `docs/autopilot/delivery-system-model-policy.md`
 - `docs/autopilot/delivery-system-connector-snapshots.md`
 - `docs/autopilot/delivery-system-execution-engine-options.md`
+- `docs/autopilot/delivery-system-runtime-package-decision.md`
+- `docs/autopilot/delivery-system-read-only-ui-decision.md`
+- `docs/autopilot/delivery-system-snapshots/2026-05-13-autopilot-read-only-dry-run.md`
 
-Future typed-contract files require a runtime/package decision first:
+Typed-contract files approved by the runtime/package decision:
 
 - `src/data/delivery-system/roles.ts`
 - `src/data/delivery-system/gates.ts`
@@ -44,6 +47,14 @@ Future typed-contract files require a runtime/package decision first:
 - `src/lib/delivery-system/ledger.ts`
 - `tests/delivery-system/governance.test.ts`
 - `tests/delivery-system/ledger.test.ts`
+- `tests/delivery-system/boundary.test.ts`
+- `tests/autopilot-delivery-system.spec.ts`
+- `package.json`
+- `package-lock.json`
+- `astro.config.mjs`
+- `playwright.config.ts`
+- `tsconfig.json`
+- `vitest.config.ts`
 
 Modify:
 
@@ -51,13 +62,9 @@ Modify:
 - `docs/autopilot/v3-prompt-pack.md`
 - `docs/autopilot/2026-05-10-autopilot-run-log.md`
 
-Later, after typed contracts pass:
+Read-only UI files approved by the UI architecture decision:
 
 - `src/pages/autopilot.astro`
-- `src/components/autopilot/DeliverySystemOverview.astro`
-- `src/components/autopilot/GovernanceGates.astro`
-- `src/components/autopilot/LedgerSummary.astro`
-- `src/components/autopilot/WorkflowMap.astro`
 
 ## Task 1: Project Onboarding And Architecture Baseline
 
@@ -133,18 +140,18 @@ Actual: completed on 2026-05-13. Governance, ledger, and model-policy docs were 
 
 ## Task 3: Typed Contract Tests First
 
-Status: deferred until an Autopilot runtime/package decision exists. The post-split Autopilot repository is intentionally docs-only and has no `package.json`, `src`, or `tests` tree.
+Status: completed after `docs/autopilot/delivery-system-runtime-package-decision.md` approved a minimal TypeScript/Vitest package for pure governance contracts.
 
 **Files:**
 - Create: `tests/delivery-system/governance.test.ts`
 - Create: `tests/delivery-system/ledger.test.ts`
-- Create later: `src/data/delivery-system/*.ts`
-- Create later: `src/lib/delivery-system/*.ts`
+- Create: `tests/delivery-system/boundary.test.ts`
 
-- [ ] Write failing tests for role separation: implementers cannot approve their own work, testers cannot change business scope, Autopilot cannot approve delivery.
-- [ ] Write failing tests for gate decisions: blocker and major issue require rework, minor issue allows inline fix only with evidence, pass allows progression.
-- [ ] Write failing tests for ledger completeness: decision ledger and issue ledger require all mandatory fields.
-- [ ] Run:
+- [x] Write failing tests for role separation: implementers cannot approve their own work, testers cannot change business scope, Autopilot cannot approve delivery.
+- [x] Write failing tests for gate decisions: blocker and major issue require rework, minor issue allows inline fix only with evidence, pass allows progression.
+- [x] Write failing tests for ledger completeness: decision ledger and issue ledger require all mandatory fields.
+- [x] Add boundary tests for non-mutating scripts, source imports, and product runtime paths.
+- [x] Run:
 
 ```powershell
 npm run test -- tests/delivery-system/governance.test.ts tests/delivery-system/ledger.test.ts
@@ -152,9 +159,11 @@ npm run test -- tests/delivery-system/governance.test.ts tests/delivery-system/l
 
 Expected: fail because delivery-system modules do not exist yet.
 
+Actual: completed on 2026-05-13. Initial red run failed because `src/lib/delivery-system/governance` and `src/lib/delivery-system/ledger` did not exist.
+
 ## Task 4: Typed Registries And Pure Helpers
 
-Status: deferred until an Autopilot runtime/package decision exists. Typed registries must not reintroduce product runtime code into the control-plane repository.
+Status: completed for the first pure TypeScript/Vitest governance-contract slice. Typed registries must not reintroduce product runtime code into the control-plane repository.
 
 **Files:**
 - Create: `src/data/delivery-system/roles.ts`
@@ -164,14 +173,15 @@ Status: deferred until an Autopilot runtime/package decision exists. Typed regis
 - Create: `src/data/delivery-system/modelPolicy.ts`
 - Create: `src/lib/delivery-system/governance.ts`
 - Create: `src/lib/delivery-system/ledger.ts`
+- Create: `src/lib/delivery-system/validation.ts`
 - Modify: `docs/projects/multi-agent-autonomous-delivery-system/work-log.md`
 
-- [ ] Implement typed roles for every layer in the user brief.
-- [ ] Implement gate definitions for architecture compliance, plan alignment, best practices, acceptance criteria, testing status, security review, and scope validation.
-- [ ] Implement workflow state transitions for request, analysis, plan, execution, test, review, governance, delivery, monitoring, and memory.
-- [ ] Implement `evaluateGateSeverity()` and `validateGateResult()`.
-- [ ] Implement `validateDecisionLedgerEntry()` and `validateIssueLedgerEntry()`.
-- [ ] Run:
+- [x] Implement typed roles for every layer in the user brief.
+- [x] Implement gate definitions for architecture compliance, plan alignment, best practices, acceptance criteria, testing status, security review, and scope validation.
+- [x] Implement workflow state transitions for request, analysis, plan, execution, test, review, governance, delivery, monitoring, and memory.
+- [x] Implement `evaluateGateSeverity()` and `validateGateResult()`.
+- [x] Implement `validateDecisionLedgerEntry()` and `validateIssueLedgerEntry()`.
+- [x] Run:
 
 ```powershell
 npm run test -- tests/delivery-system/governance.test.ts tests/delivery-system/ledger.test.ts
@@ -180,23 +190,21 @@ npm run typecheck
 
 Expected: tests pass and typecheck exits 0.
 
+Actual: completed on 2026-05-13. `npm run test -- tests/delivery-system/governance.test.ts tests/delivery-system/ledger.test.ts tests/delivery-system/boundary.test.ts` passed 11 tests after review fixes. `npm run typecheck` passed. `npm run verify` passed.
+
 ## Task 5: Read-Only Command Center UI
 
-Status: deferred until a read-only Autopilot UI architecture decision exists.
+Status: completed after `docs/autopilot/delivery-system-read-only-ui-decision.md` approved a static read-only Astro command center.
 
 **Files:**
 - Create or modify: `src/pages/autopilot.astro`
-- Create: `src/components/autopilot/DeliverySystemOverview.astro`
-- Create: `src/components/autopilot/GovernanceGates.astro`
-- Create: `src/components/autopilot/LedgerSummary.astro`
-- Create: `src/components/autopilot/WorkflowMap.astro`
 - Modify: `docs/projects/multi-agent-autonomous-delivery-system/work-log.md`
 
-- [ ] Render layers, roles, gates, workflow states, and model policy from typed data.
-- [ ] Mark the UI as read-only and non-executing.
-- [ ] Show current architecture record path, work log path, next review date, and current risks.
-- [ ] Avoid remote connector calls in the UI.
-- [ ] Run:
+- [x] Render layers, roles, gates, workflow states, and model policy from typed data.
+- [x] Mark the UI as read-only and non-executing.
+- [x] Show current architecture record path, work log path, next review date, and current risks.
+- [x] Avoid remote connector calls in the UI.
+- [x] Run:
 
 ```powershell
 npm run typecheck
@@ -205,22 +213,26 @@ npm run build
 
 Expected: static build succeeds.
 
+Actual: completed on 2026-05-13. `npm run typecheck` passed and `npm run build` built one static page at `/autopilot/index.html`.
+
 ## Task 6: Browser And Accessibility Smoke
 
 **Files:**
 - Create: `tests/autopilot-delivery-system.spec.ts`
 - Modify: `docs/projects/multi-agent-autonomous-delivery-system/work-log.md`
 
-- [ ] Add Playwright check for `/autopilot`.
-- [ ] Verify delivery-system heading, governance gates, ledger summary, workflow map, and read-only status are visible.
-- [ ] Verify no horizontal overflow at mobile and desktop widths.
-- [ ] Run:
+- [x] Add Playwright check for `/autopilot`.
+- [x] Verify delivery-system heading, governance gates, ledger summary, workflow map, and read-only status are visible.
+- [x] Verify no horizontal overflow at mobile and desktop widths.
+- [x] Run:
 
 ```powershell
 npm run test:e2e -- tests/autopilot-delivery-system.spec.ts
 ```
 
 Expected: new smoke test passes.
+
+Actual: completed on 2026-05-13. First run failed because Playwright Chromium was not installed. `npx playwright install chromium` completed, then `npm run test:e2e` passed 3 Chromium tests.
 
 ## Task 7: Connector Snapshot Procedure
 
@@ -288,7 +300,7 @@ git diff --check
 
 Expected: first search finds all core concepts, placeholder search has no matches, diff check has no whitespace errors.
 
-Actual: completed on 2026-05-13. Required-term search found the multi-agent delivery architecture, ledger schemas, gate result, connector snapshot, execution-engine deferral decision, phase-5 trigger criteria, self-approval rejection, ledger impact, and architecture impact across `docs/`. Placeholder-token scan and Autopilot runtime-file scan returned no matches. `git diff --check` passed with only LF/CRLF normalization warnings.
+Actual: completed on 2026-05-13 and refreshed after Tasks 3-6. Required-term search found the multi-agent delivery architecture, ledger schemas, gate result, connector snapshot, execution-engine deferral decision, phase-5 trigger criteria, self-approval rejection, ledger impact, and architecture impact across `docs/`. Placeholder-token scan returned no matches. Product runtime/deployment path scans returned no matches. `git diff --check` passed with only LF/CRLF normalization warnings. Final `npm run verify` passed typecheck, Vitest, Astro build, and Playwright e2e.
 
 ## Acceptance Criteria
 

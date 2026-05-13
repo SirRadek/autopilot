@@ -152,3 +152,117 @@ Risks:
 - No typed enforcement exists yet.
 - Connector snapshots have not been exercised in a full dry run.
 - Workflow runtime and model facts must be rechecked against current official docs before implementation.
+
+## 2026-05-13 Typed Governance Contracts
+
+Date: 2026-05-13
+Request or trigger: user asked to execute the large workflow plan, use multiagent support, and proceed while checking work.
+Mode: WRITE_ALLOWED for a minimal TypeScript/Vitest governance-contract package.
+Scope: exercise read-only snapshot procedure, record runtime/package decision, add failing contract tests, implement typed registries and pure validators, and verify the non-execution boundary.
+Files changed:
+
+- `package.json`
+- `package-lock.json`
+- `tsconfig.json`
+- `vitest.config.ts`
+- `src/data/delivery-system/roles.ts`
+- `src/data/delivery-system/gates.ts`
+- `src/data/delivery-system/workflows.ts`
+- `src/data/delivery-system/ledgers.ts`
+- `src/data/delivery-system/modelPolicy.ts`
+- `src/lib/delivery-system/validation.ts`
+- `src/lib/delivery-system/governance.ts`
+- `src/lib/delivery-system/ledger.ts`
+- `tests/delivery-system/governance.test.ts`
+- `tests/delivery-system/ledger.test.ts`
+- `tests/delivery-system/boundary.test.ts`
+- `docs/autopilot/delivery-system-runtime-package-decision.md`
+- `docs/autopilot/delivery-system-snapshots/2026-05-13-autopilot-read-only-dry-run.md`
+- `docs/autopilot/delivery-system-connector-snapshots.md`
+- `docs/autopilot/delivery-system-execution-engine-options.md`
+- `docs/autopilot/v3-prompt-pack.md`
+- `docs/autopilot/project-architecture-registry.md`
+- `docs/projects/multi-agent-autonomous-delivery-system/architecture.md`
+- `docs/projects/multi-agent-autonomous-delivery-system/work-log.md`
+- `docs/projects/autopilot-control-plane/architecture.md`
+- `docs/projects/autopilot-control-plane/work-log.md`
+- `docs/autopilot/2026-05-10-autopilot-run-log.md`
+- `docs/superpowers/plans/2026-05-13-multi-agent-autonomous-delivery-system.md`
+
+Architecture impact: the project advanced from phase-0 Markdown governance to phase-1 typed governance contracts. Execution runtime, connector clients, UI, deployments, and remote mutation remain out of scope.
+Decisions:
+
+- Minimal TypeScript/Vitest package is approved only for typed governance contracts and pure validators.
+- Runtime dependencies remain empty.
+- Development dependencies are limited to TypeScript, Vitest, and Node types.
+- Markdown remains the human-readable source of policy; TypeScript mirrors it for executable validation.
+- Source files must not import connector SDKs, network APIs, process execution APIs, or product runtime code.
+
+Verification:
+
+- Connector snapshot dry run covered local repository and GitHub metadata in read-only mode.
+- Gemini advisory was run with sanitized aliases and treated as advisory only.
+- Two inspect-only subagents reviewed architecture impact and dependency/no-side-effect boundaries.
+- Red TDD run failed because `src/lib/delivery-system/governance` and `src/lib/delivery-system/ledger` did not exist.
+- `npm run test -- tests/delivery-system/governance.test.ts tests/delivery-system/ledger.test.ts tests/delivery-system/boundary.test.ts`: passed 3 files and 11 tests after review fixes.
+- `npm run typecheck`: passed.
+- `npm run verify`: passed.
+- Forbidden source/package scan returned no matches for process, network, connector, and cloud SDK usage in `src` and `package.json`.
+- Forbidden product-runtime path scan returned no matches for app runtime or deployment paths.
+- Placeholder-token scan returned no matches.
+- `git diff --check` passed with only LF/CRLF normalization warnings.
+
+Risks:
+
+- Typed contracts can drift from Markdown governance docs.
+- Package scope can creep toward UI, connector clients, or execution runtime if future changes ignore the runtime-package decision.
+- Only local and GitHub snapshot dry run coverage exists so far.
+
+## 2026-05-13 Read-Only Command Center
+
+Date: 2026-05-13
+Request or trigger: continue executing the multi-agent delivery plan after typed contracts passed.
+Mode: WRITE_ALLOWED for static read-only UI and browser smoke tests.
+Scope: add `/autopilot` command center, Playwright smoke test, and UI architecture decision without connector calls or execution behavior.
+Files changed:
+
+- `astro.config.mjs`
+- `playwright.config.ts`
+- `package.json`
+- `package-lock.json`
+- `src/env.d.ts`
+- `src/pages/autopilot.astro`
+- `tests/autopilot-delivery-system.spec.ts`
+- `tests/delivery-system/boundary.test.ts`
+- `docs/autopilot/delivery-system-read-only-ui-decision.md`
+- `docs/autopilot/v3-prompt-pack.md`
+- `docs/autopilot/project-architecture-registry.md`
+- `docs/projects/multi-agent-autonomous-delivery-system/architecture.md`
+- `docs/projects/autopilot-control-plane/architecture.md`
+- `docs/projects/multi-agent-autonomous-delivery-system/work-log.md`
+- `docs/projects/autopilot-control-plane/work-log.md`
+- `docs/autopilot/2026-05-10-autopilot-run-log.md`
+- `docs/superpowers/plans/2026-05-13-multi-agent-autonomous-delivery-system.md`
+
+Architecture impact: the project advanced to phase-2 static read-only reporting. `/autopilot` renders local typed governance contracts and evidence paths, but does not call connectors, mutate data, run workflows, or approve delivery.
+Decisions:
+
+- Astro is approved only for static local read-only reporting.
+- Playwright is approved only for local smoke verification.
+- No UI framework, connector SDK, server API route, deployment target, credentials, or execution runtime is approved.
+
+Verification:
+
+- Context7 checked current Astro and Playwright docs before setup.
+- `npm run typecheck`: passed.
+- `npm run test`: passed 3 files and 11 tests after review fixes.
+- `npm run build`: built one static page at `/autopilot/index.html`.
+- First `npm run test:e2e` failed because Chromium was not installed.
+- `npx playwright install chromium`: completed.
+- Second `npm run test:e2e`: passed 3 Chromium tests, including mobile and desktop horizontal-overflow checks.
+- Final `npm run verify`: passed typecheck, Vitest, Astro build, and Playwright e2e.
+
+Risks:
+
+- UI must remain static and read-only.
+- Browser tooling surfaced through Playwright; the separate Browser plugin tool did not surface through tool search in this session.
