@@ -13,14 +13,52 @@ describe("delivery system governance contracts", () => {
     expect(
       canApproveWork({
         reviewerRoleId: "backend-agent",
-        authorRoleId: "backend-agent"
+        authorRoleId: "backend-agent",
+        reviewerActorId: "worker-1",
+        authorActorId: "worker-1",
+        reviewKind: "code"
       })
     ).toBe(false);
 
     expect(
       canApproveWork({
         reviewerRoleId: "code-reviewer",
-        authorRoleId: "backend-agent"
+        authorRoleId: "backend-agent",
+        reviewerActorId: "reviewer-1",
+        authorActorId: "worker-1",
+        reviewKind: "code"
+      })
+    ).toBe(true);
+
+    expect(
+      canApproveWork({
+        reviewerRoleId: "code-reviewer",
+        authorRoleId: "backend-agent",
+        reviewerActorId: "same-person",
+        authorActorId: "same-person",
+        reviewKind: "code"
+      })
+    ).toBe(false);
+  });
+
+  it("keeps approval scoped to review domain", () => {
+    expect(
+      canApproveWork({
+        reviewerRoleId: "scope-guardian",
+        authorRoleId: "backend-agent",
+        reviewerActorId: "scope-1",
+        authorActorId: "worker-1",
+        reviewKind: "code"
+      })
+    ).toBe(false);
+
+    expect(
+      canApproveWork({
+        reviewerRoleId: "scope-guardian",
+        authorRoleId: "backend-agent",
+        reviewerActorId: "scope-1",
+        authorActorId: "worker-1",
+        reviewKind: "scope"
       })
     ).toBe(true);
   });

@@ -204,7 +204,7 @@ Verification:
 - Gemini advisory was run with sanitized aliases and treated as advisory only.
 - Two inspect-only subagents reviewed architecture impact and dependency/no-side-effect boundaries.
 - Red TDD run failed because `src/lib/delivery-system/governance` and `src/lib/delivery-system/ledger` did not exist.
-- `npm run test -- tests/delivery-system/governance.test.ts tests/delivery-system/ledger.test.ts tests/delivery-system/boundary.test.ts`: passed 3 files and 10 tests.
+- `npm run test -- tests/delivery-system/governance.test.ts tests/delivery-system/ledger.test.ts tests/delivery-system/boundary.test.ts`: passed 3 files and 11 tests after review fixes.
 - `npm run typecheck`: passed.
 - `npm run verify`: passed.
 - Forbidden source/package scan returned no matches for process, network, connector, and cloud SDK usage in `src` and `package.json`.
@@ -255,7 +255,7 @@ Verification:
 
 - Context7 checked current Astro and Playwright docs before setup.
 - `npm run typecheck`: passed.
-- `npm run test`: passed 3 files and 10 tests.
+- `npm run test`: passed 3 files and 11 tests after review fixes.
 - `npm run build`: built one static page at `/autopilot/index.html`.
 - First `npm run test:e2e` failed because Chromium was not installed.
 - `npx playwright install chromium`: completed.

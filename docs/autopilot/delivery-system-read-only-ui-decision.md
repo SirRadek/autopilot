@@ -76,7 +76,7 @@ The UI is allowed to summarize local governance contracts. It is not allowed to 
 Performed on 2026-05-13:
 
 - `npm run typecheck`: passed
-- `npm run test`: passed 3 files and 10 tests
+- `npm run test`: passed 3 files and 11 tests after review fixes
 - `npm run build`: passed, building one static page at `/autopilot/index.html`
 - initial `npm run test:e2e`: failed because Playwright Chromium was not installed
 - `npx playwright install chromium`: completed

@@ -25,9 +25,15 @@ const forbiddenSourceFragments = [
   "node:https",
   "fetch(",
   "@octokit",
-  "cloudflare",
-  "vercel",
-  "linear"
+  "@cloudflare",
+  "@vercel",
+  "@linear",
+  "from \"cloudflare",
+  "from \"vercel",
+  "from \"linear",
+  "from 'cloudflare",
+  "from 'vercel",
+  "from 'linear"
 ];
 
 const forbiddenRuntimePaths = [
@@ -70,7 +76,7 @@ describe("delivery system boundary guards", () => {
 
   it("keeps governance source files free of connector and execution APIs", () => {
     const sourceText = listFiles(join(root, "src"))
-      .filter((file) => file.endsWith(".ts"))
+      .filter((file) => file.endsWith(".ts") || file.endsWith(".astro"))
       .map((file) => readFileSync(file, "utf8"))
       .join("\n");
 

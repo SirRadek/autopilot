@@ -190,7 +190,7 @@ npm run typecheck
 
 Expected: tests pass and typecheck exits 0.
 
-Actual: completed on 2026-05-13. `npm run test -- tests/delivery-system/governance.test.ts tests/delivery-system/ledger.test.ts tests/delivery-system/boundary.test.ts` passed 10 tests. `npm run typecheck` passed. `npm run verify` passed.
+Actual: completed on 2026-05-13. `npm run test -- tests/delivery-system/governance.test.ts tests/delivery-system/ledger.test.ts tests/delivery-system/boundary.test.ts` passed 11 tests after review fixes. `npm run typecheck` passed. `npm run verify` passed.
 
 ## Task 5: Read-Only Command Center UI
 

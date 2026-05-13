@@ -34,7 +34,7 @@ connector_snapshot:
     - no account IDs collected
   source_links:
     - https://github.com/SirRadek/autopilot
-  summary: Local and GitHub evidence confirmed the Autopilot control-plane repository is private, on default branch main, currently being modified on feature branch codex/execute-delivery-system-plan, and has no open PRs, open issues, or workflow runs.
+  summary: Local and GitHub evidence confirmed the Autopilot control-plane repository is private, on default branch main, and was being modified on feature branch codex/execute-delivery-system-plan. At collection time there were no open PRs, open issues, or workflow runs.
   risks:
     - GitHub snapshot only covers metadata available through gh CLI.
     - Linear, Vercel, Cloudflare, and Docket snapshots were not collected in this dry run.
@@ -69,7 +69,7 @@ github_snapshot:
   summary:
     default_branch: main
     local_branch: codex/execute-delivery-system-plan
-    open_pull_requests: 0
+    open_pull_requests_at_collection_time: 0
     open_issues: 0
     recent_workflow_runs: 0
     latest_release: null
@@ -110,3 +110,7 @@ Docket:
 ## Adoption Decision
 
 This snapshot is sufficient to prove the phase-0 snapshot procedure can be followed for local and GitHub evidence. It is not sufficient for product deployment, connector mutation, runtime engine selection, or external project inventory decisions.
+
+## Later State Change
+
+After this snapshot was collected, draft PR `https://github.com/SirRadek/autopilot/pull/1` was opened from `codex/execute-delivery-system-plan` to `main`. Treat the `open_pull_requests_at_collection_time` value as historical evidence, not current GitHub state.

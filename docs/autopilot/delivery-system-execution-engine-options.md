@@ -6,7 +6,7 @@ Owner: Autopilot Control Plane
 
 Decision: do not select or implement an execution runtime yet.
 
-The Multi-Agent Autonomous Delivery System remains in documentation and governance-contract phase. Typed contracts, read-only UI, and execution-runtime implementation are deferred until the gates in this record are satisfied. Connector snapshots are now documented, but they must be exercised in a dry run before runtime work starts.
+The Multi-Agent Autonomous Delivery System has documentation, typed governance contracts, and a static read-only command center. Execution-runtime implementation remains deferred until the gates in this record are satisfied. Connector snapshots are documented and have a local/GitHub dry run, but Linear, Vercel, Cloudflare, and Docket snapshots remain unexercised.
 
 ## Sources Checked
 
@@ -33,13 +33,13 @@ Scores:
 - `2`: weak fit or high operational burden
 - `1`: not suitable for this criterion
 
-Criteria: durability, human approval, retries, logs and observability, local development, security and isolation, cost predictability, vendor lock-in, fit with Autopilot docs-first control plane, and fit with future Astro or Cloudflare product surfaces.
+Criteria: durability, human approval, retries, logs and observability, local development, security and isolation, cost predictability, vendor lock-in, fit with the Autopilot governance-first control plane, and fit with future Astro or Cloudflare product surfaces.
 
 ## Option Matrix
 
 | Option | Durability | Human Approval | Retries | Logs | Local Dev | Security | Cost Predictability | Vendor Lock-In | Autopilot Fit | Astro/Cloudflare Fit | Summary |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
-| Vercel Workflow / WDK | 5 | 4 | 5 | 5 | 4 | 4 | 3 | 3 | 3 | 3 | Strong durable JS/TS workflow candidate, but Vercel Workflow is beta and Autopilot has no runtime package yet. |
+| Vercel Workflow / WDK | 5 | 4 | 5 | 5 | 4 | 4 | 3 | 3 | 3 | 3 | Strong durable JS/TS workflow candidate, but Vercel Workflow is beta and Autopilot has no execution runtime or deployment architecture yet. |
 | Cloudflare Workflows | 5 | 5 | 5 | 4 | 3 | 4 | 3 | 3 | 3 | 5 | Strong fit if the execution MVP is Worker-based; still requires Worker architecture and account-bound resources. |
 | Cloudflare Durable Objects | 4 | 3 | 3 | 4 | 3 | 4 | 3 | 3 | 3 | 5 | Good for stateful coordination, not a full workflow engine by itself. |
 | Cloudflare Queues | 3 | 2 | 5 | 3 | 3 | 4 | 4 | 3 | 2 | 5 | Useful async transport and retries, but needs orchestration and approval logic elsewhere. |
@@ -58,13 +58,13 @@ Fit:
 
 - good candidate for future JS/TS durable orchestration
 - useful if Autopilot later gains a Vercel runtime
-- not appropriate for the current docs-only repository
+- not appropriate for the current static read-only control plane
 
 Deferral reasons:
 
 - Vercel Workflow is documented as beta
-- Autopilot has no runtime package or deployment architecture
-- governance ledgers and read-only views are not implemented yet
+- Autopilot has no execution runtime or deployment architecture
+- governance ledgers and read-only views exist, but full connector evidence, rollback, and secrets handling are not implemented yet
 
 ### Cloudflare Workflows
 
@@ -79,7 +79,7 @@ Fit:
 Deferral reasons:
 
 - requires Cloudflare account resources and Worker deployment architecture
-- Autopilot does not yet have typed contracts or exercised connector snapshots
+- Autopilot has typed contracts, but only local/GitHub connector snapshots have been exercised
 - secrets, bindings, and account identifiers are not modeled for runtime use
 
 ### Cloudflare Durable Objects
@@ -168,7 +168,7 @@ Deferral reasons:
 
 - no durability without storage
 - no centralized observability without more infrastructure
-- still requires typed contracts first
+- still requires an execution MVP, storage decision, and observability design first
 
 ## Recommendation
 
@@ -202,9 +202,9 @@ Bounded execution MVP may start only when all conditions are true:
 ```yaml
 decision_id: 2026-05-13-execution-engine-defer
 type: architecture
-context: Autopilot is now a docs-first control-plane repository with no runtime package.
+context: Autopilot is now a governance-first control-plane repository with typed contracts and a static read-only command center, but no execution runtime.
 decision: Do not select or implement an execution runtime in phase 0.
-reasoning: Governance, ledgers, connector snapshots, typed contracts, and read-only visibility must exist before durable execution is safe.
+reasoning: Typed contracts and read-only visibility now exist, but full connector snapshots, human approval mechanics, rollback flow, secrets handling, and execution observability must exist before durable execution is safe.
 alternatives:
   - Vercel Workflow / WDK
   - Cloudflare Workflows

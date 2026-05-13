@@ -4,30 +4,48 @@ import {
   type GateStatus,
   requiredGateResultFields
 } from "../../data/delivery-system/gates";
-import { roleHasPermission } from "../../data/delivery-system/roles";
+import { type Permission, roleHasPermission } from "../../data/delivery-system/roles";
 import { validateRequiredFields, type ValidationResult } from "./validation";
 
 export interface ApprovalCheck {
   reviewerRoleId: string;
   authorRoleId: string;
+  reviewerActorId?: string;
+  authorActorId?: string;
+  reviewKind?: ReviewKind;
 }
 
 export interface GateSeverityOptions {
   inlineFixEvidence?: boolean;
 }
 
-export function canApproveWork({ reviewerRoleId, authorRoleId }: ApprovalCheck): boolean {
+export type ReviewKind = "architecture" | "code" | "security" | "ux" | "scope" | "copy";
+
+const reviewPermissions: Record<ReviewKind, readonly Permission[]> = {
+  architecture: ["review_architecture"],
+  code: ["review_code"],
+  security: ["review_security"],
+  ux: ["review_ux"],
+  scope: ["change_business_scope"],
+  copy: ["write_documentation"]
+};
+
+export function canApproveWork({
+  reviewerRoleId,
+  authorRoleId,
+  reviewerActorId,
+  authorActorId,
+  reviewKind = "code"
+}: ApprovalCheck): boolean {
   if (reviewerRoleId === authorRoleId) {
     return false;
   }
 
-  return (
-    roleHasPermission(reviewerRoleId, "approve_gate") ||
-    roleHasPermission(reviewerRoleId, "review_code") ||
-    roleHasPermission(reviewerRoleId, "review_security") ||
-    roleHasPermission(reviewerRoleId, "review_architecture") ||
-    roleHasPermission(reviewerRoleId, "review_ux")
-  );
+  if (!reviewerActorId || !authorActorId || reviewerActorId === authorActorId) {
+    return false;
+  }
+
+  return reviewPermissions[reviewKind].some((permission) => roleHasPermission(reviewerRoleId, permission));
 }
 
 export function canChangeBusinessScope(roleId: string): boolean {

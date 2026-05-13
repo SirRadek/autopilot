@@ -380,9 +380,9 @@ Recommended command pattern:
 You are external architecture critic for Autopilot v3 prompt pack.
 Do not edit files. Do not use tools.
 Context is redacted:
-- local-autopilot-workspace contains an Astro/React/Tailwind app.
-- Deliverable is one Markdown operating manual for supervised bots.
-- Phase is read-only: no app code, no Git mutation, no remote service mutation, no secrets, no autonomous execution.
+- local-autopilot-workspace contains Markdown governance docs, TypeScript/Vitest governance contracts, and a static Astro `/autopilot` command center.
+- Deliverable is an advisory critique of the operating manual for supervised bots.
+- Phase is advisory-only: no file edits, no Git mutation, no remote service mutation, no secrets, no autonomous execution.
 - Gemini is advisory only and uses best available CLI routing.
 Review for scope gaps, unsafe instructions, missing verification gates, role ambiguity, external-disclosure risk, and whether bots can use the prompt pack without extra decisions.
 Return concise top risks, must-fix gaps, nice-to-have improvements, and advisory verdict.

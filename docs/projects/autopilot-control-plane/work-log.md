@@ -226,7 +226,7 @@ Decisions:
 
 Verification:
 
-- `npm run test -- tests/delivery-system/governance.test.ts tests/delivery-system/ledger.test.ts tests/delivery-system/boundary.test.ts`: passed 3 files and 10 tests.
+- `npm run test -- tests/delivery-system/governance.test.ts tests/delivery-system/ledger.test.ts tests/delivery-system/boundary.test.ts`: passed 3 files and 11 tests after review fixes.
 - `npm run typecheck`: passed.
 - `npm run verify`: passed.
 - Forbidden source/package scan returned no matches for process, network, connector, and cloud SDK usage in `src` and `package.json`.
@@ -271,7 +271,7 @@ Decisions:
 Verification:
 
 - `npm run typecheck`: passed.
-- `npm run test`: passed 3 files and 10 tests.
+- `npm run test`: passed 3 files and 11 tests after review fixes.
 - `npm run build`: passed, one page built.
 - `npm run test:e2e`: passed after installing Playwright Chromium.
 - Final `npm run verify`: passed typecheck, Vitest, Astro build, and Playwright e2e.
