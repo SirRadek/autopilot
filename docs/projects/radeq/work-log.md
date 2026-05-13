@@ -103,6 +103,8 @@ Verification:
 - `npm ci` passed with 0 vulnerabilities.
 - `npm test` passed: 7 test files and 40 tests.
 - `npm run build` passed and built 2 Astro pages, with an existing chunk-size warning.
+- Post-merge verification on branch `new` passed again: `npm test` passed 7 test files and 40 tests.
+- Post-merge verification on branch `new` passed again: `npm run build` built 2 Astro pages, with the existing chunk-size warning.
 
 Risks:
 

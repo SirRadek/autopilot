@@ -826,3 +826,5 @@ Verification:
 - Radeq cleanup branch verification passed: no legacy docs references, `git diff --check`, `npm ci`, `npm test`, and `npm run build`.
 - Post-merge `gh pr view 1 --repo SirRadek/radeq` confirmed PR state `MERGED`, merge commit `ef7053c`, base `new`, and head `codex/separate-autopilot-docs`.
 - Post-merge Radeq default-branch scans found no `docs/autopilot` or `docs/superpowers` tree.
+- Post-merge Radeq default-branch verification passed: `npm test` passed 7 test files and 40 tests.
+- Post-merge Radeq default-branch verification passed: `npm run build` built 2 Astro pages, with the existing chunk-size warning.

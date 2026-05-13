@@ -121,6 +121,7 @@ Verification:
 - Radeq cleanup PR opened: `https://github.com/SirRadek/radeq/pull/1`.
 - After explicit user approval, Radeq cleanup PR `https://github.com/SirRadek/radeq/pull/1` was squash-merged into `new` as `ef7053c`.
 - Radeq cleanup verification passed: `git diff --check`, `npm ci`, `npm test`, and `npm run build`.
+- Post-merge Radeq verification on branch `new` passed again: no legacy docs references, `npm test` passed 7 test files and 40 tests, and `npm run build` built 2 Astro pages with the existing chunk-size warning.
 
 Risks:
 
