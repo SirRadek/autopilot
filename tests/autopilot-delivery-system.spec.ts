@@ -10,6 +10,8 @@ test.describe("Autopilot command center", () => {
     await expect(page.getByTestId("governance-gates")).toContainText("architecture compliance");
     await expect(page.getByTestId("ledger-summary")).toContainText("Decision fields");
     await expect(page.getByTestId("workflow-map")).toContainText("business review");
+    await expect(page.getByTestId("decision-mesh-coverage")).toContainText("capability routing");
+    await expect(page.getByTestId("decision-mesh-coverage")).toContainText("project meshes");
   });
 
   for (const viewport of [

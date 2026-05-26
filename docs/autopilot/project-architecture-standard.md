@@ -25,6 +25,16 @@ docs/projects/<project-slug>/architecture.md
 docs/projects/<project-slug>/work-log.md
 ```
 
+Each project must also have a project-specific Decision Mesh:
+
+```text
+docs/projects/<project-slug>/decision-mesh/
+```
+
+The project mesh lives with that project's architecture record. If the canonical architecture record is in the product repository, create the mesh there. If Autopilot only has a control-plane mirror under `docs/projects/<project-slug>/`, keep the mirror mesh there until the project repository owns its own architecture records.
+
+Autopilot's root `mesh/` is only Autopilot's operational mesh. It describes how Autopilot routes, governs, reviews, and reasons about work. It must not be reused as the product or project mesh for supervised projects.
+
 The central registry lives at:
 
 ```text
@@ -41,6 +51,7 @@ Each `architecture.md` must include:
 - System boundary: what belongs to this project and what is external.
 - Runtime architecture: routes, components, services, storage, background jobs, agents, and execution surfaces.
 - Data flows: source, validation, transformation, storage, export, and deletion paths.
+- Decision Mesh: path to the project-specific mesh, whether it exists, what project surfaces it covers, and what stop conditions are currently known.
 - Integrations: GitHub, Cloudflare, Vercel, Linear, Docket, databases, mail, LLM providers, or other services.
 - Deployment and environments: local, preview, production, CI, and known environment variables or bindings without secrets.
 - Security and privacy controls: secrets handling, private data boundaries, public disclosure rules, auth, validation, and headers.
@@ -75,6 +86,10 @@ Architecture impact: none, existing architecture reviewed.
 
 - Update `work-log.md` after every meaningful work slice, even when no files changed.
 - Update `architecture.md` whenever runtime boundaries, data flows, integrations, storage, deployment, security posture, verification gates, or project scope change.
+- Create the project-specific Decision Mesh when project architecture starts if it does not already exist.
+- Update the project-specific Decision Mesh after every meaningful completed work slice, or record explicitly why there is no mesh impact.
+- Use Autopilot capability routing before implementation planning when the task touches web builds, optimization, data, SEO, automation, recovery, documents, bots/RAG, or 3D.
+- Keep any parallel production-studio system behind an explicit architecture decision with source-of-truth and interop rules.
 - Active projects must be reviewed at least weekly. If there were no architecture changes, add a work-log entry saying the architecture was reviewed and remains current.
 - Inactive projects must be reviewed before new implementation starts.
 - Production, deployment, remote mutation, credential, billing, or database work cannot proceed unless the architecture record is current for that project.
@@ -128,9 +143,10 @@ Before a worker starts implementation, the supervisor checks:
 1. Project has a registry row.
 2. Architecture record exists.
 3. Work log exists.
-4. Architecture is current enough for the requested change.
-5. The requested change names expected architecture impact.
-6. Project has a unique local root and remote repository, or the registry marks it as `split_required`.
-7. Autopilot changes do not modify product runtime files unless the handoff explicitly targets that product repository.
-8. The final handoff includes verification and log update evidence.
+4. Project-specific Decision Mesh exists, or the first architecture task creates it.
+5. Architecture is current enough for the requested change.
+6. The requested change names expected architecture impact and expected mesh impact.
+7. Project has a unique local root and remote repository, or the registry marks it as `split_required`.
+8. Autopilot changes do not modify product runtime files unless the handoff explicitly targets that product repository.
+9. The final handoff includes verification, architecture log update evidence, and project mesh update evidence.
 ```

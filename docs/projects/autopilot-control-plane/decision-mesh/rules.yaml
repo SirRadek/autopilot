@@ -1,0 +1,19 @@
+rules:
+  - id: ACP-BOUNDARY-001
+    title: Control plane is not product runtime
+    applies_to:
+      - control_plane_boundary
+    instruction: "Do not add product runtime, deployment, connector mutation, or autonomous execution to Autopilot without an explicit architecture decision."
+    severity: blocker
+  - id: ACP-MCP-001
+    title: MCP remains read-only
+    applies_to:
+      - read_only_mcp_boundary
+    instruction: "Autopilot MCP tools may route context but must not mutate connectors, run workflows, deploy, or read product repositories."
+    severity: blocker
+  - id: ACP-CAP-001
+    title: Extend existing capability routing first
+    applies_to:
+      - capability_routing_layer
+    instruction: "Improve the current mesh/MCP/governance path before creating a parallel system; keep the parallel option behind a decision record."
+    severity: major

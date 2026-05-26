@@ -1,5 +1,39 @@
 # Radeq.cz Website Work Log
 
+## 2026-05-24 Project Mesh Seed
+
+Date: 2026-05-24
+Request or trigger: user required every project to have its own Decision Mesh and requested cautious improvement of the existing Autopilot system.
+Mode: WRITE_ALLOWED for Autopilot control-plane architecture mirror only.
+Scope: create a project-specific Decision Mesh seed for Radeq in the Autopilot architecture records; no Radeq product runtime files were edited.
+Files changed:
+
+- `docs/projects/radeq/architecture.md`
+- `docs/projects/radeq/work-log.md`
+- `docs/projects/radeq/decision-mesh/`
+- `docs/autopilot/project-architecture-registry.md`
+
+Architecture impact: Radeq now has a control-plane mirror project mesh covering the static public site, lead capture pipeline, optional 3D mascot add-on, and SEO/performance surface.
+Decisions:
+
+- Keep Radeq product runtime in the separate Radeq repository.
+- Treat Radeq 3D/WebGL as an optional enhancement, not a core content carrier.
+- Use the Radeq project mesh as architecture context for future Radeq work until the product repository owns its own architecture records.
+
+Verification:
+
+- Project mesh policy test passed after the Radeq mesh seed was created.
+- `npm run verify` passed in the Autopilot control-plane repository after the Radeq project mesh mirror was added.
+- `npm audit` reported 0 vulnerabilities.
+- `git diff --check` passed with only existing LF/CRLF normalization warnings.
+
+Risks:
+
+- This is an Autopilot mirror mesh, not yet a canonical mesh inside the Radeq product repository.
+- Future Radeq implementation must still verify against the actual Radeq checkout and current product files.
+
+Project mesh impact: `docs/projects/radeq/decision-mesh/` was created.
+
 ## 2026-05-13 Architecture Registry Onboarding
 
 Date: 2026-05-13

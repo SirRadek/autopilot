@@ -1,7 +1,9 @@
 ---
+import { capabilityModules } from "../data/delivery-system/capabilities";
 import { governanceGates } from "../data/delivery-system/gates";
 import { requiredDecisionLedgerFields, requiredIssueLedgerFields } from "../data/delivery-system/ledgers";
 import { modelPolicyRules } from "../data/delivery-system/modelPolicy";
+import { projectMeshPolicy } from "../data/delivery-system/projectMesh";
 import { deliveryRoles } from "../data/delivery-system/roles";
 import { workflowStates, workflowTransitions } from "../data/delivery-system/workflows";
 
@@ -334,6 +336,25 @@ const workflowPreview = workflowTransitions.slice(0, 9);
         <div class="metric">
           <b>{workflowStates.length}</b>
           <span>workflow states</span>
+        </div>
+      </section>
+
+      <section class="section grid-two" data-testid="decision-mesh-coverage">
+        <div class="panel">
+          <h2>Decision Mesh Coverage</h2>
+          <ul class="list">
+            <li><span>capability routing</span><code>{capabilityModules.length}</code></li>
+            <li><span>context packet tool</span><code>build_agent_packet</code></li>
+            <li><span>capability selector</span><code>select_capabilities</code></li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h2>Project Mesh Lifecycle</h2>
+          <ul class="list">
+            <li><span>project meshes</span><code>{projectMeshPolicy.projectMeshRequired ? "required" : "optional"}</code></li>
+            <li><span>path pattern</span><code>{projectMeshPolicy.projectMeshPathPattern}</code></li>
+            <li><span>update triggers</span><code>{projectMeshPolicy.updateTriggers.length}</code></li>
+          </ul>
         </div>
       </section>
 

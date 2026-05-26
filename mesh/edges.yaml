@@ -1,0 +1,181 @@
+edges:
+  - from: file_upload
+    to: auth_required
+    relation: requires
+    weight: 0.97
+    why: "Uploads must reject anonymous users before accepting content."
+  - from: file_upload
+    to: storage_provider
+    relation: depends_on
+    weight: 0.93
+    why: "Uploaded files need a known storage provider and URL contract."
+  - from: file_upload
+    to: security_upload
+    relation: requires
+    weight: 0.92
+    why: "Uploads receive untrusted content and need security review."
+  - from: file_upload
+    to: qa_upload_tests
+    relation: validates_with
+    weight: 0.86
+    why: "Uploads need positive and negative test coverage."
+  - from: file_upload
+    to: user_profile
+    relation: touches
+    weight: 0.8
+    why: "Avatar uploads usually update or display profile state."
+  - from: file_upload
+    to: frontend_form
+    relation: touches
+    weight: 0.74
+    why: "User uploads usually need a form and error states."
+  - from: file_upload
+    to: public_api
+    relation: may_expose
+    weight: 0.7
+    why: "Upload endpoints can become public API surfaces."
+  - from: payments_checkout
+    to: public_api
+    relation: may_expose
+    weight: 0.82
+    why: "Checkout and webhook routes are public contract surfaces."
+  - from: payments_checkout
+    to: auth_required
+    relation: requires
+    weight: 0.78
+    why: "Customer checkout state must bind to an authenticated or verified identity."
+  - from: public_api
+    to: security_upload
+    relation: escalates_when_combined
+    weight: 0.76
+    why: "Public routes that accept files raise upload security risk."
+  - from: reasoning_strategy
+    to: payments_checkout
+    relation: escalates_for_review
+    weight: 0.82
+    why: "Revenue-critical payment work can justify strategic reasoning review."
+  - from: reasoning_strategy
+    to: public_api
+    relation: escalates_for_review
+    weight: 0.8
+    why: "Public API contracts can justify architecture and security reasoning."
+  - from: reasoning_strategy
+    to: security_upload
+    relation: escalates_for_audit
+    weight: 0.78
+    why: "Security-sensitive upload surfaces can justify frontier-level audit."
+  - from: project_mesh_lifecycle
+    to: reasoning_strategy
+    relation: informs
+    weight: 0.72
+    why: "Project meshes should capture when work requires strategic reasoning or local-worker routing decisions."
+  - from: project_mesh_lifecycle
+    to: public_api
+    relation: tracks_project_surface
+    weight: 0.68
+    why: "Project meshes should record public API surfaces and their stop conditions."
+  - from: project_mesh_lifecycle
+    to: payments_checkout
+    relation: tracks_project_surface
+    weight: 0.66
+    why: "Project meshes should record project-specific revenue and checkout risks when they exist."
+  - from: capability_routing
+    to: web_build_mesh
+    relation: activates
+    weight: 0.84
+    why: "New website and web app tasks should route through web build checks before implementation."
+  - from: capability_routing
+    to: optimization_mesh
+    relation: activates
+    weight: 0.88
+    why: "Slow, broken, or conversion-related tasks should begin with measured optimization."
+  - from: capability_routing
+    to: data_mesh
+    relation: activates
+    weight: 0.85
+    why: "Data cleanup, migration, reporting, and knowledge tasks require data safety rules."
+  - from: capability_routing
+    to: seo_mesh
+    relation: activates
+    weight: 0.86
+    why: "Web, recovery, and optimization tasks often need technical SEO routing."
+  - from: capability_routing
+    to: automation_mesh
+    relation: activates
+    weight: 0.8
+    why: "Manual process digitization should route through automation failure and handoff checks."
+  - from: capability_routing
+    to: recovery_mesh
+    relation: activates
+    weight: 0.8
+    why: "Broken or hacked site tasks need recovery-first sequencing."
+  - from: capability_routing
+    to: document_mesh
+    relation: activates
+    weight: 0.76
+    why: "Document reconstruction should route through preservation and uncertainty checks."
+  - from: capability_routing
+    to: bot_rag_mesh
+    relation: activates
+    weight: 0.76
+    why: "Bot and RAG tasks need source grounding and privacy boundaries."
+  - from: capability_routing
+    to: three_d_experience_addon
+    relation: optional_addon
+    weight: 0.62
+    why: "3D is available as a premium enhancement only when it improves understanding or product presentation."
+  - from: web_build_mesh
+    to: seo_mesh
+    relation: requires
+    weight: 0.84
+    why: "New web builds need SEO basics and content structure."
+  - from: optimization_mesh
+    to: seo_mesh
+    relation: coordinates_with
+    weight: 0.82
+    why: "SEO and performance optimization reinforce each other."
+  - from: optimization_mesh
+    to: data_mesh
+    relation: may_require
+    weight: 0.68
+    why: "Performance bottlenecks can come from data and database issues."
+  - from: recovery_mesh
+    to: optimization_mesh
+    relation: sequences_into
+    weight: 0.78
+    why: "Recovery diagnosis often leads to prioritized optimization fixes."
+  - from: recovery_mesh
+    to: seo_mesh
+    relation: sequences_into
+    weight: 0.76
+    why: "Rescue work often needs SEO recovery, URL maps, and indexability checks."
+  - from: document_mesh
+    to: data_mesh
+    relation: depends_on
+    weight: 0.8
+    why: "Document extraction output should become validated structured data."
+  - from: bot_rag_mesh
+    to: data_mesh
+    relation: depends_on
+    weight: 0.82
+    why: "Knowledge bots need curated and traceable source data."
+  - from: three_d_experience_addon
+    to: web_build_mesh
+    relation: enhances
+    weight: 0.64
+    why: "3D should enhance a web build rather than replace the page's HTML content and conversion flow."
+  - from: context_economy_policy
+    to: capability_routing
+    relation: precedes
+    weight: 0.8
+    why: "Selecting capabilities reduces the context needed for planning and execution."
+  - from: context_economy_policy
+    to: project_mesh_lifecycle
+    relation: informs
+    weight: 0.72
+    why: "Project meshes help provide compact project-specific context instead of full project dumps."
+  - from: model_spend_policy
+    to: reasoning_strategy
+    relation: refines
+    weight: 0.82
+    why: "Model spend rules refine when frontier reasoning is justified and when work should stay local."

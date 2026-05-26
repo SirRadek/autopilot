@@ -1,0 +1,40 @@
+id: model_spend_policy
+type: routing_policy
+name: Model spend policy
+question: "Which model class is economically and technically appropriate for this task?"
+why: "Most routine work should use local or low-cost workers, while frontier models are reserved for strategic reasoning, review, audit, planning, and hard edge cases."
+signals:
+  - model spend
+  - provider
+  - deepseek
+  - qwen
+  - low cost
+  - frontier
+  - reasoning
+  - local worker
+  - cloud worker
+related_agents:
+  - architect
+  - security
+  - business
+  - qa
+related_files:
+  - src/data/delivery-system/modelSpend.ts
+  - src/data/delivery-system/modelPolicy.ts
+  - docs/autopilot/delivery-system-model-policy.md
+required_checks:
+  - provider_availability_verified
+  - choose_smallest_safe_model_class
+  - disclose_model_choice_when_risk_affects_delivery
+  - keep_frontier_for_reasoning
+stop_conditions:
+  - provider_availability_unverified
+  - non_local_worker_dependency
+  - frontier_used_for_simple_worker_task
+  - model_choice_affects_risk_without_disclosure
+must_not_assume:
+  - Do not make DeepSeek, Qwen, Gemini, OpenAI, Claude, or any single provider mandatory.
+  - Do not route routine worker loops to a cloud model by default.
+objective:
+  - Keep model selection provider-neutral and cost-aware.
+  - Escalate only when risk, ambiguity, or review value justifies it.

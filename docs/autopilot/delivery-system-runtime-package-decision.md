@@ -56,6 +56,7 @@ Development dependencies:
 Subsequent extension:
 
 - `docs/autopilot/delivery-system-read-only-ui-decision.md` later approves `astro` and `@playwright/test` for static read-only UI and browser smoke verification only.
+- `docs/autopilot/decision-mesh-mcp-decision.md` later approves `@modelcontextprotocol/sdk`, `yaml`, `zod`, and `tsx` for local Decision Mesh parsing, generated artifact checks, and read-only stdio MCP serving only.
 
 Deferred dependencies:
 

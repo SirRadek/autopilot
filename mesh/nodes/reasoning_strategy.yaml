@@ -1,0 +1,44 @@
+id: reasoning_strategy
+type: routing_policy
+name: Strategic reasoning layer
+question: "Does this task need frontier-level reasoning or should it stay with local workers?"
+why: "Large frontier models are most useful as strategic reasoning, review, audit, planning, and edge-case analysis layers; routine worker workloads should stay local by default."
+signals:
+  - reasoning
+  - frontier
+  - strategic
+  - deep research
+  - architecture
+  - review
+  - audit
+  - planning
+  - orchestration
+  - edge-case
+  - tradeoff
+  - local
+  - non local
+  - swarm
+related_agents:
+  - architect
+  - security
+  - business
+  - qa
+related_files:
+  - src/data/delivery-system/modelPolicy.ts
+  - docs/autopilot/delivery-system-model-policy.md
+  - AGENTS.md
+required_checks:
+  - local_worker_default
+  - frontier_reasoning_only_for_strategy_review_audit
+  - no_frontier_for_boilerplate
+  - verify_external_claims
+stop_conditions:
+  - non_local_worker_dependency
+  - frontier_used_for_simple_worker_task
+  - provider_availability_unverified
+must_not_assume:
+  - Do not assume a cloud frontier model is available.
+  - Do not route routine worker tasks to non-local models by default.
+objective:
+  - Keep routine coding, embeddings, RAG, indexing, automation, and summarization local by default.
+  - Escalate to frontier reasoning only for deep research, architecture, review, audit, orchestration, and hard edge-case analysis.

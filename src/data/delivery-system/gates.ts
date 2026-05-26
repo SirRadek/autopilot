@@ -38,5 +38,6 @@ export const governanceGates = [
   "acceptance_criteria",
   "testing_status",
   "security_review",
-  "scope_validation"
+  "scope_validation",
+  "project_mesh_current"
 ] as const;

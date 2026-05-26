@@ -74,8 +74,9 @@ describe("delivery system boundary guards", () => {
     }
   });
 
-  it("keeps governance source files free of connector and execution APIs", () => {
-    const sourceText = listFiles(join(root, "src"))
+  it("keeps governance, mesh, and MCP source files free of connector and execution APIs", () => {
+    const sourceText = ["src", "mcp", "scripts"]
+      .flatMap((directory) => listFiles(join(root, directory)))
       .filter((file) => file.endsWith(".ts") || file.endsWith(".astro"))
       .map((file) => readFileSync(file, "utf8"))
       .join("\n");

@@ -1,0 +1,16 @@
+edges:
+  - from: capability_routing_layer
+    to: control_plane_boundary
+    relation: preserves
+    weight: 0.86
+    why: "Capability routing should keep Autopilot's control-plane scope bounded."
+  - from: read_only_mcp_boundary
+    to: control_plane_boundary
+    relation: enforces
+    weight: 0.9
+    why: "Read-only MCP tools help prevent Autopilot from becoming a mutation runtime."
+  - from: capability_routing_layer
+    to: read_only_mcp_boundary
+    relation: exposed_through
+    weight: 0.8
+    why: "Capability selection is exposed through the same local read-only MCP server."

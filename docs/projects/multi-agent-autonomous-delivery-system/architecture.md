@@ -1,8 +1,8 @@
 # Multi-Agent Autonomous Delivery System Architecture
 
-Last updated: 2026-05-13
-Next review: 2026-05-20
-Status: phase-2 read-only command center
+Last updated: 2026-05-24
+Next review: 2026-05-31
+Status: phase-3 read-only Decision Mesh context router
 Slug: `multi-agent-autonomous-delivery-system`
 Canonical remote repository: `SirRadek/autopilot`
 Local workspace: `C:\Users\sirok\Documents\Autopilot`
@@ -13,7 +13,7 @@ Visibility: Autopilot control-plane subsystem; external/private project details 
 
 This project defines a governed autonomous software delivery system. It turns product requests into auditable delivery runs with business review, architecture control, bounded execution, testing, code/security/UX review, governance gates, monitoring, and memory.
 
-The system is not currently an execution runtime. It is a planned architecture and implementation roadmap that must begin with documentation, typed contracts, ledgers, and read-only supervision.
+The system is not currently an execution runtime. It is a planned architecture and implementation roadmap that begins with documentation, typed contracts, ledgers, Decision Mesh context routing, and read-only supervision.
 
 This project is an Autopilot subsystem. It belongs inside the dedicated Autopilot control-plane repository, not inside any product repository.
 
@@ -39,6 +39,10 @@ In this project:
 - governance contracts
 - typed registries for roles, gates, workflows, ledgers, and model policy
 - pure validators for gate results, role permissions, and ledger completeness
+- Decision Mesh YAML/JSON source of truth, schemas, generated graph artifact, and pure query library
+- local read-only stdio MCP server for relevant subgraph and agent-packet lookup
+- capability routing, context economy, and model spend policies
+- seeded project-specific Decision Mesh under `docs/projects/multi-agent-autonomous-delivery-system/decision-mesh/`
 - static read-only command-center view at `/autopilot`
 - local browser/e2e smoke tests for the command center
 
@@ -51,6 +55,7 @@ External to this project:
 - Docket product/sales knowledge
 - Gemini CLI advisory critique
 - local or remote model runtimes such as Qwen candidates
+- remote MCP transports and mutating MCP tools
 - product repositories created or supervised by Autopilot
 
 ## Repository Boundary
@@ -184,8 +189,11 @@ Detailed contracts are now split into:
 - `docs/autopilot/delivery-system-governance.md`
 - `docs/autopilot/delivery-system-ledgers.md`
 - `docs/autopilot/delivery-system-model-policy.md`
+- `docs/autopilot/decision-mesh-mcp-decision.md`
+- `mesh/`
 - `src/data/delivery-system/*.ts`
 - `src/lib/delivery-system/*.ts`
+- `src/lib/decision-mesh/*.ts`
 
 Markdown governance remains the human-readable policy source. TypeScript contracts are the executable mirror. If they disagree, work must stop until a decision ledger entry resolves the mismatch.
 
@@ -267,6 +275,19 @@ Gemini CLI:
 - redacted advisory critique only
 - cannot approve work or replace local evidence
 
+Decision Mesh MCP:
+
+- local stdio context router only
+- root `mesh/` is Autopilot's operational mesh only
+- every supervised project must create its own project-specific mesh during architecture onboarding if missing
+- project meshes must be updated after every meaningful completed work slice
+- returns relevant subgraphs, compact agent packets, project mesh packets, node explanations, required agents, and risks
+- selects capabilities before planning through `select_capabilities`
+- routes frontier reasoning only as strategic review, audit, planning, architecture, or edge-case escalation
+- keeps routine coding, embeddings, RAG, indexing, automation, and summaries local by default
+- cannot approve delivery, mutate files, call connectors, or read product repositories
+- keeps a later parallel AI Production Studio possible only through explicit architecture decision, not as the current implementation path
+
 ## Security And Governance Controls
 
 - Nobody approves their own work.
@@ -286,6 +307,11 @@ Required before implementation:
 - project registry row exists
 - architecture record is current
 - work log is current
+- project-specific Decision Mesh exists or is created by the first architecture task
+- Decision Mesh packet reviewed when task touches auth, payments, database, uploads, public API, frontend UX, security, or release behavior
+- project mesh impact recorded after completed work
+- capability routing reviewed for web, optimization, data, SEO, automation, recovery, document, bot/RAG, or 3D tasks
+- reasoning escalation reviewed when a task proposes non-local workers or frontier models
 - design spec exists
 - implementation plan exists
 - connector and provider facts are verified when unstable
@@ -303,6 +329,8 @@ Required before delivery:
 ## Known Gaps And Risks
 
 - Initial typed registries and pure validators exist for governance contracts.
+- Initial Decision Mesh and local read-only MCP server exist for compact context routing.
+- Capability routing, context economy, model spend policy, and seeded project mesh records now exist as incremental improvements to the read-only context router.
 - Runtime/package approval is limited to TypeScript/Vitest contract validation and a static Astro read-only command center; no connector client or execution runtime is approved.
 - No execution engine has been selected; the phase-0 execution-engine decision record currently defers selection.
 - Connector snapshot procedure exists and has been exercised for local repository plus GitHub metadata; Linear, Vercel, Cloudflare, and Docket snapshots remain unexercised.
@@ -323,5 +351,6 @@ Update this file when any of these change:
 - execution engine decision
 - monitoring/recovery flow
 - memory strategy
+- Decision Mesh routing or MCP tool behavior
 - model policy
 - privacy or remote mutation policy

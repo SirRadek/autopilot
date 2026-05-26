@@ -56,6 +56,7 @@ export const workflowTransitions = [
   { from: "governance_gate", to: "delivery", condition: "gate result pass" },
   { from: "delivery", to: "monitoring", condition: "delivery accepted" },
   { from: "monitoring", to: "memory", condition: "run evidence summarized" },
+  { from: "memory", to: "planning", condition: "lessons and optimization signals shape the next planning cycle" },
   { from: "governance_gate", to: "rework", condition: "blocker or major issue found" },
   { from: "testing", to: "rework", condition: "failed tests require fix" },
   { from: "rework", to: "testing", condition: "fix assigned and completed" },

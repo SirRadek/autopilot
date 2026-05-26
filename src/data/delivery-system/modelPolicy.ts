@@ -15,6 +15,15 @@ export interface ModelPolicyRule {
   forbiddenUse: string;
 }
 
+export interface ReasoningEscalationPolicy {
+  defaultWorkerLayer: "local_swarm";
+  strategicLayer: "frontier_reasoning";
+  localDefaultUse: readonly string[];
+  frontierEscalationUse: readonly string[];
+  frontierForbiddenUse: readonly string[];
+  stopConditions: readonly string[];
+}
+
 export const modelPolicyRules = [
   {
     layer: "orchestrator",
@@ -65,3 +74,43 @@ export const modelPolicyRules = [
     forbiddenUse: "scope or architecture approval"
   }
 ] as const satisfies readonly ModelPolicyRule[];
+
+export const reasoningEscalationPolicy = {
+  defaultWorkerLayer: "local_swarm",
+  strategicLayer: "frontier_reasoning",
+  localDefaultUse: [
+    "boilerplate coding",
+    "bounded worker tasks",
+    "autocomplete",
+    "embeddings",
+    "RAG retrieval",
+    "indexing",
+    "automation loops",
+    "routine summarization"
+  ],
+  frontierEscalationUse: [
+    "deep research",
+    "architecture review",
+    "security audit",
+    "code review",
+    "agent validation",
+    "strategic planning",
+    "orchestration design",
+    "edge-case reasoning",
+    "cross-domain tradeoff analysis"
+  ],
+  frontierForbiddenUse: [
+    "autocomplete",
+    "boilerplate coding",
+    "embeddings",
+    "routine summarization",
+    "simple tasks",
+    "local automation loops",
+    "unreviewed worker execution"
+  ],
+  stopConditions: [
+    "non_local_worker_dependency",
+    "frontier_used_for_simple_worker_task",
+    "provider_availability_unverified"
+  ]
+} as const satisfies ReasoningEscalationPolicy;

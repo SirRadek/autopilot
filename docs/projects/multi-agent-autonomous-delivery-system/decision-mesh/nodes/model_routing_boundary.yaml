@@ -1,0 +1,30 @@
+id: model_routing_boundary
+type: routing_policy
+name: Model routing boundary
+question: "Does model routing keep routine work local and reserve frontier reasoning for strategic review?"
+why: "The system should optimize cost, latency, and reliability by using local or low-cost workers for routine tasks and frontier models only for high-value reasoning."
+signals:
+  - model
+  - routing
+  - local worker
+  - frontier
+  - reasoning
+  - provider
+related_agents:
+  - architect
+  - security
+  - qa
+related_files:
+  - src/data/delivery-system/modelPolicy.ts
+  - src/data/delivery-system/modelSpend.ts
+  - docs/autopilot/delivery-system-model-policy.md
+required_checks:
+  - provider_availability_verified
+  - smallest_safe_model_class
+  - frontier_used_only_for_reasoning
+stop_conditions:
+  - provider_availability_unverified
+  - frontier_used_for_simple_worker_task
+  - non_local_worker_dependency
+objective:
+  - Keep model routing provider-neutral, local-first, and review-oriented.

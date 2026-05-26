@@ -10,14 +10,23 @@
     "preview": "astro preview",
     "test": "vitest run",
     "test:e2e": "playwright test",
+    "mesh:generate": "tsx scripts/generate-decision-mesh.ts",
+    "mesh:check": "tsx scripts/generate-decision-mesh.ts --check",
+    "mcp:mesh": "tsx mcp/server.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "verify": "npm run typecheck && npm run test && npm run build && npm run test:e2e"
+    "verify": "npm run mesh:check && npm run typecheck && npm run test && npm run build && npm run test:e2e"
   },
   "devDependencies": {
     "@playwright/test": "1.60.0",
-    "@types/node": "25.7.0",
-    "astro": "6.3.2",
+    "@types/node": "25.9.1",
+    "astro": "6.3.7",
+    "tsx": "^4.22.3",
     "typescript": "6.0.3",
-    "vitest": "4.1.6"
+    "vitest": "4.1.7"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "yaml": "^2.9.0",
+    "zod": "^4.4.3"
   }
 }

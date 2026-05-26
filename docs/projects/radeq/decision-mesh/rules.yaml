@@ -1,0 +1,25 @@
+rules:
+  - id: RAD-STATIC-001
+    title: Core content remains static-readable
+    applies_to:
+      - static_public_site
+    instruction: "Do not make primary content, navigation, CTA, or SEO text depend on WebGL or client-only JavaScript."
+    severity: blocker
+  - id: RAD-LEADS-001
+    title: Lead data remains validated and minimized
+    applies_to:
+      - lead_capture_pipeline
+    instruction: "Client and server validation, privacy minimization, and controlled D1 error behavior must remain intact."
+    severity: blocker
+  - id: RAD-3D-001
+    title: 3D remains optional
+    applies_to:
+      - three_d_mascot_addon
+    instruction: "3D mascot changes require reduced-motion behavior, WebGL fallback, mobile check, cleanup, and asset-license evidence."
+    severity: major
+  - id: RAD-SEO-001
+    title: Speed and SEO are protected
+    applies_to:
+      - seo_performance_surface
+    instruction: "Performance or SEO-impacting changes require measurement or an explicit note that measurement was not available."
+    severity: major

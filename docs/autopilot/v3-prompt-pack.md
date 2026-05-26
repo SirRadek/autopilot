@@ -1,6 +1,6 @@
 # Autopilot V3 Prompt Pack
 
-Date: 2026-05-10
+Date: 2026-05-24
 Workspace: `C:\Users\sirok\Documents\Autopilot`
 Deliverable: this Markdown file only.
 
@@ -12,7 +12,7 @@ This is a read-only prompt pack phase. Bots may inspect, critique, and validate 
 
 ## Current Baseline
 
-Facts checked locally on 2026-05-13 after repository separation:
+Facts checked locally on 2026-05-24 after repository separation and Decision Mesh integration:
 
 - Project path: `C:\Users\sirok\Documents\Autopilot`
 - Repository: `SirRadek/autopilot`
@@ -20,6 +20,10 @@ Facts checked locally on 2026-05-13 after repository separation:
 - Repository role: Autopilot control plane with Markdown governance, typed governance contracts, and a static read-only command center.
 - Top-level files include `.gitignore`, `README.md`, `docs`, `package.json`, `package-lock.json`, `src`, `tests`, `astro.config.mjs`, `playwright.config.ts`, `tsconfig.json`, and `vitest.config.ts`.
 - Static UI route: `/autopilot`.
+- Decision Mesh source of truth: YAML under `mesh/`; generated JSON is derived evidence only.
+- Capability routing entry point: `select_capabilities`, followed by compact subgraph and agent-packet tools.
+- Context economy and model spend rules are typed local policies and must be checked before broad model escalation.
+- Every supervised project needs a project-specific Decision Mesh under `docs/projects/<project-slug>/decision-mesh/`.
 - No connector client, durable workflow engine, server API route, `functions`, `migrations`, or `public` tree exists in this repository.
 - Radeq product runtime lives separately at `C:\Users\sirok\Documents\Projects\radeq` and `SirRadek/radeq`.
 - Gemini CLI exists locally.
@@ -52,6 +56,11 @@ Global rules:
 - Use exact file paths for codebase claims.
 - Keep provider/model logic adaptable. No Qwen dependency.
 - Treat Gemini as advisory only. Gemini can never approve work or override supervisor verification.
+- Use the Decision Mesh before planning or editing when a task may affect web builds, optimization, data, SEO, automation, recovery, documents, bots/RAG, 3D, auth, payments, public APIs, security, or release behavior.
+- Call `select_capabilities` before `get_relevant_subgraph` or `build_agent_packet` for capability-sensitive work.
+- Apply context economy: do not load the whole repository when a relevant subgraph and agent packet are sufficient.
+- Apply model spend rules: local workers handle routine loops; frontier reasoning is reserved for deep research, architecture, security, ambiguous edge cases, repeated failure, and final review.
+- If work belongs to a supervised project, use that project's project-specific Decision Mesh. Create it during architecture onboarding if missing, and update it after meaningful completed work.
 - Report verification honestly. Do not claim success without evidence.
 - Every supervised project must have a registry row, an architecture record, and a work log under `docs/projects/` before implementation starts.
 - Autopilot is a standalone control-plane project. Product projects must have separate local roots and separate remote repositories.
@@ -103,6 +112,7 @@ Authoritative phase-0 records:
 - `docs/autopilot/delivery-system-execution-engine-options.md`
 - `docs/autopilot/delivery-system-runtime-package-decision.md`
 - `docs/autopilot/delivery-system-read-only-ui-decision.md`
+- `docs/autopilot/decision-mesh-mcp-decision.md`
 
 Rules:
 
@@ -110,6 +120,8 @@ Rules:
 - No worker may add more app runtime code, workflows, automations, credentials, connectors, or deployments without a later architecture decision and explicit approval.
 - The current TypeScript package is limited to typed governance contracts and pure validators.
 - The current Astro route is limited to static read-only reporting.
+- The root Decision Mesh describes Autopilot operations only; product/project reasoning must live in each project's project-specific Decision Mesh.
+- Capability routing, context economy, model spend, and project mesh lifecycle are part of the current source-of-truth boundary.
 - Every worker output related to this architecture must include role, mode, scope, architecture impact, ledger impact, tests or verification evidence, and next action.
 - Connector snapshots are reviewed evidence only, not automatic source of truth.
 - Autopilot monitors and proposes recovery; it does not approve delivery or steer product scope.
@@ -948,6 +960,7 @@ The prompt pack is complete when:
 
 - The header states date, workspace path, purpose, and read-only warning.
 - Global rules forbid unapproved Git, secrets, remote mutation, and unsupported provider assumptions.
+- Global rules require Decision Mesh routing, context economy, model spend checks, and project-specific Decision Mesh updates for relevant work.
 - Supervisor protocol assigns one bot at a time, enforces scope, verifies output, and logs decisions.
 - `WRITE_ALLOWED` unlock protocol is present and keeps implementation locked by default.
 - Structured handoff package format is present.

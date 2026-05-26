@@ -31,6 +31,10 @@ Autopilot does not:
 - treat connector output as source of truth without review
 - run durable autonomous execution before an approved execution-engine decision record exists
 
+Autopilot's root Decision Mesh is Autopilot's operational mesh. It describes Autopilot's internal routing, governance, review, and reasoning behavior.
+
+Every supervised project must have its own project-specific Decision Mesh created during architecture onboarding if it does not already exist. Product/project meshes live with that project's architecture records and must be updated after every meaningful completed work slice.
+
 Product projects live in their own repositories and roots:
 
 ```text
@@ -257,6 +261,7 @@ Must not:
 | Testing status | Testing Layer | command output or explicit not-applicable reason | rework |
 | Security review | Review Layer | findings or explicit no-actionable-findings result | rework or escalate |
 | Scope validation | Governance Layer | changed files and scope comparison | split or revert out-of-scope work |
+| Project mesh current | Architecture + Governance | project-specific mesh exists and update impact recorded | block delivery |
 | Repository boundary | Governance Layer | canonical root and remote check | stop merge |
 | Ledger completeness | Governance Layer | decision, issue, gate, and work-log evidence | block delivery |
 
@@ -386,6 +391,7 @@ Every workflow handoff must include:
 - requested scope
 - files changed or inspected
 - architecture impact
+- project mesh impact
 - ledger impact
 - tests or verification
 - unresolved risks

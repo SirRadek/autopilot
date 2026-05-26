@@ -38,6 +38,95 @@ Models cannot:
 | Autopilot Supervisor | monitoring and recovery proposals | supervisor model | product steering or delivery approval |
 | Memory | summarization and retrieval | lower-cost summarizer when safe | overwriting source artifacts |
 
+## Reasoning Usage Policy
+
+The default worker layer is local.
+
+Local worker default:
+
+- autocomplete
+- boilerplate coding
+- bounded implementation
+- embeddings
+- RAG retrieval
+- indexing
+- automation loops
+- routine summarization
+- simple utility tasks
+
+Frontier reasoning is a strategic escalation layer, not the default worker.
+
+Use frontier reasoning only for:
+
+- deep research
+- architecture review
+- security audit
+- code review
+- agent validation
+- strategic planning
+- orchestration design
+- edge-case reasoning
+- cross-domain tradeoff analysis
+
+Do not use frontier reasoning for:
+
+- autocomplete
+- boilerplate coding
+- embeddings
+- routine summarization
+- simple tasks
+- local automation loops
+- unreviewed worker execution
+
+Stop conditions:
+
+- `non_local_worker_dependency`
+- `frontier_used_for_simple_worker_task`
+- `provider_availability_unverified`
+
+If a task cannot run locally and is not strategic reasoning or independent review, stop and ask for an owner decision. Do not solve routine local-worker work by silently moving it to a cloud/frontier model.
+
+## Model Spend Policy
+
+Model selection is provider-neutral. DeepSeek, Qwen, Gemini, OpenAI, Claude, or any cheaper GPT-class worker may be useful when available, but no workflow may silently depend on one of them.
+
+Use low-cost or local workers for:
+
+- bulk summarization
+- SEO drafts
+- data cleanup plans
+- document reconstruction drafts
+- task packet generation
+- first-pass code
+- classification
+
+Use long-context research models for:
+
+- long-context research
+- brainstorming variants
+- market research
+- document understanding
+- broad planning
+
+Use repo execution agents for:
+
+- repository editing
+- tests
+- bounded refactors
+- debugging
+- patch workflow
+
+Use frontier reasoning only when:
+
+- risk is high
+- requirements are ambiguous
+- architecture-level decisions are involved
+- security sensitivity is high
+- previous attempts failed repeatedly
+- final independent review is needed
+
+Stop if provider availability is unverified, if a routine local-worker task depends on a non-local model, or if model choice affects risk without disclosure.
+
 ## Qwen2.5-Coder Policy
 
 Qwen2.5-Coder 7B and Qwen2.5-Coder 14B are optional bounded worker candidates.

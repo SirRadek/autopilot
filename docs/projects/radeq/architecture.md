@@ -1,7 +1,7 @@
 # Radeq.cz Website Architecture
 
-Last updated: 2026-05-13
-Next review: 2026-05-20
+Last updated: 2026-05-24
+Next review: 2026-05-31
 Status: active
 Slug: `radeq`
 Primary repository: `SirRadek/radeq`
@@ -53,6 +53,23 @@ SirRadek/radeq
 Autopilot may track Radeq through registry rows, architecture mirrors, sanitized snapshots, and work-log summaries. Autopilot must not become the canonical home for Radeq runtime code, migrations, deployment configuration, or assets.
 
 Current state: the local Radeq product checkout exists separately at `C:\Users\sirok\Documents\Projects\radeq`. Cleanup PR `https://github.com/SirRadek/radeq/pull/1` was merged into `new` as `ef7053c`, so legacy Autopilot governance files are no longer present on the Radeq default branch.
+
+## Decision Mesh
+
+Project-specific mesh path:
+
+```text
+docs/projects/radeq/decision-mesh/
+```
+
+Current mesh coverage:
+
+- static public site boundary
+- lead capture and D1 data flow
+- optional 3D mascot add-on
+- SEO and performance surface
+
+This is a control-plane mirror for Radeq architecture evidence. Canonical product runtime code remains in the Radeq repository.
 
 ## Runtime Architecture
 
@@ -224,3 +241,4 @@ Update this file when any of these change:
 - 3D mascot asset, runtime loader, or performance strategy
 - security/privacy policy or external model disclosure rules
 - verification gates or acceptance criteria
+- project-specific Decision Mesh nodes, edges, rules, or stop conditions

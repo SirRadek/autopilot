@@ -1,0 +1,21 @@
+edges:
+  - from: static_public_site
+    to: seo_performance_surface
+    relation: requires
+    weight: 0.88
+    why: "The public site must remain SEO-friendly and fast."
+  - from: lead_capture_pipeline
+    to: static_public_site
+    relation: extends
+    weight: 0.78
+    why: "Lead capture is part of the public conversion flow."
+  - from: three_d_mascot_addon
+    to: static_public_site
+    relation: enhances
+    weight: 0.64
+    why: "3D is an optional enhancement, not the content carrier."
+  - from: three_d_mascot_addon
+    to: seo_performance_surface
+    relation: constrained_by
+    weight: 0.82
+    why: "3D must not damage performance, mobile usability, or SEO content."

@@ -1,5 +1,140 @@
 # Multi-Agent Autonomous Delivery System Work Log
 
+## 2026-05-24 Mesh Audit Implementation
+
+Date: 2026-05-24
+Request or trigger: user requested implementation of the workflow and mesh audit after research-first review.
+Mode: WRITE_ALLOWED for local governance, mesh, MCP, docs, tests, dashboard, and dependency hygiene.
+Scope: strengthen the existing read-only context-router path without creating a parallel system.
+Files changed:
+
+- `mcp/server.ts`
+- `src/lib/decision-mesh/*.ts`
+- `src/data/delivery-system/capabilities.ts`
+- `src/data/delivery-system/workflows.ts`
+- `src/pages/autopilot.astro`
+- `tests/decision-mesh/query.test.ts`
+- `tests/delivery-system/*.test.ts`
+- `tests/autopilot-delivery-system.spec.ts`
+- `docs/autopilot/decision-mesh-mcp-decision.md`
+- `docs/autopilot/v3-prompt-pack.md`
+- `docs/projects/multi-agent-autonomous-delivery-system/architecture.md`
+- `docs/projects/multi-agent-autonomous-delivery-system/work-log.md`
+- `package.json`
+- `package-lock.json`
+
+Architecture impact: delivery-system context routing now includes project-specific mesh packets and an explicit memory-to-planning feedback loop. This remains a read-only governance and context layer, not an execution runtime.
+Decisions:
+
+- Use `build_project_mesh_packet` for project-owned context.
+- Keep root Autopilot mesh and product/project meshes separate.
+- Treat capability YAML as canonical content and TypeScript routing as an executable mirror.
+- Keep parallel-system work deferred behind a future architecture decision.
+
+Verification:
+
+- Test-first audit checks passed after implementation.
+- `npm run verify` passed with 12 Vitest files, 40 tests, Astro build, and 3 Playwright checks.
+- MCP smoke test verified `build_project_mesh_packet` against the Radeq project mesh.
+- Package hygiene checks passed: no vulnerabilities, no outdated packages, and no extraneous top-level packages.
+
+Risks:
+
+- Future project work must keep project meshes updated after completed slices.
+- More drift checks may be needed as capability routing grows.
+
+Project mesh impact: no semantic change to this project's project-specific mesh in this slice; the MCP/query layer now supports project mesh packets.
+
+## 2026-05-24 Capability Routing And Context Economy
+
+Date: 2026-05-24
+Request or trigger: user requested cautious implementation of capability routing and reasoning/model-spend improvements without closing the door to a future parallel system.
+Mode: WRITE_ALLOWED for local governance, mesh, MCP, docs, and tests.
+Scope: extend the existing Autopilot Decision Mesh and typed governance contracts with capability routing, context economy, provider-neutral model spend policy, and project-specific mesh seed.
+Files changed:
+
+- `mesh/`
+- `mcp/server.ts`
+- `src/data/delivery-system/capabilities.ts`
+- `src/data/delivery-system/contextEconomy.ts`
+- `src/data/delivery-system/modelSpend.ts`
+- `src/lib/decision-mesh/*.ts`
+- `tests/delivery-system/*.test.ts`
+- `tests/decision-mesh/query.test.ts`
+- `docs/projects/multi-agent-autonomous-delivery-system/decision-mesh/`
+- `docs/projects/multi-agent-autonomous-delivery-system/architecture.md`
+- `docs/projects/multi-agent-autonomous-delivery-system/work-log.md`
+
+Architecture impact: the delivery-system context router now selects capability modules before planning and records context economy/model spend policy as typed data. A project-specific Decision Mesh seed now exists for this subsystem.
+Decisions:
+
+- Add `select_capabilities` to the existing read-only MCP server.
+- Keep the system local-first and provider-neutral.
+- Keep frontier reasoning as strategic escalation, not everyday work.
+- Keep the future parallel system option behind architecture decision.
+
+Verification:
+
+- Targeted typed policy tests passed.
+- Targeted Decision Mesh query tests passed after `selectCapabilities` was added.
+- Project mesh policy test passed after this project's mesh seed was created.
+- MCP smoke test called `select_capabilities` and returned a compact capability packet for a slow-site SEO task.
+- `npm run verify` passed: mesh check, typecheck, 9 Vitest files with 35 tests, Astro build, and 3 Playwright tests.
+- `npm audit` reported 0 vulnerabilities.
+- `git diff --check` passed with only existing LF/CRLF normalization warnings.
+
+Risks:
+
+- Execution runtime remains deferred.
+- The project mesh is a seed and should grow with future work slices.
+
+Project mesh impact: `docs/projects/multi-agent-autonomous-delivery-system/decision-mesh/` was created with governance pipeline, worker boundary, and model routing boundary nodes.
+
+## 2026-05-24 Decision Mesh Context Router
+
+Date: 2026-05-24
+Request or trigger: user requested a Decision Mesh MVP after research-first validation, with Codex consuming relevant subgraphs through MCP and 3D visualization deferred.
+Mode: WRITE_ALLOWED for local read-only context-router implementation.
+Scope: add YAML/JSON Decision Mesh, pure query layer, local read-only MCP tools, generated graph artifact, AGENTS/GEMINI instructions, and tests.
+Files changed:
+
+- `mesh/`
+- `src/lib/decision-mesh/*.ts`
+- `mcp/server.ts`
+- `scripts/generate-decision-mesh.ts`
+- `tests/decision-mesh/*.test.ts`
+- `AGENTS.md`
+- `GEMINI.md`
+- `docs/autopilot/decision-mesh-mcp-decision.md`
+- `docs/projects/multi-agent-autonomous-delivery-system/architecture.md`
+- `docs/projects/multi-agent-autonomous-delivery-system/work-log.md`
+
+Architecture impact: the delivery system advanced from read-only command center to read-only Decision Mesh context router. Execution runtime, remote MCP transport, connector mutation, and 3D viewer remain deferred.
+Decisions:
+
+- Codex should consume compact mesh context through MCP tools instead of reading the full graph by default.
+- YAML is the mesh source of truth; generated JSON is a derived artifact.
+- Stop conditions from the mesh require owner decision unless the task is explicitly to resolve them.
+- Frontier reasoning is a strategic escalation layer only; routine worker tasks stay local by default.
+- Autopilot's root mesh is operational only; every supervised project must create and maintain its own project-specific mesh.
+- Viewer work is deferred until query/MCP behavior is stable.
+
+Verification:
+
+- Targeted Decision Mesh tests passed.
+- Generated JSON sync check passed.
+- Typecheck passed.
+- MCP smoke test called `get_relevant_subgraph` over stdio through the SDK client and returned the expected avatar-upload context.
+- Reasoning policy tests verify local-worker default and strategic frontier escalation rules.
+- Project mesh policy tests verify project mesh onboarding and update requirements.
+- Full `npm run verify` passed.
+- `npm audit` reported 0 vulnerabilities after lockfile remediation.
+
+Risks:
+
+- MCP client registration is not automated in this repository.
+- Future mesh growth will need stronger schema validation and possibly SQLite or Neo4j indexing.
+
 ## 2026-05-13 Planning Baseline
 
 Date: 2026-05-13
