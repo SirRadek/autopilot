@@ -8,6 +8,8 @@ describe("context economy and model spend policies", () => {
     expect(contextUsagePolicy.default.neverDumpFullProject).toBe(true);
     expect(contextUsagePolicy.default.preferRelevantSubgraph).toBe(true);
     expect(contextUsagePolicy.default.preferAgentPacket).toBe(true);
+    expect(contextUsagePolicy.cavemanMode.enabled).toBe(true);
+    expect(contextUsagePolicy.cavemanMode.rules).toContain("prefer_deterministic_tools_first");
     expect(contextUsagePolicy.beforeCallingModel.requiredSteps).toEqual([
       "classify_task",
       "select_capabilities",
@@ -28,13 +30,19 @@ describe("context economy and model spend policies", () => {
       "next_actions"
     ]);
     expect(sessionResetProtocol.restartPromptTemplate).toContain("Do not rely on previous conversation.");
+    expect(sessionResetProtocol.restartPromptTemplate).toContain("compact handoff");
+    expect(sessionResetProtocol.restartPromptTemplate).toContain("local files, tests, architecture records");
+    expect(sessionResetProtocol.restartPromptTemplate).not.toContain("summary as the source of truth");
   });
 
   it("keeps model spend provider-neutral and reserves frontier models for reasoning", () => {
     expect(modelSpendPolicy.providerDependency).toBe("provider_neutral");
     expect(modelSpendPolicy.lowCostWorkerUse).toContain("bulk_summarization");
+    expect(modelSpendPolicy.freeCloudAdvisoryUse).toContain("brainstorming");
+    expect(modelSpendPolicy.requiredChecks).toContain("free_tier_or_no_cost_confirmed");
     expect(modelSpendPolicy.repoExecutorUse).toContain("repo_editing");
     expect(modelSpendPolicy.frontierOnlyWhen).toContain("architecture_level");
     expect(modelSpendPolicy.stopConditions).toContain("provider_availability_unverified");
+    expect(modelSpendPolicy.stopConditions).toContain("paid_model_or_credit_required");
   });
 });

@@ -20,7 +20,7 @@ Every project must have:
 Local workspace roots should follow this separation:
 
 ```text
-C:\Users\sirok\Documents\Autopilot\
+C:\Programování\Codex\
   # Autopilot control plane only.
   # Registry, templates, governance, ledgers, sanitized snapshots, dashboard.
 
@@ -115,7 +115,7 @@ Before implementation starts on any project, the supervisor must check:
 
 ## Current Migration State
 
-The local and remote split is established for Autopilot and Radeq: `C:\Users\sirok\Documents\Autopilot` is the Autopilot control-plane root, `C:\Users\sirok\Documents\Projects\radeq` is the Radeq product root, `SirRadek/autopilot` is the Autopilot repository, and `SirRadek/radeq` is the Radeq repository.
+The local and remote split is established for Autopilot and Radeq: `C:\Programování\Codex` is the current Autopilot control-plane root for this workspace, `C:\Users\sirok\Documents\Projects\radeq` is the Radeq product root, `SirRadek/autopilot` is the Autopilot repository, and `SirRadek/radeq` is the Radeq repository. Historical notes may still mention the previous `C:\Users\sirok\Documents\Autopilot` checkout as migration evidence.
 
 Completed migration evidence:
 

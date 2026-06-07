@@ -1,0 +1,58 @@
+name: Blocker
+description: Record a human-visible blocker without changing Autopilot authority.
+title: "[Blocker]: "
+labels:
+  - autopilot
+  - blocked
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this when work needs a human decision, missing credential, missing project mesh, or policy clarification.
+  - type: input
+    id: blocked_item
+    attributes:
+      label: Blocked task or run
+      placeholder: "Issue #123, run id, task id, or project slug"
+    validations:
+      required: true
+  - type: dropdown
+    id: blocker_type
+    attributes:
+      label: Blocker type
+      options:
+        - owner_decision
+        - missing_secret
+        - missing_project_mesh
+        - unsafe_scope
+        - failing_verification
+        - external_service
+        - unclear_acceptance
+    validations:
+      required: true
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: What cannot proceed while this is blocked?
+    validations:
+      required: true
+  - type: textarea
+    id: required_decision
+    attributes:
+      label: Required decision or unblock action
+      description: State the smallest action needed to proceed.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: Link logs, PRs, runs, commits, or verification output.
+  - type: checkboxes
+    id: no_raw_prompt
+    attributes:
+      label: Safety
+      options:
+        - label: This blocker is not a raw prompt for an agent; it must be normalized before execution.
+          required: true

@@ -1,0 +1,61 @@
+id: prompt_library_boundary
+type: governance_policy
+name: Prompt library boundary
+question: "Does Autopilot prompt work stay in the local versioned library and route through existing model governance before adoption?"
+why: "Autopilot needs reusable prompts, but prompt management must not become an unreviewed runtime, leaked-prompt importer, paid SaaS dependency, or duplicate source of truth."
+signals:
+  - prompt library
+  - prompt management
+  - prompt version
+  - prompt eval
+  - model-specific prompt
+  - gpt prompt
+  - claude prompt
+  - gemini prompt
+  - qwen prompt
+  - github prompt
+  - plugin prompt
+  - asset prompt
+  - role prompt
+related_agents:
+  - architect
+  - memory
+  - qa
+  - security
+related_files:
+  - prompt-library/
+  - src/data/delivery-system/promptLibrary.ts
+  - docs/autopilot/prompt-library-operating-model.md
+  - docs/autopilot/delivery-system-model-policy.md
+  - docs/projects/autopilot-control-plane/work-log.md
+required_checks:
+  - local_git_prompt_library
+  - official_provider_docs_verified
+  - source_authority_recorded
+  - prompt_metadata_complete
+  - prompt_eval_defined
+  - role_scope_declared
+  - token_efficiency_route_selected
+  - plugin_capability_verified
+  - github_task_normalized
+  - asset_or_library_source_verified
+  - redacted_context_only
+  - version_change_logged
+  - rollback_path_exists
+stop_conditions:
+  - leaked_system_prompt_used
+  - prompt_without_eval
+  - prompt_without_source_authority
+  - paid_prompt_management_tool_required
+  - role_without_scope
+  - plugin_invoked_without_availability_check
+  - raw_github_issue_used_as_prompt
+  - asset_or_library_without_source_review
+  - prompt_runtime_without_architecture_decision
+  - model_output_used_as_source_of_truth
+objective:
+  - Store prompt contracts locally in Git first.
+  - Keep prompt adoption behind metadata, eval, and mesh checks.
+  - Keep provider docs and local verification above third-party prompt packs.
+  - Plan prompt-management tooling as optional future work, not current runtime.
+  - Normalize GitHub, plugin, library, and asset inputs into bounded task contracts before prompting agents.

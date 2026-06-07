@@ -10,6 +10,11 @@ export interface ContextUsagePolicy {
   readonly beforeCallingModel: {
     readonly requiredSteps: readonly string[];
   };
+  readonly cavemanMode: {
+    readonly enabled: boolean;
+    readonly goal: string;
+    readonly rules: readonly string[];
+  };
   readonly avoid: readonly string[];
 }
 
@@ -43,12 +48,26 @@ export const contextUsagePolicy = {
   beforeCallingModel: {
     requiredSteps: ["classify_task", "select_capabilities", "select_context", "select_model", "build_agent_packet"]
   },
+  cavemanMode: {
+    enabled: true,
+    goal: "Solve narrow tasks with the smallest useful context, deterministic evidence, and local/no-cost workers before any cloud reasoning.",
+    rules: [
+      "one_task_only",
+      "read_must_read_files_only",
+      "use_rg_before_opening_files",
+      "prefer_deterministic_tools_first",
+      "prefer_local_worker_before_cloud",
+      "short_answer_unless_risk_requires_detail",
+      "stop_instead_of_guessing"
+    ]
+  },
   avoid: [
     "full_repo_dump",
     "repeated_project_explanation",
     "long_unstructured_chat_history",
     "multiple_unrelated_tasks_in_one_session",
-    "asking_frontier_model_for_boilerplate"
+    "asking_frontier_model_for_boilerplate",
+    "large_context_for_simple_fix"
   ]
 } as const satisfies ContextUsagePolicy;
 
@@ -65,7 +84,7 @@ export const sessionResetProtocol = {
   restartPromptTemplate: [
     "Continue from this compressed state.",
     "Do not rely on previous conversation.",
-    "Treat this summary as the source of truth.",
+    "Treat this summary as a compact handoff; local files, tests, architecture records, and explicit owner decisions remain the source of truth.",
     "",
     "Goal:",
     "{{goal}}",

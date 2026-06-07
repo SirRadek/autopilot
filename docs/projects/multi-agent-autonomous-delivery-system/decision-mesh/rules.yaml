@@ -11,6 +11,12 @@ rules:
       - worker_boundary
     instruction: "Worker output must be independently reviewed before governance approval."
     severity: blocker
+  - id: MAS-OBS-001
+    title: Delivery diagnostics stay project-scoped
+    applies_to:
+      - delivery_observability_boundary
+    instruction: "Diagnose delivery-system worker, governance, model-routing, and verification symptoms in this project mesh. Autopilot may store only redacted summaries and source pointers."
+    severity: blocker
   - id: MAS-MODEL-001
     title: Model routing is local-first
     applies_to:

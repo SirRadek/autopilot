@@ -11,6 +11,18 @@ rules:
       - lead_capture_pipeline
     instruction: "Client and server validation, privacy minimization, and controlled D1 error behavior must remain intact."
     severity: blocker
+  - id: RAD-OBS-001
+    title: Radeq runtime logs stay project-owned
+    applies_to:
+      - runtime_observability_boundary
+    instruction: "Diagnose Radeq runtime, deployment, client, lead API, SEO, and 3D symptoms inside the Radeq project mesh. Autopilot may record only redacted summaries and source pointers."
+    severity: blocker
+  - id: RAD-OBS-002
+    title: Radeq diagnostics require bounded evidence
+    applies_to:
+      - runtime_observability_boundary
+    instruction: "Define symptom, time window, evidence source, baseline metric, suspected layer, reproduction or counterexample, and fix verification before changing Radeq runtime behavior."
+    severity: major
   - id: RAD-3D-001
     title: 3D remains optional
     applies_to:
@@ -22,4 +34,19 @@ rules:
     applies_to:
       - seo_performance_surface
     instruction: "Performance or SEO-impacting changes require measurement or an explicit note that measurement was not available."
+    severity: major
+  - id: RAD-DESIGN-001
+    title: Proposal variants require separate composition logic
+    applies_to:
+      - static_public_site
+      - seo_performance_surface
+    instruction: "A/B/C/D proposal variants must differ by first-screen purpose, H1/H2, layout rhythm, section order, visual anchor, CTA logic, proof strategy, and mobile behavior. Palette-only or shared-shell variants are a stop condition."
+    severity: blocker
+  - id: RAD-DESIGN-002
+    title: Design refinements require public mobile evidence
+    applies_to:
+      - static_public_site
+      - seo_performance_surface
+      - runtime_observability_boundary
+    instruction: "Before claiming a Radeq preview refinement is ready, record the public preview URL or commit, mobile viewport evidence, overflow state, console state, metadata/indexability state, performance note, and rollback path."
     severity: major

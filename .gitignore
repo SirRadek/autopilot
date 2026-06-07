@@ -5,6 +5,9 @@ dist/
 
 # local automation/test artifacts
 .codex-run/
+.codex/state/
+output/document-reader/
+output/playwright/
 test-results/
 docs/autopilot/reference/private-*
 .wrangler/

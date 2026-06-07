@@ -1,0 +1,53 @@
+id: codex_hooks_guardrail
+type: governance_policy
+name: Codex hooks guardrail
+question: "Should deterministic Codex lifecycle hooks report risk, preserve compact continuity, or collect redacted control-plane evidence for this task?"
+why: "Lifecycle hooks can apply fast repeatable checks around prompts, tool calls, compaction, subagents, and turn completion without creating another agent runtime."
+signals:
+  - hook
+  - hooks
+  - lifecycle
+  - session start
+  - pre tool
+  - post tool
+  - pre compact
+  - post compact
+  - stop hook
+  - completion check
+  - redacted evidence
+related_agents:
+  - architect
+  - qa
+  - security
+  - memory
+related_files:
+  - .codex/hooks.json
+  - .codex/hooks/autopilot-hook.mjs
+  - docs/autopilot/codex-hooks-operating-model.md
+  - docs/projects/autopilot-control-plane/work-log.md
+required_checks:
+  - official_codex_hooks_contract_verified
+  - project_hook_trust_reviewed
+  - report_first_default
+  - redacted_metadata_only
+  - no_raw_prompt_command_or_response_storage
+  - no_remote_mutation
+  - no_cloud_or_paid_dependency
+  - hook_failure_does_not_claim_verification
+  - architecture_work_log_mesh_impact_checked
+stop_conditions:
+  - hook_stores_raw_sensitive_content
+  - hook_creates_duplicate_runtime_queue
+  - hook_mutates_remote_without_approval
+  - hook_calls_paid_or_cloud_worker
+  - unreviewed_hook_claimed_active
+  - blocking_hook_without_false_positive_tests
+  - hook_claimed_as_complete_enforcement_boundary
+must_not_assume:
+  - Do not assume project hooks are active before trust review and runtime evidence.
+  - Do not assume PreToolUse intercepts every possible action path.
+  - Do not treat hook warnings or event records as delivery approval.
+objective:
+  - Apply fast deterministic report-first guardrails around the Codex lifecycle.
+  - Preserve compact redacted evidence without storing raw project or prompt content.
+  - Feed Decision Mesh and Protective Supervision without becoming a second runtime.

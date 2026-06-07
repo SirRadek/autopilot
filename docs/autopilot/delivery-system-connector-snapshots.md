@@ -15,6 +15,17 @@ Connector snapshots are reviewed evidence inputs. They are not automatic source 
 - Cross-check connector output against local repository state when the task concerns code.
 - Remote writes require explicit `REMOTE_MUTATION_APPROVED` scope and a work-log entry.
 
+## Observability Ownership
+
+Before collecting logs, traces, metrics, or CI/deploy evidence, classify the symptom owner:
+
+- `autopilot_control_plane`: MCP, mesh, command-center, governance tests, architecture/work-log process, or local control-plane tooling.
+- `project_runtime`: a supervised project's website, API, database, deployment, automation, worker, model route, or user-facing behavior.
+
+Autopilot may store redacted summaries, source pointers, time windows, correlation IDs, suspected layer, and verification results. Raw project runtime logs, CI logs, deployment logs, traces, and metrics remain in the affected project or source system unless an explicit owner decision approves a bounded artifact.
+
+If ownership is ambiguous, stop and resolve `ambiguous_problem_owner` before diagnosing or planning a fix.
+
 ## Snapshot Envelope
 
 ```yaml

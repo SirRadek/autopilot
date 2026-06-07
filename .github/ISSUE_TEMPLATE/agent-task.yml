@@ -1,0 +1,93 @@
+name: Agent task
+description: Create a bounded Autopilot task for routing through the Decision Mesh.
+title: "[Agent Task]: "
+labels:
+  - autopilot
+  - agent-task
+body:
+  - type: markdown
+    attributes:
+      value: |
+        GitHub is the human control surface. Autopilot Decision Mesh remains the routing and policy authority.
+  - type: input
+    id: project_slug
+    attributes:
+      label: Project slug
+      description: Supervised project slug, if this belongs to a project mesh.
+      placeholder: "autopilot-control-plane"
+  - type: dropdown
+    id: agent_role
+    attributes:
+      label: Preferred agent role
+      description: This is a request, not an override of Decision Mesh routing.
+      options:
+        - orchestrator
+        - architect
+        - automation
+        - backend
+        - frontend
+        - qa
+        - security
+        - docs
+        - qwen-worker
+    validations:
+      required: true
+  - type: dropdown
+    id: delivery_profile
+    attributes:
+      label: Delivery profile
+      options:
+        - micro_patch
+        - component_bundle
+        - analysis_only
+    validations:
+      required: true
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+      description: What should be true when this work is complete?
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: Concrete checks a reviewer can use to accept the work.
+      placeholder: |
+        - ...
+        - ...
+    validations:
+      required: true
+  - type: textarea
+    id: allowed_paths
+    attributes:
+      label: Allowed edit paths
+      description: Keep this bounded. Use repo-relative paths.
+      placeholder: |
+        - docs/autopilot/...
+        - src/lib/...
+    validations:
+      required: true
+  - type: textarea
+    id: verification
+    attributes:
+      label: Verification steps
+      placeholder: |
+        - npm run mesh:check
+        - npm run typecheck
+        - npm test
+    validations:
+      required: true
+  - type: textarea
+    id: out_of_scope
+    attributes:
+      label: Out of scope
+      description: Explicitly list what the agent must not change.
+  - type: checkboxes
+    id: decision_mesh_ack
+    attributes:
+      label: Decision Mesh authority
+      options:
+        - label: I understand this issue does not bypass Decision Mesh routing, stop conditions, or verification.
+          required: true

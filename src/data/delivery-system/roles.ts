@@ -116,6 +116,18 @@ export const deliveryRoles = [
     forbiddenActions: ["approve_own_work", "mutate_remote_without_approval"]
   },
   {
+    id: "visual-analyst",
+    layer: "analysis",
+    title: "Visual Analyst",
+    responsibilities: [
+      "analyze visual goals before asset production",
+      "route visual work to the appropriate production lane",
+      "define visual acceptance criteria and evidence requirements"
+    ],
+    permissions: ["plan_workflow"],
+    forbiddenActions: ["approve_own_work", "change_scope_without_evidence", "mutate_remote_without_approval"]
+  },
+  {
     id: "backend-agent",
     layer: "execution",
     title: "Backend Agent",
@@ -138,6 +150,23 @@ export const deliveryRoles = [
     responsibilities: ["produce UI design artifacts", "support UX consistency"],
     permissions: ["implement_code"],
     forbiddenActions: ["approve_own_work", "change_scope_without_evidence", "mutate_remote_without_approval"]
+  },
+  {
+    id: "graphic-production-agent",
+    layer: "execution",
+    title: "Graphic Production Agent",
+    responsibilities: [
+      "route visual work to the smallest useful graphics toolchain",
+      "produce visual briefs, asset manifests, motion specs, and fallback plans",
+      "keep primary content outside canvas and motion layers"
+    ],
+    permissions: ["implement_code", "write_documentation"],
+    forbiddenActions: [
+      "approve_own_work",
+      "change_scope_without_evidence",
+      "mutate_remote_without_approval",
+      "start_autonomous_execution"
+    ]
   },
   {
     id: "infrastructure-agent",
@@ -228,6 +257,18 @@ export const deliveryRoles = [
     forbiddenActions: ["approve_own_work", "mutate_remote_without_approval"]
   },
   {
+    id: "design-critic",
+    layer: "review",
+    title: "Design Critic",
+    responsibilities: [
+      "critique visual hierarchy, clarity, brand fit, accessibility, and motion value",
+      "compare visual output against the brief and project constraints",
+      "return evidence-based design findings before governance"
+    ],
+    permissions: ["review_ux"],
+    forbiddenActions: ["approve_own_work", "change_scope_without_evidence", "mutate_remote_without_approval"]
+  },
+  {
     id: "copywriter",
     layer: "copywriting",
     title: "Copywriter",
@@ -274,6 +315,25 @@ export const deliveryRoles = [
     responsibilities: ["monitor runs", "detect failures", "propose recovery", "record incidents"],
     permissions: ["monitor_runs", "propose_recovery"],
     forbiddenActions: ["approve_delivery", "change_scope_without_evidence", "mutate_remote_without_approval"]
+  },
+  {
+    id: "protective-supervisor",
+    layer: "autopilot",
+    title: "Protective Supervisor",
+    responsibilities: [
+      "run currentness sentinel reviews for prompt, mesh, and architecture guidance",
+      "compile reviewed agent outputs into next-agent handoff packets",
+      "maintain progress states, blockers, waiting dependencies, and next action sequence"
+    ],
+    permissions: ["monitor_runs", "propose_recovery", "record_memory", "write_documentation"],
+    forbiddenActions: [
+      "approve_delivery",
+      "approve_own_work",
+      "bypass_governance",
+      "change_scope_without_evidence",
+      "mutate_remote_without_approval",
+      "start_autonomous_execution"
+    ]
   },
   {
     id: "memory-curator",

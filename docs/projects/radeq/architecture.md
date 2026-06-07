@@ -1,7 +1,7 @@
 # Radeq.cz Website Architecture
 
-Last updated: 2026-05-24
-Next review: 2026-05-31
+Last updated: 2026-06-06
+Next review: 2026-06-07
 Status: active
 Slug: `radeq`
 Primary repository: `SirRadek/radeq`
@@ -11,7 +11,7 @@ Visibility: public repository, with private reference assets excluded by policy
 
 ## Purpose And Scope
 
-Radeq.cz is a public static website for presenting fast web systems, conversion flows, SEO structures, and lightweight automation work. The current product surface is the Czech route `/`, the English route `/en/`, interactive style previews, a 3D mascot enhancement, and a Cloudflare D1-backed lead capture endpoint.
+Radeq.cz is a public static website for presenting fast web systems, conversion flows, SEO structures, and lightweight automation work. The current product surface is the Czech route `/`, the English route `/en/`, a static service catalog that promotes one primary shop demo, a compact global theme menu for four visual directions, a light/dark visual mode toggle, optional compatibility demo routes under `/demo/<module>/` and `/en/demo/<module>/`, an optional 3D mascot enhancement, and a Cloudflare D1-backed lead capture endpoint.
 
 Out of scope for the current architecture:
 
@@ -68,6 +68,7 @@ Current mesh coverage:
 - lead capture and D1 data flow
 - optional 3D mascot add-on
 - SEO and performance surface
+- runtime observability boundary for project-owned logs, deployment evidence, client console symptoms, lead API failures, and performance bottlenecks
 
 This is a control-plane mirror for Radeq architecture evidence. Canonical product runtime code remains in the Radeq repository.
 
@@ -77,14 +78,21 @@ Static page shell:
 
 - `src/pages/index.astro` renders the Czech route.
 - `src/pages/en/index.astro` renders the English route.
-- `src/layouts/BaseLayout.astro` sets global metadata, language, alternate link, global CSS, and `MotionOrchestrator`.
+- `src/pages/demo/[module].astro` renders Czech interactive demo pages. `/demo/service-landing/` is the only demo promoted from the homepage and is the primary shop-only showcase. `/demo/eshop-offers/`, blog/docs, and team-overview modules remain directly addressable compatibility routes until a separate URL migration removes or redirects them.
+- `src/pages/en/demo/[module].astro` renders the English equivalents.
+- `src/layouts/BaseLayout.astro` sets global metadata, canonical URLs, alternate links, Open Graph URL metadata, language, global CSS, and `MotionOrchestrator`.
+- `src/pages/robots.txt.ts` and `src/pages/sitemap.xml.ts` generate static indexability endpoints from the configured Astro `site` and `base`.
 
 Interactive islands:
 
-- `src/components/StyleMatrixSimulator.tsx` is hydrated with `client:load` and reads typed presets from `src/data/styleMatrix.ts`.
-- `src/components/ContactTerminal.tsx` is hydrated with `client:load` and posts lead payloads to `/api/leads`.
+- `src/components/StyleVariantToggle.tsx` is hydrated with `client:load` and controls `html[data-style]` globally with four-theme persistence. Its compact Czech/English menu exposes descriptive names while retaining the stable `variant-a` through `variant-d` storage and event contract.
+- `src/components/StyleMatrixSimulator.tsx` is hydrated with `client:load` on demo routes, reads typed presets from `src/data/styleMatrix.ts`, and follows the global style switch instead of owning a separate A/B/C/D picker. The primary and compatibility shop routes use `shopOnly`, so A/B/C/D changes presentation while products, filters, comparison, and demo-cart behavior remain fixed.
+- `src/components/ThemeModeToggle.tsx` is hydrated with `client:load` and controls `html[data-theme]` with a light-first default and localStorage persistence.
+- `src/components/ContactTerminal.tsx` is hydrated with `client:load` and posts lead payloads to `/api/leads`. Its UI contract includes explicit labels and autocomplete metadata, required/optional guidance, inline localized validation, focus transfer to the first invalid field, and live status feedback. The API payload, persistence, and server validation contracts remain unchanged.
 - `src/components/MotionOrchestrator.tsx` tracks active sections, pointer motion, scroll state, and reduced-motion state.
-- `src/components/CoreIsland.tsx` dynamically imports Three.js and `GLTFLoader` only after the user enables the 3D mascot.
+- `src/components/CatGuide.astro`, `src/components/StudioProof.astro`, and `src/components/DemoWorlds.astro` provide structurally distinct static homepage proposal compositions for B/C/D. They are selected by `html[data-style]` and kept outside the motion scene section scan while preserving HTML-readable content.
+- `src/components/CoreIsland.tsx` dynamically imports Three.js and `GLTFLoader` only after the user enables the 3D mascot, and exposes asset provenance and budget metadata as non-content `data-*` attributes.
+- `src/lib/catMascot.ts` owns the mascot asset manifest for source, license, provenance, byte budget, triangle budget, loading strategy, and SEO role.
 
 Lead API:
 
@@ -176,6 +184,7 @@ GitHub Pages path behavior:
 - `astro.config.mjs` uses `DEPLOY_TARGET=github-pages`
 - GitHub Pages build uses site `https://sirradek.github.io`
 - GitHub Pages build uses base `/radeq`
+- Preview branch `codex/radeq-ab-c-preview` was temporarily allowed to deploy to the `github-pages` environment for draft PR preview `https://github.com/SirRadek/radeq/pull/2`.
 
 Cloudflare Pages path behavior:
 

@@ -1,0 +1,57 @@
+name: Sync Labels
+
+on:
+  workflow_dispatch:
+
+permissions:
+  issues: write
+
+jobs:
+  sync-labels:
+    name: Create or update Autopilot labels
+    runs-on: ubuntu-latest
+    steps:
+      - name: Sync labels
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const labels = [
+              ["autopilot", "Autopilot control-plane work", "0e8a16"],
+              ["agent-task", "Bounded work request for Decision Mesh routing", "1d76db"],
+              ["blocked", "Human decision or external dependency required", "b60205"],
+              ["needs-review", "Defect-focused review requested", "d93f0b"],
+              ["status:ready", "Ready for routing or dispatch", "2ea043"],
+              ["status:running", "Currently executing", "fbca04"],
+              ["status:done", "Accepted and complete", "0e8a16"],
+              ["role:orchestrator", "Orchestration or queue authority", "5319e7"],
+              ["role:architect", "Architecture or system design", "5319e7"],
+              ["role:automation", "Automation workflow work", "5319e7"],
+              ["role:backend", "Backend implementation", "5319e7"],
+              ["role:frontend", "Frontend implementation", "5319e7"],
+              ["role:qa", "Verification and quality review", "5319e7"],
+              ["role:security", "Security-sensitive work", "5319e7"],
+              ["worker:qwen", "Candidate for bounded Qwen worker execution", "0052cc"],
+              ["profile:micro-patch", "Smallest safe bounded patch", "c5def5"],
+              ["profile:component-bundle", "Bounded subsystem bundle", "c5def5"]
+            ];
+
+            for (const [name, description, color] of labels) {
+              try {
+                await github.rest.issues.updateLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name,
+                  description,
+                  color
+                });
+              } catch (error) {
+                if (error.status !== 404) throw error;
+                await github.rest.issues.createLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name,
+                  description,
+                  color
+                });
+              }
+            }

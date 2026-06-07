@@ -1,0 +1,69 @@
+id: observability_mesh
+type: capability_module
+name: Observability Mesh
+question: "Does this task require logs, traces, metrics, diagnostics, incident evidence, or bottleneck localization?"
+why: "Diagnostics must first separate Autopilot control-plane issues from supervised project runtime issues, then use bounded, redacted evidence to localize the narrowest failing layer."
+signals:
+  - log
+  - logs
+  - logging
+  - runtime logs
+  - observability
+  - diagnostic
+  - diagnostics
+  - trace
+  - tracing
+  - error
+  - bottleneck
+  - bottlenecks
+  - problem
+  - problems
+  - monitoring
+  - incident
+  - request id
+  - deploy log
+  - ci log
+  - runtime log
+related_agents:
+  - architect
+  - qa
+  - frontend
+  - backend_database
+  - seo_performance
+  - security
+related_files:
+  - docs/autopilot/delivery-system-connector-snapshots.md
+  - docs/projects/<project-slug>/architecture.md
+  - docs/projects/<project-slug>/work-log.md
+  - docs/projects/<project-slug>/decision-mesh/
+required_checks:
+  - problem_scope_classified
+  - autopilot_vs_project_boundary
+  - project_slug_or_control_plane_identified
+  - log_window_defined
+  - source_inventory
+  - redacted_log_summary
+  - correlation_id_or_fallback
+  - baseline_metric
+  - suspect_layer_identified
+  - reproduction_or_counterexample
+  - fix_verification
+stop_conditions:
+  - ambiguous_problem_owner
+  - raw_project_logs_copied_to_autopilot
+  - no_log_window
+  - no_baseline_metric
+  - no_reproduction_path
+  - raw_logs_contain_secrets
+  - production_mutation_without_approval
+  - log_dump_too_large
+  - correlation_missing_for_distributed_issue
+must_not_assume:
+  - Do not treat Autopilot operational logs as product runtime evidence.
+  - Do not treat product runtime logs as Autopilot source of truth.
+  - Do not copy raw project logs into Autopilot; store redacted summaries and source pointers only.
+  - Do not diagnose before classifying whether the symptom belongs to Autopilot or a supervised project.
+objective:
+  - Separate control-plane problems from project runtime problems before analysis.
+  - Localize failures to the narrowest layer with bounded evidence.
+  - Preserve project ownership of runtime logs while allowing Autopilot to route, summarize, and govern diagnostics.

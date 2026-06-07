@@ -1,11 +1,11 @@
 # Multi-Agent Autonomous Delivery System Architecture
 
-Last updated: 2026-05-24
-Next review: 2026-05-31
+Last updated: 2026-05-31
+Next review: 2026-06-07
 Status: phase-3 read-only Decision Mesh context router
 Slug: `multi-agent-autonomous-delivery-system`
 Canonical remote repository: `SirRadek/autopilot`
-Local workspace: `C:\Users\sirok\Documents\Autopilot`
+Local workspace: `C:\Programování\Codex`
 Separation status: `autopilot_subsystem`
 Visibility: Autopilot control-plane subsystem; external/private project details must be redacted
 
@@ -43,6 +43,7 @@ In this project:
 - local read-only stdio MCP server for relevant subgraph and agent-packet lookup
 - capability routing, context economy, and model spend policies
 - seeded project-specific Decision Mesh under `docs/projects/multi-agent-autonomous-delivery-system/decision-mesh/`
+- project-specific delivery observability boundary for worker, governance, model-routing, and verification symptoms
 - static read-only command-center view at `/autopilot`
 - local browser/e2e smoke tests for the command center
 
@@ -63,7 +64,7 @@ External to this project:
 The multi-agent delivery system is part of Autopilot itself. Its target home is:
 
 ```text
-C:\Users\sirok\Documents\Autopilot
+C:\Programování\Codex
 SirRadek/autopilot
 ```
 

@@ -1,0 +1,52 @@
+id: runtime_observability_boundary
+type: diagnostics_boundary
+name: Radeq runtime observability boundary
+question: "Does this symptom belong to Radeq's public site, lead API, deployment, client runtime, SEO/performance surface, or optional 3D layer?"
+why: "Radeq owns its own runtime symptoms, logs, deploy evidence, performance baselines, and bottlenecks; Autopilot may route and summarize but must not become the source of truth for raw project logs."
+signals:
+  - radeq
+  - runtime log
+  - deploy log
+  - cloudflare
+  - pages
+  - d1
+  - lead api
+  - client console
+  - core web vitals
+  - seo drop
+  - mobile bug
+  - webgl error
+related_agents:
+  - frontend
+  - backend_database
+  - seo_performance
+  - qa
+  - security
+related_files:
+  - docs/projects/radeq/architecture.md
+  - docs/projects/radeq/work-log.md
+  - docs/projects/radeq/decision-mesh/
+required_checks:
+  - problem_scope_classified
+  - project_slug_confirmed
+  - log_window_defined
+  - source_inventory
+  - redacted_log_summary
+  - correlation_id_or_fallback
+  - baseline_metric
+  - suspect_layer_identified
+  - reproduction_or_counterexample
+  - fix_verification
+stop_conditions:
+  - ambiguous_problem_owner
+  - raw_project_logs_copied_to_autopilot
+  - no_log_window
+  - no_baseline_metric
+  - no_reproduction_path
+  - raw_logs_contain_secrets
+  - production_mutation_without_approval
+  - correlation_missing_for_distributed_issue
+objective:
+  - Keep Radeq diagnostics inside the Radeq project mesh and architecture record.
+  - Use redacted summaries in Autopilot handoffs instead of raw runtime log storage.
+  - Localize symptoms to static site, lead capture, deployment, SEO/performance, client runtime, or optional 3D before planning fixes.

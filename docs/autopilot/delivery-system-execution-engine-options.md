@@ -13,7 +13,7 @@ The Multi-Agent Autonomous Delivery System has documentation, typed governance c
 Official or primary sources checked on 2026-05-13:
 
 - Vercel Workflow docs: https://vercel.com/docs/workflow
-- Workflow DevKit docs: https://useworkflow.dev/docs
+- Workflow DevKit docs: https://useworkflow.dev/docs/getting-started
 - Cloudflare Workflows docs: https://developers.cloudflare.com/workflows/
 - Cloudflare Durable Objects docs: https://developers.cloudflare.com/durable-objects/
 - Cloudflare Queues docs: https://developers.cloudflare.com/queues/

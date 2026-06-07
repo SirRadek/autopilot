@@ -110,6 +110,11 @@ edges:
     weight: 0.8
     why: "Broken or hacked site tasks need recovery-first sequencing."
   - from: capability_routing
+    to: observability_mesh
+    relation: activates
+    weight: 0.84
+    why: "Log, tracing, monitoring, and incident tasks must first classify ownership and evidence boundaries."
+  - from: capability_routing
     to: document_mesh
     relation: activates
     weight: 0.76
@@ -139,6 +144,31 @@ edges:
     relation: may_require
     weight: 0.68
     why: "Performance bottlenecks can come from data and database issues."
+  - from: observability_mesh
+    to: optimization_mesh
+    relation: informs
+    weight: 0.86
+    why: "Diagnostics should provide baseline and bottleneck evidence before optimization changes."
+  - from: observability_mesh
+    to: recovery_mesh
+    relation: sequences_into
+    weight: 0.78
+    why: "Incident evidence can route a problem into recovery when the system is broken or unsafe."
+  - from: observability_mesh
+    to: automation_mesh
+    relation: audits
+    weight: 0.74
+    why: "Automation failures require logs, retries, alerts, and manual handoff evidence."
+  - from: observability_mesh
+    to: public_api
+    relation: may_trace
+    weight: 0.72
+    why: "Public API diagnostics often need request IDs, status codes, and bounded error contracts."
+  - from: project_mesh_lifecycle
+    to: observability_mesh
+    relation: separates_scope
+    weight: 0.84
+    why: "Project meshes own project runtime diagnostics; Autopilot only routes and records redacted evidence."
   - from: recovery_mesh
     to: optimization_mesh
     relation: sequences_into
@@ -179,3 +209,68 @@ edges:
     relation: refines
     weight: 0.82
     why: "Model spend rules refine when frontier reasoning is justified and when work should stay local."
+  - from: prompt_library_policy
+    to: reasoning_strategy
+    relation: constrains
+    weight: 0.86
+    why: "Prompt contracts must follow reasoning model routing and cannot turn advisory output into source-of-truth decisions."
+  - from: prompt_library_policy
+    to: model_spend_policy
+    relation: constrains
+    weight: 0.84
+    why: "Prompt selection must respect provider-neutral, cost-aware, free/no-cost model routing."
+  - from: prompt_library_policy
+    to: context_economy_policy
+    relation: supports
+    weight: 0.78
+    why: "Reusable prompt contracts reduce repeated context and help build compact task packets."
+  - from: prompt_library_policy
+    to: bot_rag_mesh
+    relation: supports
+    weight: 0.72
+    why: "Knowledge and RAG prompts need source grounding, privacy boundaries, and answer policy."
+  - from: protective_supervision_policy
+    to: project_mesh_lifecycle
+    relation: updates
+    weight: 0.88
+    why: "Protective supervision keeps per-project progress, blockers, and waiting dependencies visible in the affected project mesh or work log."
+  - from: protective_supervision_policy
+    to: observability_mesh
+    relation: summarizes
+    weight: 0.84
+    why: "Sentinel and blocker review may summarize diagnostics, but raw project logs remain project-owned."
+  - from: protective_supervision_policy
+    to: context_economy_policy
+    relation: compacts
+    weight: 0.86
+    why: "Handoff compilation turns noisy agent outputs into compact next-agent packets."
+  - from: protective_supervision_policy
+    to: reasoning_strategy
+    relation: guards
+    weight: 0.82
+    why: "Currentness and handoff checks keep advisory model output separate from verified facts and delivery authority."
+  - from: protective_supervision_policy
+    to: prompt_library_policy
+    relation: feeds
+    weight: 0.8
+    why: "Recurring currentness findings can propose prompt-library updates after sources, evals, and rollback paths are recorded."
+  - from: codex_hooks_guardrail
+    to: protective_supervision_policy
+    relation: feeds_redacted_evidence
+    weight: 0.88
+    why: "Lifecycle hooks can provide compact redacted event evidence to protective supervision without becoming a worker or approval authority."
+  - from: codex_hooks_guardrail
+    to: observability_mesh
+    relation: reports_control_plane_events
+    weight: 0.84
+    why: "Hook evidence belongs to Autopilot control-plane observability and must not absorb raw supervised-project runtime logs."
+  - from: codex_hooks_guardrail
+    to: context_economy_policy
+    relation: preserves_compaction_context
+    weight: 0.82
+    why: "Pre- and post-compaction hooks preserve a compact source-grounded continuity reminder."
+  - from: codex_hooks_guardrail
+    to: project_mesh_lifecycle
+    relation: checks_boundary
+    weight: 0.8
+    why: "Lifecycle warnings can remind the orchestrator to load the supervised project's own mesh before implementation."

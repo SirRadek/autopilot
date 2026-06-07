@@ -110,6 +110,42 @@ describe("Decision Mesh queries", () => {
     );
   });
 
+  it("routes prompt library work through prompt policy and blocks unverified prompt adoption", () => {
+    const result = getRelevantSubgraph(mesh, {
+      task: "Add a GPT Claude Gemini Qwen prompt library with prompt evals, source authority, and version rollback",
+      agent: "architect",
+      max_nodes: 5
+    });
+
+    expect(result.relevant_nodes.map((node) => node.id)).toContain("prompt_library_policy");
+    expect(result.required_agents).toEqual(expect.arrayContaining(["architect", "qa"]));
+    const promptNode = result.relevant_nodes.find((node) => node.id === "prompt_library_policy");
+    expect(promptNode?.required_checks).toEqual(
+      expect.arrayContaining(["prompt_metadata_complete", "prompt_eval_defined", "official_provider_docs_verified"])
+    );
+    expect(findRisks(mesh, { task: "Adopt leaked system prompts without evals" }).stop_conditions).toEqual(
+      expect.arrayContaining(["leaked_system_prompt_used", "prompt_without_eval"])
+    );
+  });
+
+  it("routes protective supervision work through currentness, handoff, progress, and blocker guardrails", () => {
+    const result = getRelevantSubgraph(mesh, {
+      task: "Add a protective currentness sentinel that compiles agent output into next-agent handoff packets and tracks progress blockers",
+      agent: "architect",
+      max_nodes: 5
+    });
+
+    expect(result.relevant_nodes.map((node) => node.id)).toContain("protective_supervision_policy");
+    expect(result.required_agents).toEqual(expect.arrayContaining(["architect", "qa"]));
+    const protectiveNode = result.relevant_nodes.find((node) => node.id === "protective_supervision_policy");
+    expect(protectiveNode?.required_checks).toEqual(
+      expect.arrayContaining(["agent_output_normalized", "progress_state_updated", "blocker_owner_declared"])
+    );
+    expect(
+      findRisks(mesh, { task: "Pass raw agent output as next prompt without blocker owner" }).stop_conditions
+    ).toEqual(expect.arrayContaining(["raw_agent_output_used_as_next_prompt", "blocker_without_owner"]));
+  });
+
   it("routes per-project mesh lifecycle work to the project mesh node", () => {
     const result = getRelevantSubgraph(mesh, {
       task: "Create a separate decision mesh for a new project during architecture onboarding and update it after completion",
@@ -134,6 +170,25 @@ describe("Decision Mesh queries", () => {
     expect(result.relevant_nodes).toEqual(expect.arrayContaining(["optimization_mesh", "seo_mesh"]));
   });
 
+  it("routes diagnostics through observability with project/control-plane separation checks", () => {
+    const result = selectCapabilities(mesh, {
+      task: "Inspect logs, tracing, runtime errors, and bottlenecks while separating Autopilot from project issues"
+    });
+
+    expect(result.capabilities).toContain("observability_mesh");
+    expect(result.required_checks).toEqual(
+      expect.arrayContaining([
+        "problem_scope_classified",
+        "autopilot_vs_project_boundary",
+        "redacted_log_summary",
+        "suspect_layer_identified"
+      ])
+    );
+    expect(findRisks(mesh, { task: "Copy raw project logs into Autopilot" }).stop_conditions).toContain(
+      "raw_project_logs_copied_to_autopilot"
+    );
+  });
+
   it("builds a compact project-specific mesh packet", () => {
     const projectMesh = loadProjectDecisionMeshFromRoot(process.cwd(), "radeq");
     const packet = buildProjectMeshPacket(projectMesh, {
@@ -147,5 +202,81 @@ describe("Decision Mesh queries", () => {
     expect(packet.relevant_nodes).toContain("lead_capture_pipeline");
     expect(packet.required_checks).toContain("server_validation");
     expect(packet.stop_conditions).toContain("missing_server_validation");
+  });
+
+  it("keeps Radeq runtime diagnostics inside the Radeq project mesh", () => {
+    const projectMesh = loadProjectDecisionMeshFromRoot(process.cwd(), "radeq");
+    const packet = buildProjectMeshPacket(projectMesh, {
+      project_slug: "radeq",
+      task: "Diagnose Radeq Cloudflare deploy logs, client console errors, D1 lead API failures, and Core Web Vitals bottlenecks",
+      agent: "qa",
+      max_nodes: 4
+    });
+
+    expect(packet.relevant_nodes).toContain("runtime_observability_boundary");
+    expect(packet.required_checks).toEqual(
+      expect.arrayContaining(["project_slug_confirmed", "redacted_log_summary", "suspect_layer_identified"])
+    );
+    expect(packet.stop_conditions).toContain("raw_project_logs_copied_to_autopilot");
+  });
+
+  it("keeps Autopilot prompt library work inside the control-plane project mesh", () => {
+    const projectMesh = loadProjectDecisionMeshFromRoot(process.cwd(), "autopilot-control-plane");
+    const packet = buildProjectMeshPacket(projectMesh, {
+      project_slug: "autopilot-control-plane",
+      task: "Plan prompt library adoption for GPT Claude Gemini Qwen with evals and source authority",
+      agent: "architect",
+      max_nodes: 4
+    });
+
+    expect(packet.relevant_nodes).toContain("prompt_library_boundary");
+    expect(packet.required_checks).toEqual(
+      expect.arrayContaining(["prompt_metadata_complete", "prompt_eval_defined", "official_provider_docs_verified"])
+    );
+    expect(packet.stop_conditions).toContain("paid_prompt_management_tool_required");
+  });
+
+  it("keeps Autopilot protective supervision inside the control-plane project mesh", () => {
+    const projectMesh = loadProjectDecisionMeshFromRoot(process.cwd(), "autopilot-control-plane");
+    const packet = buildProjectMeshPacket(projectMesh, {
+      project_slug: "autopilot-control-plane",
+      task: "Run protective supervision for currentness, agent handoff packets, progress ledger state, blockers, and waiting dependencies",
+      agent: "architect",
+      max_nodes: 5
+    });
+
+    expect(packet.relevant_nodes).toContain("protective_supervision_boundary");
+    expect(packet.required_checks).toEqual(
+      expect.arrayContaining(["official_docs_or_context7_for_currentness", "agent_output_normalized"])
+    );
+    expect(packet.stop_conditions).toContain("duplicate_runtime_queue");
+  });
+
+  it("routes Codex lifecycle hooks through report-first control-plane boundaries", () => {
+    const rootMesh = loadDecisionMeshFromRoot(process.cwd());
+    const subgraph = getRelevantSubgraph(rootMesh, {
+      task: "Add Codex hooks for session start, tool risk checks, compaction continuity, and stop evidence",
+      agent: "architect",
+      max_nodes: 6
+    });
+
+    const hookNode = subgraph.relevant_nodes.find((node) => node.id === "codex_hooks_guardrail");
+
+    expect(hookNode).toBeDefined();
+    expect(hookNode?.stop_conditions).toContain("hook_stores_raw_sensitive_content");
+
+    const projectMesh = loadProjectDecisionMeshFromRoot(process.cwd(), "autopilot-control-plane");
+    const packet = buildProjectMeshPacket(projectMesh, {
+      project_slug: "autopilot-control-plane",
+      task: "Implement project-local Codex hooks as redacted report-first lifecycle guardrails",
+      agent: "architect",
+      max_nodes: 5
+    });
+
+    expect(packet.relevant_nodes).toContain("codex_hooks_boundary");
+    expect(packet.required_checks).toEqual(
+      expect.arrayContaining(["exact_hook_definition_trusted", "runtime_activation_evidence_separate"])
+    );
+    expect(packet.stop_conditions).toContain("runtime_activation_claim_without_evidence");
   });
 });
