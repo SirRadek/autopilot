@@ -56,7 +56,13 @@ Verification:
   `actions/github-script` release documentation was checked on 2026-06-07.
   The release-hardening patch upgrades them to Node 24-compatible majors
   `checkout@v6`, `setup-node@v6`, and `github-script@v8`.
-- Final action-upgrade CI, tag, release, and post-release checks remain pending.
+- Release-hardening PR `https://github.com/SirRadek/autopilot/pull/3` was opened
+  against `main`.
+- GitHub Actions run `https://github.com/SirRadek/autopilot/actions/runs/27097407828`
+  passed in 1m7s with 0 annotations, confirming the Node 20 deprecation warning
+  is removed.
+- Final evidence-commit CI, merge, tag, release, and post-release checks remain
+  pending.
 Risks:
 
 - The release is a large accumulated control-plane change and therefore relies
