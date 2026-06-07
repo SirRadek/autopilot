@@ -12,5 +12,9 @@ describe("prompt pack policy alignment", () => {
     expect(promptPack).toContain("context economy");
     expect(promptPack).toContain("model spend");
     expect(promptPack).toContain("project-specific Decision Mesh");
+    expect(promptPack).toContain("prompt-library/");
+    expect(promptPack).toContain("GitHub issues, PR comments");
+    expect(promptPack).toContain("plugin availability");
+    expect(promptPack).toContain("asset/library source checks");
   });
 });

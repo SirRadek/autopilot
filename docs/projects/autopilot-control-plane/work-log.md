@@ -1,5 +1,633 @@
 # Autopilot Control Plane Work Log
 
+## 2026-06-07 Autopilot v0.2.0 Release
+
+Date: 2026-06-07
+Request or trigger: owner requested that all current Codex Autopilot, Decision
+Mesh, governance, Product & Design OS, prompt-library, hook, and verification
+work be published to GitHub as a new version.
+Mode: REMOTE_MUTATION_APPROVED for `SirRadek/autopilot` branch publication,
+pull request, merge, tag `v0.2.0`, and GitHub release only.
+Scope: publish the complete intended Autopilot control-plane worktree. Included
+project records are sanitized control-plane architecture, mesh, and work-log
+records; no external product runtime repository, deployment, database, or
+credential mutation is included.
+Files changed: all current non-ignored files in the Autopilot repository,
+including root/project meshes, MCP routing, typed governance, Product & Design
+OS, prompt library, GitHub templates/workflows, Codex hooks, documentation,
+command-center UI, and tests.
+Architecture impact: release `v0.2.0` establishes the expanded Autopilot
+control plane with capability routing, project meshes, Product & Design OS,
+prompt governance, local-worker/token policies, protective supervision,
+observability boundaries, GitHub control surfaces, and report-first Codex
+hooks. It remains a control plane rather than a product runtime.
+Decisions:
+
+- Use semantic minor version `0.2.0` because the release adds multiple
+  backward-compatible governance and tooling capabilities.
+- Publish through `codex/autopilot-v0.2.0`, reviewed PR, successful GitHub CI,
+  merge to `main`, annotated tag `v0.2.0`, and GitHub release.
+- Exclude ignored local runtime evidence such as `.codex/state/`, build output,
+  test output, local databases, environment files, and credentials.
+- Preserve external product repositories as separate sources of truth.
+Verification:
+
+- High-confidence secret scan passed with no credential literals found.
+- `npm.cmd ci --ignore-scripts` completed from the committed lockfile shape.
+- `npm.cmd audit --audit-level=high` passed with 0 vulnerabilities.
+- `npm.cmd run verify` passed for `v0.2.0`: mesh check, 64-file Product
+  & Design OS validation, typecheck, 26 Vitest files with 115 tests, Astro
+  static build, and 3 Playwright Chromium tests.
+- `git diff --check` passed.
+- GitHub authentication and `SirRadek/autopilot` remote access were verified.
+- Release commit `f493d7c` was pushed to `codex/autopilot-v0.2.0`.
+- Draft PR `https://github.com/SirRadek/autopilot/pull/2` was opened against
+  `main`.
+- GitHub Actions run `https://github.com/SirRadek/autopilot/actions/runs/27097229986`
+  passed the complete verify job in 1m22s.
+- Final evidence-commit CI, merge, tag, release, and post-merge checks remain
+  pending.
+Risks:
+
+- The release is a large accumulated control-plane change and therefore relies
+  on full automated verification and PR audit rather than direct push to main.
+- The repository is private and GitHub branch protection is unavailable on the
+  current plan; the branch/PR/CI sequence is therefore enforced procedurally.
+Follow-up: after merge, verify `main`, tag `v0.2.0`, release notes, and clean
+local tracking state.
+
+## 2026-06-06 Codex Hooks Report-First Guardrail
+
+Date: 2026-06-06
+Request or trigger: owner asked to use Codex lifecycle hooks inside Autopilot.
+Mode: WRITE_ALLOWED for project-local Codex hook configuration, deterministic
+handler, redacted local state rules, tests, Decision Mesh, architecture, and
+work-log records. No remote mutation, deployment, cloud model, connector, or
+supervised-project runtime change was authorized.
+Scope: add a phase-1 report-first hook layer for startup, prompt, tool,
+compaction, subagent, and completion events without creating another runtime
+queue or approval authority.
+Files changed:
+
+- `.codex/hooks.json`
+- `.codex/hooks/autopilot-hook.mjs`
+- `.gitignore`
+- `AGENTS.md`
+- `docs/autopilot/codex-hooks-operating-model.md`
+- `mesh/`
+- `docs/projects/autopilot-control-plane/decision-mesh/`
+- `docs/projects/autopilot-control-plane/architecture.md`
+- `docs/projects/autopilot-control-plane/work-log.md`
+- `tests/codex-hooks.test.ts`
+- `tests/decision-mesh/query.test.ts`
+- `tests/autopilot-delivery-system.spec.ts`
+
+Architecture impact: Autopilot now has a project-local deterministic Codex
+lifecycle layer. Hooks feed redacted event evidence and compact continuity into
+Protective Supervision and control-plane observability, but Decision Mesh,
+architecture records, work logs, tests, and explicit owner decisions remain
+authoritative.
+Decisions:
+
+- Keep phase 1 report-only; no automatic allow, deny, rewrite, push, deploy,
+  merge, cloud-model call, or remote mutation.
+- Store only hashed identifiers, event names, tool names, risk classes, result
+  classes, and input fingerprints.
+- Ignore `.codex/state/` and prohibit raw prompts, commands, tool responses,
+  transcripts, credentials, customer data, and project runtime logs.
+- Require exact hook trust review and refreshed-session lifecycle evidence
+  before claiming active Codex App or CLI runtime loading.
+- Require owner approval, focused deny tests, false-positive review, and
+  rollback before adding blocking rules.
+Verification:
+
+- Windows `commandWindows` smoke test passed and returned valid `SessionStart`
+  JSON through the checked-in PowerShell command.
+- `npm.cmd test -- codex-hooks decision-mesh/query` passed: 2 files, 22 tests.
+- `npm.cmd run mesh:check` passed with 27 nodes and 55 links.
+- `npm.cmd run pdos:validate` passed: 64 checked files, 0 errors, 0 warnings.
+- `npm.cmd run typecheck` passed.
+- Full `npm.cmd test` passed: 26 files, 115 tests.
+- `npm.cmd run build` passed.
+- `npm.cmd run test:e2e` passed: 3 Chromium tests.
+- `git diff --check` passed after the final work-log update.
+Risks:
+
+- `PreToolUse` does not intercept every possible action path and is not a
+  complete security boundary.
+- Hook commands are skipped until the exact project-local definitions are
+  trusted.
+- The active Codex App host has not yet produced runtime hook evidence.
+Follow-up: refresh or restart Codex, review/trust hooks, start a new session,
+and confirm `.codex/state/events.jsonl` receives a `SessionStart` entry.
+
+## 2026-06-05 Gemini Advisory Packet Tightening
+
+Date: 2026-06-05
+Request or trigger: user asked how Gemini brainstorming is configured, whether it receives the right data, and what prompts/files are used after a RadeQ attempt produced unusable workspace/process-focused output.
+Mode: WRITE_ALLOWED for prompt-library contracts, Gemini advisory rules, RadeQ work-log note, and governance records only. No RadeQ product code, GitHub remote, deployment, or Codex App runtime claim was changed.
+Scope: audit and tighten Gemini brainstorming inputs so advisory calls receive compact redacted product packets rather than broad Autopilot workspace/governance context.
+Files changed:
+
+- `prompt-library/02-gemini/input-packet-template.md`
+- `prompt-library/02-gemini/radeq-design-brainstorming.md`
+- `prompt-library/02-gemini/brainstorming.md`
+- `prompt-library/README.md`
+- `GEMINI.md`
+- `docs/projects/radeq/work-log.md`
+- `docs/projects/autopilot-control-plane/work-log.md`
+
+Architecture impact: Gemini remains an advisory-only, free/no-cost, redacted critique/brainstorming lane. The prompt-library now includes a generic Gemini input-packet template and a RadeQ-specific design brainstorming packet that explicitly tells Gemini to focus on the product/design question and not review Autopilot internals, Codex runtime, local workspace structure, CI/process governance, or unrelated repositories.
+Decisions:
+
+- Keep Gemini output non-authoritative and verification-gated.
+- Do not pass raw agent output, full workspace dumps, absolute local paths, private repo details, or broad governance context to Gemini.
+- For RadeQ design brainstorming, send the sanitized product baseline: PR 2 / commit `a649c4a`, A `Guided Offer Map`, B `Cat Concierge`, C `Studio Proof`, D `Demo Worlds`, target user, critical action, design/SEO tradeoff, constraints, and required output shape.
+- Discard Gemini output when it focuses on workspace/process context instead of the product packet.
+
+Verification:
+
+- `npm.cmd test -- prompt-library-policy prompt-pack-policy` passed: 2 files, 9 tests.
+- `npm.cmd run pdos:validate` passed: 64 checked files, 0 errors, 0 warnings.
+- `git diff --check` passed for `GEMINI.md`, `prompt-library`, and the RadeQ work-log change.
+
+## 2026-06-05 Design SEO Tradeoff Profiles
+
+Date: 2026-06-05
+Request or trigger: user clarified that some sites can be intentionally design-led even at the cost of perfect SEO, and that the correct balance depends on the project's focus.
+Mode: WRITE_ALLOWED for Product & Design OS rules, recipes, design-intelligence documentation, and work-log records only. No product runtime or remote service was changed.
+Scope: add a design/SEO tradeoff rule so Autopilot does not force every website into the same SEO maximum.
+Files changed:
+
+- `product-design-os/rules/design-seo-tradeoff.md`
+- `product-design-os/rules/theme-crossing.md`
+- `product-design-os/rules/strict-process.md`
+- `product-design-os/recipes/creative-motion.json`
+- `product-design-os/recipes/marketing-premium.json`
+- `product-design-os/README.md`
+- `product-design-os/scripts/validate-product-design-os.ts`
+- `docs/autopilot/design-intelligence-operating-model.md`
+- `docs/projects/autopilot-control-plane/work-log.md`
+
+Architecture impact: Product & Design OS now distinguishes `seo_led`, `balanced`, `brand_led`, and `experimental_showcase` profiles. Public pages still require an SEO/accessibility floor, but brand-led and experimental pages may intentionally relax exhaustive keyword coverage, dense internal linking, schema beyond basics, perfect Lighthouse scores, and conservative layouts when the tradeoff is recorded.
+Verification:
+
+- `npm.cmd run pdos:validate` passed: 64 checked files, 0 errors, 0 warnings.
+- JSON parse check passed for `creative-motion.json` and `marketing-premium.json`.
+- `git diff --check` passed for the touched Product & Design OS and design-intelligence files.
+
+## 2026-06-05 Product Design Library And Clean-Room Source Governance
+
+Date: 2026-06-05
+Request or trigger: user asked to turn themes, assets, links, examples, and project references into a reusable library, keep everything free and commercially usable, and support inspiration through OCR, web checks, screenshots, and HTML analysis while building original work.
+Mode: WRITE_ALLOWED for Product & Design OS library records, source/license rules, clean-room reference workflow, project-index generator, documentation, architecture, and work-log records. No remote mutation, paid tool, connector sync, or product runtime change was performed.
+Scope: add a local library layer for commercial-safe source pools, inspiration-only references, clean-room reference analysis, generated project indexing, and source/provenance gates.
+Files changed:
+
+- `product-design-os/library/`
+- `product-design-os/rules/source-and-license-gates.md`
+- `product-design-os/rules/clean-room-reference-workflow.md`
+- `product-design-os/scripts/update-project-library.ts`
+- `product-design-os/scripts/validate-product-design-os.ts`
+- `product-design-os/assets/asset.schema.json`
+- `product-design-os/README.md`
+- `product-design-os/rules/strict-process.md`
+- `product-design-os/rules/anti-ai-slop.md`
+- `docs/autopilot/design-intelligence-operating-model.md`
+- `docs/autopilot/graphic-agent-operating-model.md`
+- `docs/projects/autopilot-control-plane/architecture.md`
+- `docs/projects/autopilot-control-plane/work-log.md`
+- `package.json`
+
+Architecture impact: Product & Design OS now has a local design library that separates commercial-safe source pools from inspiration-only references. External assets require source, license, commercial-use, cost, provenance, fallback, performance, and QA evidence before adoption. Reference screenshots, OCR, DOM/CSS inspection, and HTML captures are allowed only as analysis evidence and must be normalized into a clean-room brief before implementation. Project records can now be indexed locally from `docs/projects/*` with `npm run pdos:library:projects`.
+Decisions:
+
+- Treat broad web references as `inspiration_only` unless their asset/code license is explicitly recorded.
+- Prefer CC0, MIT, ISC, BSD, Apache-2.0, and SIL OFL for commercial-safe reuse.
+- Block NC, ND, personal-use-only, editorial-only, paid-credit-required, unknown-license, ripped, leaked, or provenance-risk sources from adoption.
+- Keep raw HTML/CSS/screenshots as evidence, not implementation input.
+- Store project indexing locally from architecture/work-log/project-mesh records rather than remote connector state.
+
+External source evidence checked on 2026-06-05:
+
+- Open Doodles source page for free commercial/personal use and CC0-style terms.
+- Open Peeps source page for CC0 commercial/personal use.
+- Kenney per-pack page showing Creative Commons CC0 on checked packs.
+- Quaternius itch asset page showing CC0 commercial/personal/educational use on the checked pack.
+- Poly Haven license page for CC0 assets and commercial-use permission.
+- ambientCG license page for CC0 assets and commercial-use permission.
+- Lucide license page for ISC/MIT-derived icon licensing.
+- Heroicons GitHub license page for MIT.
+- SIL Open Font License site for OFL font usage guidance.
+
+Verification:
+
+- `npm.cmd run pdos:library:projects` generated `product-design-os/library/project-index.json` with three known project records.
+- `npm.cmd run pdos:validate` passed: 63 checked files, 0 errors, 0 warnings.
+- `npm.cmd run typecheck` passed.
+
+Risks:
+
+- The project index is a local deterministic generator, not a live GitHub/connector sync.
+- License checks are source-level records; each concrete adopted file still needs exact URL/path evidence before use.
+- Reference comparison and OCR remain partly manual/phase-later beyond the existing local Design Reader capture.
+
+## 2026-05-30 Observability Ownership Boundary
+
+Date: 2026-05-30
+Request or trigger: user emphasized that Autopilot problems and supervised project problems must stay separated when adding logs, observability, and bottleneck localization.
+Mode: WRITE_ALLOWED for typed capability routing, root mesh, project meshes, tests, architecture, and work-log records.
+Scope: add an Observability Mesh capability and project-specific diagnostics boundaries. This change does not add a log collector, remote runtime, connector mutation, dashboard, or raw log storage.
+Files changed:
+
+- `src/data/delivery-system/capabilities.ts`
+- `tests/delivery-system/capability-policy.test.ts`
+- `tests/decision-mesh/query.test.ts`
+- `mesh/`
+- `docs/projects/autopilot-control-plane/decision-mesh/`
+- `docs/projects/radeq/decision-mesh/`
+- `docs/projects/multi-agent-autonomous-delivery-system/decision-mesh/`
+- `docs/autopilot/delivery-system-connector-snapshots.md`
+- `docs/projects/autopilot-control-plane/architecture.md`
+- `docs/projects/autopilot-control-plane/work-log.md`
+
+Architecture impact: Autopilot now has a first-class observability/diagnostics routing layer. Diagnostic tasks must classify ownership as `autopilot control-plane` or `project runtime` before reading logs. Autopilot may retain redacted summaries and source pointers; raw project logs remain project-owned.
+Decisions:
+
+- Add `observability_mesh` to the root operational mesh for routing, evidence requirements, and stop conditions.
+- Add `control_plane_observability_boundary` to the Autopilot control-plane project mesh.
+- Add `runtime_observability_boundary` to the Radeq project mesh.
+- Add `delivery_observability_boundary` to the multi-agent delivery-system project mesh.
+- Stop on ambiguous ownership, raw project logs copied into Autopilot, missing log window, missing baseline, missing reproduction path, raw logs containing secrets, or production mutation without approval.
+
+Verification:
+
+- Targeted tests passed: 2 files, 18 tests for capability routing and Decision Mesh query behavior.
+- MCP smoke test confirmed generic diagnostics activate `observability_mesh` and Radeq diagnostics route to `runtime_observability_boundary` through `build_project_mesh_packet`.
+- `npm.cmd run verify` passed: mesh check, typecheck, 16 Vitest files with 66 tests, Astro build, and 3 Playwright tests.
+- `git diff --check` passed cleanly after final whitespace normalization.
+
+Project mesh impact: root mesh now routes observability diagnostics; each supervised project mesh owns its own diagnostic boundary.
+
+## 2026-05-30 Context7 Reasoning And Gemini Brainstorm Verification
+
+Date: 2026-05-30
+Request or trigger: user asked to connect Context7 into the mesh for reasoning work and Gemini brainstorming.
+Mode: WRITE_ALLOWED for typed governance policy, root mesh, project mesh, tests, documentation, architecture, and work-log records.
+Scope: add Context7 as the preferred docs-verification lane for reasoning, technology research, design critique, architecture-library review, and Gemini/free-cloud brainstorming claims. The change does not install Context7, call a paid provider, approve external model output, or make Context7 a source of truth.
+Files changed:
+
+- `src/data/delivery-system/modelPolicy.ts`
+- `src/data/delivery-system/modelSpend.ts`
+- `src/data/delivery-system/designIntelligence.ts`
+- `tests/delivery-system/model-policy.test.ts`
+- `tests/delivery-system/design-intelligence-policy.test.ts`
+- `mesh/`
+- `docs/projects/autopilot-control-plane/decision-mesh/`
+- `docs/autopilot/delivery-system-model-policy.md`
+- `docs/autopilot/design-intelligence-operating-model.md`
+- `docs/projects/autopilot-control-plane/architecture.md`
+- `docs/projects/autopilot-control-plane/work-log.md`
+- `AGENTS.md`
+- `GEMINI.md`
+
+Architecture impact: Autopilot now treats Context7 as the first verification lane for current framework, library, SDK, API, browser, cloud, SEO, accessibility, and best-practice claims during strategic reasoning and Gemini brainstorming. If Context7 is unavailable, official documentation or another primary source must be recorded as fallback.
+Decisions:
+
+- Gemini remains advisory-only and can brainstorm, critique, and find risks, but implementation claims stay hypotheses until verified.
+- Context7 is preferred when connected; official docs, local files, tests, and controlled browser evidence remain fallback evidence.
+- Stop on `technology_claim_without_context7_or_official_docs`, `gemini_claim_adopted_without_verification`, or `gemini_claim_adopted_without_context7_or_official_docs`.
+- Do not make Context7 a runtime dependency or approval authority.
+
+Verification:
+
+- Targeted policy tests passed: 2 files, 12 tests for model policy and design intelligence.
+- MCP smoke test confirmed Gemini/best-practice brainstorming now returns `docsVerificationProviders` with `context7_when_available`, `official_docs_fallback`, local files, tests, and controlled browser evidence.
+- `npm.cmd run verify` passed: mesh check, typecheck, 16 Vitest files with 63 tests, Astro build, and 3 Playwright tests.
+
+Project mesh impact: updated `model_reasoning_boundary`, `design_intelligence_boundary`, and project rules to require Context7/official-docs verification for advisory technology claims.
+
+## 2026-05-30 Caveman Token Efficiency Policy
+
+Date: 2026-05-30
+Request or trigger: user asked for Caveman settings and more efficient token usage.
+Mode: WRITE_ALLOWED for typed governance policy, read-only MCP routing, project mesh, tests, documentation, and architecture/work-log records.
+Scope: add a token-efficiency/Caveman routing layer that minimizes context before model spend. The change does not add execution authority, model runtime, paid provider usage, or autonomous operation.
+Files changed:
+
+- `src/data/delivery-system/tokenEfficiency.ts`
+- `src/data/delivery-system/contextEconomy.ts`
+- `mcp/server.ts`
+- `tests/delivery-system/token-efficiency-policy.test.ts`
+- `tests/delivery-system/context-economy-policy.test.ts`
+- `docs/autopilot/token-efficiency-operating-model.md`
+- `docs/autopilot/delivery-system-model-policy.md`
+- `docs/autopilot/v3-prompt-pack.md`
+- `docs/projects/autopilot-control-plane/decision-mesh/`
+- `docs/autopilot/project-architecture-registry.md`
+- `docs/projects/autopilot-control-plane/architecture.md`
+- `docs/projects/autopilot-control-plane/work-log.md`
+- `AGENTS.md`
+
+Architecture impact: Autopilot now has a Caveman/compact profile selector before larger context or stronger models are used. Caveman Mode handles narrow work with one task, must-read files only, `rg` first, deterministic tools first, local/no-cost worker before cloud reasoning, and stop-rather-than-guess behavior.
+Decisions:
+
+- Caveman Mode is not a quality downgrade; it is a strict context and scope budget.
+- Use Caveman Mode for known-file fixes, small patches, test failure triage, simple explanations, and routine local work.
+- Route architecture, security, governance, payment, and auth review to compact review mode rather than Caveman.
+- Route current-docs/library/GitHub research to compact research mode with primary-source and cost/license checks.
+- Expose `select_token_efficiency_route` as a read-only MCP recommendation tool.
+
+Verification:
+
+- Targeted tests passed: 4 files, 17 tests for token-efficiency, context economy, local worker routing, and model policy.
+- MCP smoke test confirmed `select_token_efficiency_route` returns Caveman for tiny small-patch work, review compact for architecture/security, and research compact for current GitHub/library research.
+- `npm.cmd run verify` passed: mesh check, typecheck, 16 Vitest files with 62 tests, Astro build, and 3 Playwright tests.
+
+Project mesh impact: added `token_efficiency_boundary` to the Autopilot control-plane project mesh and connected it to local-worker, model-reasoning, and read-only MCP boundaries.
+
+## 2026-05-30 Local Worker Routing Policy
+
+Date: 2026-05-30
+Request or trigger: user asked to use the mesh plus LLM/ML and local workers such as Qwen2.5-Coder 14B maximum to save paid tokens, but route them intelligently.
+Mode: WRITE_ALLOWED for typed governance policy, read-only MCP routing, project mesh, tests, documentation, architecture/work-log records, and local hardware/runtime inspection.
+Scope: add a Local Worker Operating Model and typed local worker router for deterministic tools, Qwen2.5-Coder 7B, Qwen2.5-Coder 14B, local summarization, and local verification. The change does not download new models, start autonomous execution, add a mutating MCP tool, or approve local model output as final evidence.
+Files changed:
+
+- `src/data/delivery-system/localWorkers.ts`
+- `mcp/server.ts`
+- `tests/delivery-system/local-worker-policy.test.ts`
+- `docs/autopilot/local-worker-operating-model.md`
+- `docs/autopilot/delivery-system-model-policy.md`
+- `docs/projects/autopilot-control-plane/decision-mesh/`
+- `docs/autopilot/project-architecture-registry.md`
+- `docs/projects/autopilot-control-plane/architecture.md`
+- `docs/projects/autopilot-control-plane/work-log.md`
+- `AGENTS.md`
+
+Local inspection evidence:
+
+- Machine: HP Victus 16-r1xxx.
+- CPU: Intel Core i7-14700HX, 20 cores / 28 threads.
+- RAM: 32 GB.
+- GPU: NVIDIA GeForce RTX 4070 Laptop GPU with 8 GB VRAM reported by `nvidia-smi`.
+- Runtime: Ollama, Node.js, Python, and NVIDIA driver tools are present.
+- Installed Ollama models: `qwen2.5-coder:7b`, `qwen2.5-coder:7b-autopilot`.
+- Disk free on `C:`: approximately 165 GB.
+
+Architecture impact: Autopilot now has a general local-worker routing layer. Deterministic tools are preferred first for search and verification. `qwen2.5-coder:7b` is the fast available local coding worker. `qwen2.5-coder:14b` is the maximum local coding worker target for this PC, but remains an install candidate until the model is pulled and hardware responsiveness is verified.
+Decisions:
+
+- Use local/no-cost workers to save paid tokens before considering cloud or frontier reasoning.
+- Use Qwen2.5-Coder 7B for small file-local patch drafts, test drafts, bug summaries, and summaries.
+- Use Qwen2.5-Coder 14B only for bounded multi-file repair/refactor drafts or harder local coding tasks after install and hardware checks.
+- Keep architecture, security, business, and delivery approval outside local worker authority.
+- Expose `select_local_worker_route` as a read-only MCP recommendation tool.
+
+External research evidence checked on 2026-05-30:
+
+- Hugging Face records `Qwen2.5-Coder-14B-Instruct` as Apache-2.0, 14.7B parameters, and long-context capable.
+- Ollama's model library exposes `qwen2.5-coder:14b`, `7b`, `3b`, `1.5b`, and `0.5b`.
+- Qwen's Ollama documentation confirms Ollama runs Qwen models locally on Windows, macOS, and Linux.
+- Qwen3-Coder-Next is newer and Apache-2.0, but it is not adopted because local hardware/runtime fit is not verified.
+
+Verification:
+
+- Targeted policy tests passed: 3 files, 13 tests for local workers, model policy, and context/model spend behavior.
+- MCP smoke test confirmed `select_local_worker_route` routes small DTO tests to Qwen 7B plus deterministic checks, bounded refactor work to Qwen 14B with install/hardware gates, and security architecture review away from local-worker approval.
+- `npm.cmd run verify` passed: mesh check, typecheck, 15 Vitest files with 58 tests, Astro build, and 3 Playwright tests.
+
+Project mesh impact: added `local_worker_boundary` to the Autopilot control-plane project mesh and connected it to model reasoning, read-only MCP, and capability routing.
+
+## 2026-05-30 Free Cloud Reasoning Policy
+
+Date: 2026-05-30
+Request or trigger: user clarified that free/no-cost cloud tooling should apply beyond graphics, and that Gemini plus other relevant free models can support brainstorming, critique, and verified reasoning where useful.
+Mode: WRITE_ALLOWED for typed governance policy, read-only MCP routing, root and project mesh policy, tests, and documentation.
+Scope: generalize model routing so Gemini and other free/no-cost cloud models may act as advisory reasoning support across agents. The change does not approve paid credits, provider dependency, unredacted external disclosure, routine cloud worker loops, or model output as source of truth.
+Files changed:
+
+- `src/data/delivery-system/modelPolicy.ts`
+- `src/data/delivery-system/modelSpend.ts`
+- `mcp/server.ts`
+- `tests/delivery-system/model-policy.test.ts`
+- `tests/delivery-system/context-economy-policy.test.ts`
+- `mesh/`
+- `docs/projects/autopilot-control-plane/decision-mesh/`
+- `docs/projects/multi-agent-autonomous-delivery-system/decision-mesh/`
+- `docs/autopilot/delivery-system-model-policy.md`
+- `docs/autopilot/project-architecture-registry.md`
+- `docs/projects/autopilot-control-plane/architecture.md`
+- `docs/projects/autopilot-control-plane/work-log.md`
+- `AGENTS.md`
+- `GEMINI.md`
+
+Architecture impact: Autopilot now has a general free-cloud reasoning boundary. Local workers remain the default execution path. Free/no-cost cloud models can be used for redacted brainstorming, critique, planning review, architecture/security second opinions, agent validation, edge-case review, and research synthesis when provider availability, no-cost use, redaction, and factual verification are confirmed.
+Decisions:
+
+- Keep model selection provider-neutral; do not make Gemini, OpenAI, Claude, Qwen, DeepSeek, or any other provider mandatory.
+- Treat Gemini CLI as available advisory tooling, not approval authority or execution worker.
+- Allow other free/no-cost cloud reasoning models when they pass the same checks and add measurable review value.
+- Block paid credits, unknown pricing, account upgrades, unredacted private context, routine cloud worker loops, and model output as source-of-truth evidence.
+- Expose `select_reasoning_model_route` as a read-only MCP recommendation tool.
+
+Verification:
+
+- Regenerated root Decision Mesh artifact with `npm.cmd run mesh:generate`.
+- Targeted tests passed: 3 files, 18 tests for model policy, context/model spend, and Decision Mesh query behavior.
+- MCP smoke test confirmed `select_reasoning_model_route` returns free-cloud advisory routing for Gemini brainstorming and local routing for a boilerplate DTO automation loop.
+- `npm.cmd run verify` passed: mesh check, typecheck, 14 Vitest files with 53 tests, Astro build, and 3 Playwright tests.
+
+Project mesh impact: added `model_reasoning_boundary` to the Autopilot control-plane project mesh and updated the multi-agent model routing boundary to reflect free-cloud advisory use.
+
+## 2026-05-30 Free Cloud, No Paid Policy Update
+
+Date: 2026-05-30
+Request or trigger: user clarified the governance boundary: paid services are not allowed, but cloud services are allowed.
+Mode: WRITE_ALLOWED for typed governance policy, project mesh, tests, and documentation.
+Scope: update Graphic Production Agent and Design Intelligence routing so cloud tools are not blocked solely because they are cloud-based. The new boundary is free/no-cost confirmation, license and usage-rights review, runtime-scope review, and paid-tool blocking.
+Files changed:
+
+- `src/data/delivery-system/graphicAgent.ts`
+- `src/data/delivery-system/designIntelligence.ts`
+- `tests/delivery-system/graphic-agent-policy.test.ts`
+- `tests/delivery-system/design-intelligence-policy.test.ts`
+- `docs/autopilot/graphic-agent-operating-model.md`
+- `docs/autopilot/design-intelligence-operating-model.md`
+- `docs/projects/autopilot-control-plane/decision-mesh/`
+- `docs/projects/autopilot-control-plane/architecture.md`
+- `docs/projects/autopilot-control-plane/work-log.md`
+
+Architecture impact: Autopilot now distinguishes free cloud tools from paid/cost-bearing tools. Free cloud tools may be considered when the no-cost path is confirmed. Paid tools, paid credits, unknown pricing, or cost-bearing gateways remain stop conditions unless the owner later creates an explicit exception.
+Decisions:
+
+- Allow cloud tools and research providers when they are free/no-cost and their account, data-disclosure, license, and runtime boundaries are understood.
+- Keep local/free tools as the default production lane.
+- Replace the broad `paid_or_cloud_*` stop condition with separate cloud-free-tier and paid-tool stop conditions.
+- Keep runtime adoption advisory-only until architecture scope, dependency, rollback, and verification are approved.
+
+Verification:
+
+- Targeted policy tests passed: 2 files, 11 tests.
+- MCP smoke test confirmed `select_graphic_route` and `search_architecture_library` return free-cloud checks and paid-tool stop conditions.
+- `npm.cmd run verify` passed: mesh check, typecheck, 14 Vitest files with 51 tests, Astro build, and 3 Playwright tests.
+
+Project mesh impact: updated `graphic_agent_boundary`, `design_intelligence_boundary`, and related rules to reflect free-cloud allowance and paid-tool blocking.
+
+## 2026-05-30 Design Intelligence And Architecture Library
+
+Date: 2026-05-30
+Request or trigger: user corrected the next step: define a Design Critic and Visual Analyst, use Context7 and recommended current technologies, search free GitHub projects that may help, and start building Autopilot's own LLM/ML architecture library.
+Mode: WRITE_ALLOWED for typed governance policy, read-only MCP routing, tests, documentation, project mesh, and architecture/work-log records.
+Scope: add Design Intelligence roles and policy for visual analysis, critique, research provider routing, and an initial LLM/ML architecture library. The change does not approve runtime adoption, dependency installation, paid tools, cloud execution, connector mutation, or a parallel system.
+Files changed:
+
+- `src/data/delivery-system/designIntelligence.ts`
+- `src/data/delivery-system/roles.ts`
+- `mcp/server.ts`
+- `tests/delivery-system/design-intelligence-policy.test.ts`
+- `docs/autopilot/design-intelligence-operating-model.md`
+- `docs/projects/autopilot-control-plane/decision-mesh/`
+- `docs/autopilot/project-architecture-registry.md`
+- `docs/projects/autopilot-control-plane/architecture.md`
+- `docs/projects/autopilot-control-plane/work-log.md`
+
+Architecture impact: Autopilot now has a governed Design Intelligence layer. `Visual Analyst` handles pre-production visual strategy and acceptance criteria; `Design Critic` handles post-production critique and evidence-based rework. The local architecture library starts with current GitHub candidates for agent orchestration, TypeScript AI runtime, local AI UI, evals, and observability.
+Decisions:
+
+- Keep design critique independent from visual production.
+- Treat Context7 as the preferred current-docs provider when connected; since it is unavailable in this session, use official docs, GitHub repository data, Hugging Face docs, and local architecture records as fallback.
+- Keep GitHub project discovery advisory only; library entries do not approve adoption.
+- Track license, activity, use case, adoption status, and risk before any dependency can move from `watch` or `candidate` to implementation.
+- Expose `select_design_review_route` and `search_architecture_library` as read-only MCP tools.
+
+Initial GitHub candidates checked on 2026-05-30:
+
+- `langchain-ai/langgraph`
+- `mastra-ai/mastra`
+- `crewAIInc/crewAI`
+- `vercel/ai`
+- `open-webui/open-webui`
+- `promptfoo/promptfoo`
+- `Arize-ai/phoenix`
+- `Arize-ai/openinference`
+
+Verification:
+
+- Added policy tests for role registration, Context7 fallback, critique rubric coverage, design route selection, architecture library candidates, and library search stop conditions.
+
+Risks:
+
+- Some GitHub repositories report `NOASSERTION` through the GitHub API and require manual license-file review before adoption.
+- Context7 is not connected in this session; research policy records the fallback requirement rather than pretending the provider is available.
+- Runtime adoption remains blocked until an explicit architecture decision approves scope, dependency, cost, and rollback.
+
+Project mesh impact: added `design_intelligence_boundary` to the Autopilot control-plane project mesh with independent critique, current docs, GitHub license/activity review, and architecture-library status gates.
+
+## 2026-05-29 Graphic Production Agent Policy
+
+Date: 2026-05-29
+Request or trigger: user clarified that the goal is not to add 3D to the Astro page, but to configure a graphical agent inside Autopilot and define how graphics should be created.
+Mode: WRITE_ALLOWED for typed governance policy, tests, documentation, project mesh, and architecture/work-log records.
+Scope: add a governed Graphic Production Agent role and policy for routing static graphics, motion backgrounds, physics visuals, moving models, and video storyboards. The change does not add a product runtime, mutating MCP tool, connector client, deployment path, or paid/cloud default.
+Files changed:
+
+- `src/data/delivery-system/graphicAgent.ts`
+- `src/data/delivery-system/roles.ts`
+- `mcp/server.ts`
+- `tests/delivery-system/graphic-agent-policy.test.ts`
+- `docs/autopilot/graphic-agent-operating-model.md`
+- `docs/projects/autopilot-control-plane/decision-mesh/`
+- `docs/projects/autopilot-control-plane/architecture.md`
+- `docs/projects/autopilot-control-plane/work-log.md`
+
+Architecture impact: Autopilot now has an explicit visual-production governance contract and a local read-only MCP route selector. The Graphic Production Agent defaults to local/free tools such as HTML/CSS/SVG, Canvas 2D, Three.js, Rapier, Blender, and Playwright capture. Optional external tools such as Figma, Canva, HyperFrames, and Kling AI require owner decision, and Kling AI additionally requires cost and account approval.
+Decisions:
+
+- Treat graphical production as an Autopilot execution role, not a separate design runtime.
+- Keep DOM content first and motion second.
+- Route motion backgrounds to CSS/SVG or Canvas before WebGL.
+- Use Rapier only for real physics signals such as collisions, gravity, constraints, or rigid bodies.
+- Keep external paid/cloud tools behind explicit owner decision.
+- Expose `select_graphic_route` as a read-only MCP tool; it routes and reports checks only, and does not generate assets or mutate providers.
+
+Verification:
+
+- Added policy tests for role registration, local/free defaults, motion routing, physics routing, and paid/cloud stop conditions.
+
+Risks:
+
+- Tool availability such as Blender or HyperFrames must be verified before a production task depends on them.
+- Visual direction remains a stop condition; the agent cannot infer brand intent from tooling alone.
+
+Project mesh impact: added `graphic_agent_boundary` to the Autopilot control-plane project mesh with local/free default, content-outside-canvas, mobile fallback, reduced-motion, and owner-cost-decision gates.
+
+## 2026-05-29 Project Delivery Workflow Visualization
+
+Date: 2026-05-29
+Request or trigger: user requested the missing workflow view showing how work moves from proposal to completed project, which agents participate, who they communicate with, and in what order.
+Mode: WRITE_ALLOWED for the static command-center UI, smoke test, and architecture/work-log records.
+Scope: add a read-only workflow section to `/autopilot` that shows owner intake, mesh routing, architecture contract, task dispatch, implementation, verification, review/governance, and delivery/memory closeout. No execution runtime, connector mutation, queue mutation, or approval authority was added.
+Files changed:
+
+- `src/pages/autopilot.astro`
+- `tests/autopilot-delivery-system.spec.ts`
+- `docs/projects/autopilot-control-plane/architecture.md`
+- `docs/projects/autopilot-control-plane/work-log.md`
+
+Architecture impact: the command center now exposes the project delivery path alongside the Decision Mesh graph. The new view clarifies agent roles, communication order, mesh checkpoints, outputs, gates, and concurrency boundaries while preserving Autopilot as the workflow authority and GitHub as a visibility/audit mirror.
+Decisions:
+
+- Keep the workflow deterministic and static on the command-center page.
+- Model the delivery path as eight ordered phases from owner intent to delivery memory.
+- Show Qwen as a bounded worker lane only, with separate verification and review lanes.
+- Keep Decision Mesh as context routing and stop-condition evidence, not approval authority.
+
+Verification:
+
+- `npm run verify` passed: mesh check, typecheck, 12 Vitest files with 40 tests, Astro build, and 3 Playwright tests.
+- Playwright visual checks captured desktop and mobile workflow sections.
+- Computed style checks confirmed the workflow cards, phase markers, and agent chain are styled after the Astro stylesheet scope fix.
+- Mobile page check reported no horizontal overflow.
+
+Risks:
+
+- The workflow is explanatory and read-only; live workflow state still requires a future execution/queue decision before mutation is allowed.
+
+Project mesh impact: no semantic mesh change. This slice visualizes the Autopilot delivery process and records the control-plane impact.
+
+## 2026-05-29 Read-Only Decision Mesh Graph
+
+Date: 2026-05-29
+Request or trigger: user requested a graphical display of the Decision Mesh.
+Mode: WRITE_ALLOWED for the static command-center UI, smoke test, and architecture/work-log records.
+Scope: render the existing generated Decision Mesh graph in the read-only `/autopilot` page without changing mesh authority, execution behavior, or connector mutation.
+Files changed:
+
+- `src/pages/autopilot.astro`
+- `tests/autopilot-delivery-system.spec.ts`
+- `docs/projects/autopilot-control-plane/architecture.md`
+- `docs/projects/autopilot-control-plane/work-log.md`
+
+Architecture impact: the command center now includes a deterministic 2D SVG visualization of `mesh/generated/decision-mesh.json`. The root `mesh/` remains the source of truth, the generated JSON remains derived, and the visualization is read-only.
+Decisions:
+
+- Use the existing Decision Mesh loader and graph builder instead of adding a new graph runtime or separate source of truth.
+- Keep the graph static and readable on the command-center page.
+- Show node type counts and strongest links alongside the graph so the visual map has a compact textual fallback.
+
+Verification:
+
+- `npm run verify` passed: mesh check, typecheck, 12 Vitest files with 40 tests, Astro build, and 3 Playwright tests.
+- Playwright screenshot checks captured desktop and mobile graph sections.
+- Mobile page check reported no horizontal overflow.
+
+Risks:
+
+- Dense node labels are compact on narrow mobile viewports; the adjacent legend and strongest-link list provide the readable fallback.
+
+Project mesh impact: no semantic mesh change. This slice visualizes the existing Autopilot operational mesh only.
+
 ## 2026-05-24 Mesh Audit Implementation
 
 Date: 2026-05-24
@@ -450,3 +1078,810 @@ Risks:
 
 - The UI has no live connector data yet by design.
 - Read-only scope must be preserved before any future dashboard expansion.
+
+## 2026-05-31 Product & Design OS Foundation
+
+Date: 2026-05-31
+Request or trigger: user asked to restart the Radeq design workflow from stricter product/design operating-system rules and provided a Product & Design OS integration prompt.
+Mode: WRITE_ALLOWED for Autopilot governance/templates only.
+Scope: add a phase-1 Product & Design OS foundation without redesigning current UI, adding runtime dependencies, or creating a parallel source of truth.
+Files changed:
+
+- `AGENTS.md`
+- `product-design-os/`
+- `docs/projects/autopilot-control-plane/architecture.md`
+- `docs/projects/autopilot-control-plane/work-log.md`
+
+Architecture impact: Autopilot now has a Product & Design OS governance/template layer for product classification, scope locking, strict opposition, recipe selection, taste memory, asset/pattern schemas, and QA planning. It extends the existing Decision Mesh and control-plane governance; it is not a runtime, connector client, execution engine, or duplicate mesh.
+Decisions:
+
+- Keep phase 1 as templates, rules, schemas, recipes, reports, and taste memory only.
+- Treat Context7 as preferred docs verification when connected; in this session no callable Context7 MCP server was available, so official docs and canonical GitHub sources were used as fallback.
+- Gemini CLI may be used as redacted advisory critique only when free/no-cost availability is confirmed; the advisory output from this slice had a domain-mismatch warning and was not treated as source-of-truth.
+- Reddit feedback is qualitative signal only, useful for anti-template heuristics but not source-of-truth evidence.
+
+Verification:
+
+- External docs checked: Context7 overview, Gemini CLI pricing/quota docs, Playwright visual comparison and accessibility docs.
+- GitHub connector checked canonical public repositories: USWDS, Carbon, Style Dictionary, and promptfoo.
+- Gemini CLI `0.44.1` was available and ran a redacted advisory prompt outside the repo after `--skip-trust`; output was reviewed with domain-mismatch caveat.
+- Product & Design OS JSON parse check passed for 21 JSON files.
+- `git diff --check` passed.
+- `npm.cmd run typecheck` passed.
+- `npm.cmd run mesh:check` passed.
+- `npm.cmd test` passed: 16 test files, 66 tests.
+
+Risks:
+
+- Product & Design OS now has an initial deterministic foundation validator, but Design Reader/OCR/visual QA automation is still a later phase.
+- Design Reader/OCR/visual QA automation is still a later phase.
+- Radeq still needs its own project-level Needs Report and Scope Contract before the next implementation attempt.
+
+## 2026-05-31 Process And Mesh Audit
+
+Date: 2026-05-31
+Request or trigger: user asked to thoroughly review the whole process and mesh separately, check errors, invalid links, Context7/best-practice usage, and run MCP if useful.
+Mode: WRITE_ALLOWED for clear governance/process fixes and audit report only.
+Scope: audit Product & Design OS, root mesh, Autopilot project mesh, MCP read-only boundary, links, Context7 fallback, Gemini advisory route, and dependency status. No runtime, connector mutation, product implementation, or dependency upgrade was added.
+Files changed:
+
+- `src/data/delivery-system/contextEconomy.ts`
+- `tests/delivery-system/context-economy-policy.test.ts`
+- `product-design-os/`
+- `docs/autopilot/delivery-system-execution-engine-options.md`
+- `docs/autopilot/project-architecture-registry.md`
+- `docs/autopilot/repository-separation-policy.md`
+- `docs/autopilot/v3-prompt-pack.md`
+- `docs/projects/autopilot-control-plane/architecture.md`
+- `docs/projects/autopilot-control-plane/work-log.md`
+- `docs/projects/multi-agent-autonomous-delivery-system/architecture.md`
+
+Architecture impact: Current control-plane governance now points to the active local workspace `C:\Programování\Codex`, session-reset wording no longer treats summaries as source of truth, and Product & Design OS explicitly enters the Decision Mesh/MCP plus Context7/official-docs verification path.
+Decisions:
+
+- Keep MCP read-only; smoke test used stdio and closed after inspection.
+- Keep Context7 as preferred when connected, but record official-docs fallback because no callable Context7 MCP server is configured locally.
+- Keep Gemini advisory-only; redacted audit output was reviewed but not used as source-of-truth evidence.
+- Do not update `astro` or `tsx` in this audit slice because only minor newer versions are available and `npm audit` reports zero vulnerabilities.
+
+Verification:
+
+- Decision Mesh MCP tools returned compact root and project packets.
+- Local MCP smoke test listed 13 read-only tools and returned an Autopilot project mesh packet.
+- Link audit checked active docs; localhost/example/logical schema IDs were skipped, private `SirRadek/autopilot` links are treated as private evidence, and two canonical docs links were fixed.
+- `npm.cmd audit --audit-level=moderate` reported zero vulnerabilities.
+- Product & Design OS JSON parse check passed for 21 JSON files.
+- `npm.cmd run verify` passed: mesh check, typecheck, 16 Vitest files with 66 tests, Astro build, and 3 Playwright tests.
+- `git diff --check` passed after newline/trailing-whitespace normalization.
+
+Risks:
+
+- Root mesh generic nodes still contain product-repository path hints that may not exist in the control-plane repo; project meshes remain the implementation authority.
+- Product & Design OS now has an initial deterministic foundation validator and intake/change-request router, but Design Reader automation and advanced scoring remain planned.
+
+## 2026-06-01 Product & Design OS Validator
+
+Date: 2026-06-01
+Request or trigger: continued Product & Design OS process/mesh hardening after audit identified missing deterministic validators.
+Mode: WRITE_ALLOWED for local governance tooling, tests, and architecture/work-log updates only.
+Scope: add an initial no-dependency Product & Design OS foundation validator, wire it into local verification, and keep the new tooling inside the Autopilot control-plane boundary. No runtime behavior, connector mutation, remote model dependency, or product implementation was added.
+Files changed:
+
+- `package.json`
+- `tsconfig.json`
+- `product-design-os/scripts/validate-product-design-os.ts`
+- `tests/delivery-system/product-design-os-validation.test.ts`
+- `tests/delivery-system/boundary.test.ts`
+- `tests/delivery-system/core-language-boundary.test.ts`
+- `product-design-os/README.md`
+- `product-design-os/reports/product-design-os-foundation-report.md`
+- `product-design-os/reports/process-mesh-audit-2026-05-31.md`
+- `docs/autopilot/project-architecture-registry.md`
+- `docs/projects/autopilot-control-plane/architecture.md`
+- `docs/projects/autopilot-control-plane/work-log.md`
+
+Architecture impact: Product & Design OS moved from templates-only foundation toward a deterministic governance check. The validator checks required files, JSON validity, scope headings, recipe/schema basics, manifest shape, taste-memory shape, and strict-process MCP terms. It remains local and read-only; it does not introduce product runtime code, connector clients, cloud models, or a parallel source of truth.
+Decisions:
+
+- Keep `pdos:validate` dependency-free and deterministic.
+- Add `pdos:validate` to `verify` so Product & Design OS drift is caught with normal local checks.
+- Extend boundary and core-language tests to include `product-design-os/scripts`.
+- Keep advanced Design Reader, OCR, visual QA, and asset scoring as later phases.
+
+Verification:
+
+- `npm.cmd run pdos:validate` passed: 39 checked files, 0 errors, 0 warnings.
+- `npm.cmd run verify` passed: mesh check, Product & Design OS validation, typecheck, 17 Vitest files with 68 tests, Astro build, and 3 Playwright tests.
+- `git diff --check` passed after newline/trailing-whitespace normalization.
+
+Risks:
+
+- The validator is intentionally a phase-1 foundation guard, not the final Product & Design OS automation layer.
+- Design Reader/OCR/visual QA, detailed asset scoring, and recipe-selection automation remain planned.
+
+## 2026-06-01 Product & Design OS Intake Router
+
+Date: 2026-06-01
+Request or trigger: user asked to continue slowly and use the sensible MCP/technology route after the Product & Design OS audit.
+Mode: WRITE_ALLOWED for bounded local governance tooling, tests, and architecture/work-log updates only.
+Scope: add a deterministic no-dependency Product & Design OS intake and change-request router. No runtime behavior, connector mutation, cloud model dependency, paid service, product implementation, or parallel source of truth was added.
+Files changed:
+
+- `package.json`
+- `product-design-os/scripts/route-product-design-os.ts`
+- `product-design-os/scripts/validate-product-design-os.ts`
+- `tests/delivery-system/product-design-os-router.test.ts`
+- `product-design-os/README.md`
+- `product-design-os/reports/product-design-os-foundation-report.md`
+- `product-design-os/reports/process-mesh-audit-2026-05-31.md`
+- `docs/autopilot/project-architecture-registry.md`
+- `docs/projects/autopilot-control-plane/architecture.md`
+- `docs/projects/autopilot-control-plane/work-log.md`
+
+Architecture impact: Product & Design OS now has a local routing layer for Gate 1 and change-request triage. The router classifies project intake, selects an approved recipe, estimates logic/design/motion/risk levels, lists required gates, and classifies change requests as clarification, scope expansion, direction change, backlog idea, or conflict with goal. It remains advisory and deterministic; owner decisions, project mesh records, and local tests remain source of truth.
+Decisions:
+
+- Use existing Decision Mesh MCP first; no Context7 MCP server was callable in this environment, and no current external technical claim was needed for this local TypeScript slice.
+- Do not use Gemini or other cloud models for this slice because `select_reasoning_model_route` recommended local worker defaults for routine bounded tooling.
+- Keep the router dependency-free and test-driven before attempting Design Reader/OCR or visual QA automation.
+
+Verification:
+
+- `npm.cmd run pdos:route -- --text "marketing website for leads with motion cursor interaction case studies and clear CTA"` passed and selected `marketing_web` with `creative-motion`.
+- `npm.cmd run pdos:route -- --change "add 3d avatar to checkout payment step"` passed and classified the request as `E` / `conflict_with_goal`.
+- `npm.cmd run pdos:validate` passed: 41 checked files, 0 errors, 0 warnings.
+- `npm.cmd run verify` passed: mesh check, Product & Design OS validation, typecheck, 18 Vitest files with 74 tests, Astro build, and 3 Playwright tests.
+- `git diff --check` passed.
+
+Risks:
+
+- The router is deterministic heuristic triage, not product truth or final approval.
+- It must be refined against real briefs and feedback before it can replace manual product review.
+- Design Reader/OCR/visual QA and detailed asset scoring remain planned.
+
+## 2026-06-01 Product & Design OS MCP Route And Reports
+
+Date: 2026-06-01
+Request or trigger: user approved the next recommended slice: expose Product & Design OS routing through MCP and add a console-only report generator.
+Mode: WRITE_ALLOWED for bounded local governance tooling, read-only MCP exposure, tests, and architecture/work-log updates only.
+Scope: expose the deterministic Product & Design OS router as a local read-only MCP tool and add Markdown report output for needs, scope, product opposition, and implementation lock. No file-writing report output, connector mutation, cloud model dependency, paid service, product runtime code, or parallel source of truth was added.
+Files changed:
+
+- `package.json`
+- `mcp/server.ts`
+- `product-design-os/scripts/route-product-design-os.ts`
+- `tests/delivery-system/product-design-os-router.test.ts`
+- `tests/delivery-system/product-design-os-mcp.test.ts`
+- `product-design-os/README.md`
+- `product-design-os/reports/product-design-os-foundation-report.md`
+- `product-design-os/reports/process-mesh-audit-2026-05-31.md`
+- `docs/autopilot/project-architecture-registry.md`
+- `docs/projects/autopilot-control-plane/architecture.md`
+- `docs/projects/autopilot-control-plane/work-log.md`
+
+Architecture impact: Product & Design OS routing is now available through the existing local read-only MCP server as `route_product_design_os`. The MCP tool accepts literal intake/change-request fields and returns JSON or Markdown text; it does not accept file paths, write files, call connectors, mutate projects, or approve implementation. The CLI also has `pdos:report` for console-only Markdown reports.
+Decisions:
+
+- Keep MCP exposure read-only and local-only.
+- Keep report generation console-only until a later architecture decision defines where project reports should be written.
+- Continue to avoid Gemini/cloud models for this bounded tooling slice because local deterministic checks cover the risk.
+- Treat generated reports as draft governance aids, not owner approval or project truth.
+
+Verification:
+
+- `npm.cmd run pdos:report -- --text "marketing website for leads with motion cursor interaction case studies and clear CTA"` passed and printed a console-only Markdown report.
+- `npm.cmd test -- product-design-os` passed: 3 Vitest files, 11 tests.
+- `npm.cmd run pdos:validate` passed: 41 checked files, 0 errors, 0 warnings.
+- Local MCP stdio smoke passed: `route_product_design_os` was listed and returned a Markdown report.
+- `npm.cmd run verify` passed: mesh check, Product & Design OS validation, typecheck, 19 Vitest files with 77 tests, Astro build, and 3 Playwright tests.
+- `git diff --check` passed.
+
+Risks:
+
+- The MCP route is intentionally advisory and must remain read-only.
+- Report output still needs real-project calibration before it can replace manual Needs/Scope drafting.
+- Design Reader/OCR/visual QA and detailed asset scoring remain planned.
+
+## 2026-06-01 Product & Design OS Scoring
+
+Date: 2026-06-01
+Request or trigger: user asked to continue after the Product & Design OS MCP route/report slice.
+Mode: WRITE_ALLOWED for bounded local governance tooling, read-only MCP exposure, tests, and architecture/work-log updates only.
+Scope: add deterministic recipe/pattern/asset scoring for Product & Design OS. No product runtime behavior, connector mutation, file-writing MCP output, cloud model dependency, paid service, or parallel source of truth was added.
+Files changed:
+
+- `package.json`
+- `mcp/server.ts`
+- `product-design-os/scripts/score-product-design-os.ts`
+- `product-design-os/scripts/validate-product-design-os.ts`
+- `tests/delivery-system/product-design-os-scoring.test.ts`
+- `tests/delivery-system/product-design-os-mcp.test.ts`
+- `product-design-os/README.md`
+- `product-design-os/reports/product-design-os-foundation-report.md`
+- `product-design-os/reports/process-mesh-audit-2026-05-31.md`
+- `docs/autopilot/project-architecture-registry.md`
+- `docs/projects/autopilot-control-plane/architecture.md`
+- `docs/projects/autopilot-control-plane/work-log.md`
+
+Architecture impact: Product & Design OS now has a deterministic scoring layer for recipes, registered UX patterns, and registered design assets. The scorer uses the documented purpose/target/logic/usability/taste/accessibility/mobile/performance/complexity/template-risk/style-conflict formula and returns selected and rejected candidates. It is exposed locally through `pdos:score` and read-only MCP tool `score_product_design_os`.
+Decisions:
+
+- Keep scoring deterministic and dependency-free.
+- Keep empty pattern/asset manifests explicit through warnings instead of pretending candidates exist.
+- Keep MCP scoring input literal-only; no file paths and no writes.
+- Treat scores as triage support, not owner approval.
+
+Verification:
+
+- `npm.cmd run pdos:score -- --text "marketing website for leads with motion and case studies" --format markdown` passed and produced a score report.
+- `npm.cmd test -- product-design-os` passed: 4 Vitest files, 14 tests.
+- `npm.cmd run pdos:validate` passed: 42 checked files, 0 errors, 0 warnings.
+- Local MCP stdio smoke passed: `score_product_design_os` was listed and returned a Markdown score report.
+- `npm.cmd run verify` passed: mesh check, Product & Design OS validation, typecheck, 20 Vitest files with 80 tests, Astro build, and 3 Playwright tests.
+- `git diff --check` passed.
+
+Risks:
+
+- Pattern and asset manifests now contain a first marketing/creative seed set, but other project types still need candidates.
+- Scores are heuristics and need calibration against real projects and user feedback.
+- Design Reader/OCR/visual QA remains planned.
+
+## 2026-06-01 Product & Design OS Marketing Registry Seed
+
+Date: 2026-06-01
+Request or trigger: user approved continuing with the next Product & Design OS step after scoring showed empty pattern and asset manifests.
+Mode: WRITE_ALLOWED for governance metadata, tests, and architecture/work-log updates only.
+Scope: populate the first marketing/creative UX pattern and design asset registry candidates so deterministic scoring can select concrete options beyond recipes. No runtime implementation, visual asset files, connector mutation, cloud model dependency, paid service, or product website change was added.
+Files changed:
+
+- `product-design-os/patterns/pattern-manifest.json`
+- `product-design-os/assets/asset-manifest.json`
+- `tests/delivery-system/product-design-os-validation.test.ts`
+- `tests/delivery-system/product-design-os-scoring.test.ts`
+- `product-design-os/reports/product-design-os-foundation-report.md`
+- `docs/projects/autopilot-control-plane/work-log.md`
+
+Architecture impact: Product & Design OS now has a first real registry seed for marketing/creative websites. The registry includes positioning, proof, service-demo, cursor-responsive, scroll-linked, and asymmetric editorial patterns, plus matching hero/section/motion/layout asset metadata. The entries encode mobile, reduced-motion, SEO/content, performance, template-risk, and anti-generic constraints as metadata for later scoring and design review.
+Decisions:
+
+- Keep this seed focused on marketing/creative web work because that is the current product pressure point.
+- Do not add external asset sources; entries are internal metadata only.
+- Keep motion patterns as enhancements with reduced-motion and mobile fallback requirements.
+- Avoid generic SaaS gradients, fake dashboards, repeated equal cards, and motion without product value.
+
+Verification:
+
+- `npm.cmd run pdos:score -- --text "marketing website for non technical customers with motion proof service demo links and clear inquiry CTA" --format markdown` passed and selected registered patterns/assets without empty-manifest warnings.
+- `npm.cmd test -- product-design-os` passed: 4 Vitest files, 15 tests.
+- `npm.cmd run pdos:validate` passed: 42 checked files, 0 errors, 0 warnings.
+- `npm.cmd run verify` passed: mesh check, Product & Design OS validation, typecheck, 20 Vitest files with 81 tests, Astro build, and 3 Playwright tests.
+- `git diff --check` passed.
+
+Risks:
+
+- Registry coverage is still narrow; ecommerce, dashboards, internal systems, and public-sector patterns remain mostly unseeded.
+- Metadata quality needs calibration against real Radeq and client design outcomes.
+- Design Reader/OCR/visual QA remains planned.
+
+## 2026-06-01 Product & Design OS Ecommerce Registry Seed
+
+Date: 2026-06-01
+Request or trigger: user asked to continue gradually after the marketing/creative Product & Design OS registry seed.
+Mode: WRITE_ALLOWED for governance metadata, tests, and architecture/work-log updates only.
+Scope: populate the first ecommerce UX pattern and design asset registry candidates so deterministic scoring can route product-grid, product-detail, cart, checkout, review, and trust-summary work. No runtime implementation, product checkout logic, connector mutation, cloud model dependency, paid service, or product website change was added.
+Files changed:
+
+- `product-design-os/patterns/pattern-manifest.json`
+- `product-design-os/assets/asset-manifest.json`
+- `tests/delivery-system/product-design-os-scoring.test.ts`
+- `product-design-os/reports/product-design-os-foundation-report.md`
+- `docs/projects/autopilot-control-plane/architecture.md`
+- `docs/projects/autopilot-control-plane/work-log.md`
+
+Architecture impact: Product & Design OS now has an ecommerce registry seed aligned with the `ecommerce-conversion` recipe. The seed encodes product clarity, price visibility, variant/availability state, cart focus handling, checkout step recovery, sourced reviews, policy trust, mobile safety, low motion, and performance constraints as metadata for later scoring and design review.
+Decisions:
+
+- Keep ecommerce motion low and reject decorative checkout effects by metadata.
+- Prioritize trust, price clarity, mobile checkout, error states, and deterministic cart/payment state over visual novelty.
+- Do not add external dependencies or adopt third-party ecommerce UI kits in this slice.
+- Do not use Gemini/Qwen for this deterministic metadata slice; mesh routing selected local/deterministic checks and local 14B availability was not verified.
+
+Verification:
+
+- `npm.cmd run pdos:score -- --text "ecommerce product grid cart checkout payment shipping reviews trust mobile checkout clear price" --format markdown` passed and selected `ecommerce-conversion`, checkout-safe ecommerce patterns, and low-motion ecommerce assets.
+- `npm.cmd test -- product-design-os` passed: 4 Vitest files, 16 tests.
+- `npm.cmd run pdos:validate` passed: 42 checked files, 0 errors, 0 warnings.
+- `npm.cmd run verify` passed: mesh check, Product & Design OS validation, typecheck, 20 Vitest files with 82 tests, Astro build, and 3 Playwright tests.
+- `git diff --check` passed.
+
+Risks:
+
+- Dashboard, internal-system, and public-sector registry coverage was still unseeded at the end of this ecommerce slice.
+- Ecommerce scoring is still heuristic and must be calibrated against real storefront/checkouts before it is treated as implementation guidance.
+- Checkout/payment implementation remains high-risk and would require separate project scope, owner decision, and runtime tests.
+
+## 2026-06-01 Product & Design OS Dashboard And Internal Registry Seeds
+
+Date: 2026-06-01
+Request or trigger: user asked to do both next registry seeds after the ecommerce Product & Design OS slice.
+Mode: WRITE_ALLOWED for governance metadata, tests, and architecture/work-log updates only.
+Scope: populate first dashboard/data-heavy and internal-ops UX pattern and design asset registry candidates. No runtime implementation, product database logic, connector mutation, cloud model dependency, paid service, or project website change was added.
+Files changed:
+
+- `product-design-os/patterns/pattern-manifest.json`
+- `product-design-os/assets/asset-manifest.json`
+- `tests/delivery-system/product-design-os-scoring.test.ts`
+- `product-design-os/reports/product-design-os-foundation-report.md`
+- `docs/projects/autopilot-control-plane/architecture.md`
+- `docs/projects/autopilot-control-plane/work-log.md`
+
+Architecture impact: Product & Design OS now has first dashboard/data-heavy and internal-ops registry coverage. Dashboard metadata encodes KPI definitions, filters, drilldown tables, source/freshness labels, accessible chart fallback, alert triage, export consistency, low motion, and performance limits. Internal-ops metadata encodes table-first workflow, detail drawers, status taxonomy, bulk-action safeguards, saved filters, role/permission awareness, audit trail needs, keyboard/focus handling, and low decorative complexity.
+Decisions:
+
+- Keep dashboard design data-first: every metric needs definition, source, freshness, and a decision path.
+- Keep internal systems workflow-first: roles, permissions, state model, validation, keyboard flow, and audit trail take priority over visual novelty.
+- Keep motion at 0-1 for these recipes and block decorative 3D/video/particle-style assets through metadata.
+- Do not use Gemini/Qwen for this deterministic metadata slice; mesh routing selected deterministic/local checks and local 14B availability was not verified.
+
+Verification:
+
+- `npm.cmd run pdos:score -- --text "dashboard analytics KPI metric chart filters export report data freshness drilldown table alert decision support" --format markdown` passed and selected `dashboard-data-heavy`, dashboard KPI/chart/alert patterns, and dashboard data assets.
+- `npm.cmd run pdos:score -- --text "internal system operator roles permissions workflow state audit log table filters detail drawer status badges bulk action saved filters data entry" --format markdown` passed and selected `internal-ops-clean`, internal status/table/alert patterns, and internal operations assets.
+- `npm.cmd test -- product-design-os` passed: 4 Vitest files, 18 tests.
+- `npm.cmd run pdos:validate` passed: 42 checked files, 0 errors, 0 warnings.
+- `npm.cmd run verify` passed: mesh check, Product & Design OS validation, typecheck, 20 Vitest files with 84 tests, Astro build, and 3 Playwright tests.
+- `git diff --check` passed.
+
+Risks:
+
+- Public-sector and client-portal registry coverage was still unseeded at the end of this dashboard/internal slice.
+- Dashboard and internal scoring is still heuristic and must be calibrated against real dashboards/internal systems before it is treated as implementation guidance.
+- Actual database, permission, bulk action, and export behavior remains high-risk project runtime work and requires separate project scope, owner decision, and runtime tests.
+
+## 2026-06-01 Product & Design OS Public/Portal And Visual QA Seed
+
+Date: 2026-06-01
+Request or trigger: user asked to do both next options after dashboard/internal registry seeds: public-sector/client-portal seed and Design Reader/Visual QA layer.
+Mode: WRITE_ALLOWED for governance metadata, local deterministic tooling, tests, and architecture/work-log updates only.
+Scope: add public-sector and client-portal recipes, routing, patterns, assets, scoring coverage, and the first structured-snapshot Visual QA analyzer. No product runtime implementation, screenshot capture, OCR engine, connector mutation, cloud model dependency, paid service, or project website change was added.
+Files changed:
+
+- `package.json`
+- `product-design-os/recipes/client-portal-trust.json`
+- `product-design-os/recipes/public-sector-accessible.json`
+- `product-design-os/patterns/pattern-manifest.json`
+- `product-design-os/assets/asset-manifest.json`
+- `product-design-os/scripts/route-product-design-os.ts`
+- `product-design-os/scripts/validate-product-design-os.ts`
+- `product-design-os/scripts/visual-qa-product-design-os.ts`
+- `product-design-os/reader/README.md`
+- `product-design-os/reader/visual-qa-sample.json`
+- `product-design-os/README.md`
+- `tests/delivery-system/product-design-os-router.test.ts`
+- `tests/delivery-system/product-design-os-scoring.test.ts`
+- `tests/delivery-system/product-design-os-visual-qa.test.ts`
+- `product-design-os/reports/product-design-os-foundation-report.md`
+- `docs/projects/autopilot-control-plane/architecture.md`
+- `docs/projects/autopilot-control-plane/work-log.md`
+
+Architecture impact: Product & Design OS now has dedicated routing recipes for `public_sector` and `client_portal`, plus first registry coverage for accessible public services, plain-language content, accessible form flows, notices, office contacts, client account overviews, secure document lists, support threads, client task timelines, and permission-aware actions. It also has the first deterministic Design Reader / Visual QA script, which accepts structured viewport evidence and reports layout, contrast, motion, DOM-content, and template-risk issues.
+Decisions:
+
+- Public-sector defaults prioritize accessibility, findability, plain language, contact paths, keyboard flow, and near-zero motion.
+- Client-portal defaults prioritize trust, account clarity, document access, secure actions, support, permissions, and mobile access.
+- Visual QA starts with structured snapshot analysis only; full screenshot capture, OCR, DOM/CSS extraction, and reference comparison remain later phases.
+- Do not use Gemini/Qwen for this deterministic metadata/tooling slice; mesh routing selected local deterministic checks and local 14B availability was not verified.
+
+Verification:
+
+- `npm.cmd run pdos:score -- --text "public sector municipality citizen service finder accessible forms office contact notice plain language keyboard mobile" --format markdown` passed and selected `public-sector-accessible`, public-sector patterns, and public-sector assets.
+- `npm.cmd run pdos:score -- --text "client portal account overview secure documents support thread tasks timeline permissions client actions mobile trust" --format markdown` passed and selected `client-portal-trust`, client-portal patterns, and client-portal assets.
+- `npm.cmd run pdos:visual-qa -- --file product-design-os/reader/visual-qa-sample.json --format markdown` passed and produced a Visual QA report with no blocking issues for the sample.
+- `npm.cmd run typecheck` passed.
+- `npm.cmd test -- product-design-os` passed: 5 Vitest files, 22 tests.
+- `npm.cmd run pdos:validate` passed: 46 checked files, 0 errors, 0 warnings.
+- `npm.cmd run verify` passed: mesh check, Product & Design OS validation, typecheck, 21 Vitest files with 88 tests, Astro build, and 3 Playwright tests.
+- `git diff --check` passed.
+
+Risks:
+
+- Visual QA currently analyzes provided structured evidence; it does not yet capture screenshots or independently inspect live pages.
+- Public-sector and client-portal scoring is heuristic and must be calibrated against real projects before it is treated as implementation guidance.
+- Auth, permissions, document access, uploads, and public forms remain high-risk project runtime work and require separate project scope, owner decision, and runtime tests.
+
+## 2026-06-01 Product & Design OS Design Reader Capture
+
+Date: 2026-06-01
+Request or trigger: user said to continue with both next Product & Design OS steps after the structured Visual QA seed.
+Mode: WRITE_ALLOWED for local deterministic tooling, tests, ignored local artifacts, and architecture/work-log updates only.
+Scope: add a local Playwright Design Reader capture command that can inspect a local HTML file or URL, capture screenshots, extract DOM/CSS evidence, and feed the existing Visual QA analyzer. No product runtime implementation, OCR dependency, connector mutation, cloud model dependency, paid service, or project website change was added.
+Files changed:
+
+- `.gitignore`
+- `package.json`
+- `product-design-os/scripts/capture-design-reader.ts`
+- `product-design-os/scripts/validate-product-design-os.ts`
+- `product-design-os/reader/capture-sample.html`
+- `product-design-os/reader/README.md`
+- `product-design-os/README.md`
+- `product-design-os/reports/product-design-os-foundation-report.md`
+- `tests/delivery-system/product-design-os-reader-capture.test.ts`
+- `docs/projects/autopilot-control-plane/architecture.md`
+- `docs/projects/autopilot-control-plane/work-log.md`
+
+Architecture impact: Product & Design OS now has a phase-2 Design Reader capture lane. It uses the existing local Playwright dependency to open a page, capture desktop/mobile screenshots, extract headings, CTA text, visible text volume, repeated-card signals, layout overflow, text overlap, contrast warnings, canvas-content risk, motion/reduced-motion evidence, and template-risk signals, then generates the same structured Visual QA report format used by `pdos:visual-qa`. Generated screenshots and snapshots are local artifacts under ignored `output/playwright/`.
+Decisions:
+
+- Keep Design Reader capture deterministic and local before adding OCR, visual diffing, or reference comparison.
+- Reuse existing Playwright tooling instead of adding a new runtime dependency.
+- Treat OCR as planned work until a free, locally acceptable implementation path is selected and validated.
+- Do not use Gemini/Qwen/cloud workers for this routine implementation slice; mesh routing selected deterministic local tooling and local Qwen 14B availability was not verified.
+
+Verification:
+
+- `npm.cmd run typecheck` passed.
+- `npm.cmd test -- product-design-os` passed: 6 Vitest files, 23 tests.
+- `npm.cmd run pdos:reader:capture -- --html-file product-design-os/reader/capture-sample.html --output-dir output/playwright/product-design-os` passed, produced desktop/mobile screenshots, `design-reader-snapshot.json`, and `visual-qa-report.md`, with Visual QA OK and template-risk score 0/10.
+- `npm.cmd run pdos:validate` passed: 49 checked files, 0 errors, 0 warnings.
+- `npm.cmd run verify` passed: mesh check, Product & Design OS validation, typecheck, 22 Vitest files with 89 tests, Astro build, and 3 Playwright tests.
+- `git diff --check` passed.
+
+Risks:
+
+- The capture script is a first local evidence extractor, not a full OCR or screenshot-comparison engine.
+- DOM/CSS heuristics can flag likely issues, but final visual judgment still requires screenshot review for real client pages.
+- Live external URLs may need network availability and can vary over time; local files are preferred for deterministic regression checks.
+
+## 2026-06-02 Product & Design OS PDF Supervisor Adapter
+
+Date: 2026-06-02
+Request or trigger: user pointed to the private GitHub `pdf-supervisor` project and asked to reuse it after model limits reset.
+Mode: WRITE_ALLOWED for local deterministic tooling, tests, ignored local artifacts, and architecture/work-log updates only.
+Scope: add a Product & Design OS document-reader adapter that can call the separate local `pdf-supervisor` Python repository as an external worker. No dependency install, repo clone, product runtime implementation, connector mutation, cloud model dependency, paid service, or project website change was added.
+Files changed:
+
+- `.gitignore`
+- `package.json`
+- `product-design-os/reader/document-reader-adapter.ts`
+- `product-design-os/scripts/validate-product-design-os.ts`
+- `product-design-os/reader/pdf-supervisor-adapter.md`
+- `product-design-os/reader/README.md`
+- `product-design-os/README.md`
+- `product-design-os/reports/product-design-os-foundation-report.md`
+- `tests/delivery-system/product-design-os-document-reader.test.ts`
+- `docs/projects/autopilot-control-plane/architecture.md`
+- `docs/projects/autopilot-control-plane/work-log.md`
+
+Architecture impact: Product & Design OS now has a bounded external-worker bridge for document/PDF extraction. Autopilot keeps `pdf-supervisor` outside the control-plane repository and invokes only `python -m document_supervisor.cli` through `pdos:reader:document`, with `PDOS_PDF_SUPERVISOR_ROOT` or `--supervisor-root` selecting the local worker root. The adapter checks Python availability, `document_supervisor` files, commercial requirements, core dependencies, optional Tesseract, source existence, worker exit code, and expected review artifacts. Generated document-reader outputs are local artifacts under ignored `output/document-reader/`.
+Decisions:
+
+- Keep `pdf-supervisor` as an external local worker, not copied code or a duplicate Autopilot source of truth.
+- Use the commercial-safe `document_supervisor` CLI lane by default.
+- Treat OCR and extracted document text as reviewable evidence, not verified truth.
+- Keep cloud/Gemini review disabled for this adapter; local deterministic tooling is enough for this slice.
+- Do not install Python packages automatically. Runtime readiness is reported by `--check-only`.
+
+Verification:
+
+- `npm.cmd run pdos:reader:document -- --check-only --format markdown` was run as an expected negative smoke: Python 3.13.6 was detected and the adapter correctly reported missing `PDOS_PDF_SUPERVISOR_ROOT`.
+- `npm.cmd run pdos:validate` passed: 51 checked files, 0 errors, 0 warnings.
+- `npm.cmd run typecheck` passed.
+- `npm.cmd test -- product-design-os` passed: 7 Vitest files, 25 tests.
+- `npm.cmd run verify` passed: mesh check, Product & Design OS validation, typecheck, 23 Vitest files with 91 tests, Astro build, and 3 Playwright tests.
+- `git diff --check` passed.
+
+Risks:
+
+- The local machine has Python 3.13.6, but the real `pdf-supervisor` runtime dependencies and Tesseract were not installed in the active environment during the earlier inspection.
+- The adapter is tested with a fake bounded worker; a real PDF smoke test requires a local `PDOS_PDF_SUPERVISOR_ROOT` and installed commercial-safe dependencies.
+- Screenshot OCR is still separate planned work; this slice covers PDF/document conversion through `pdf-supervisor`.
+
+## 2026-06-03 Product & Design OS PDF Supervisor Local Worker Setup
+
+Date: 2026-06-03
+Request or trigger: user asked to download the private GitHub `pdf-supervisor` project and wire it into the existing Product & Design OS adapter.
+Mode: WRITE_ALLOWED for ignored local worker/runtime artifacts, a narrow adapter fix, tests, docs, and work-log update. No cloud model, paid service, connector mutation, or copied external source was added.
+Scope: clone or update `SirRadek/pdf-supervisor` as an ignored external worker under `.codex-run/workers/pdf-supervisor`, create a local Python venv under `.codex-run/venvs/pdf-supervisor`, install only `requirements-commercial.txt`, and run the Product & Design OS document-reader adapter against the real worker.
+Files changed:
+
+- `product-design-os/reader/document-reader-adapter.ts`
+- `product-design-os/reader/pdf-supervisor-adapter.md`
+- `tests/delivery-system/product-design-os-document-reader.test.ts`
+- `docs/projects/autopilot-control-plane/work-log.md`
+
+Local artifacts created:
+
+- `.codex-run/workers/pdf-supervisor`
+- `.codex-run/venvs/pdf-supervisor`
+- `.codex-run/smoke/document-reader/sample.csv`
+- `output/document-reader/pdf-supervisor-smoke/`
+
+Architecture impact: no new Autopilot runtime or source of truth was created. `pdf-supervisor` remains a separate local worker selected by explicit path. The adapter now resolves path-like Python overrides before switching into the worker directory, which prevents relative venv paths from failing dependency checks when the worker runs with a different `cwd`.
+Decisions:
+
+- Use Python 3.11.9 for the worker venv instead of the machine default Python 3.13.6.
+- Install only the commercial-safe dependency profile: `pypdfium2`, `pdfplumber`, `Pillow`, and `ftfy`.
+- Keep Tesseract optional for native-text/common-document smoke tests; OCR pages still require uncertainty handling when Tesseract is missing.
+- Keep all cloned worker code, venv files, smoke inputs, and generated conversion outputs ignored/local.
+
+Verification:
+
+- `gh repo view SirRadek/pdf-supervisor --json nameWithOwner,defaultBranchRef,isPrivate,isArchived,pushedAt,updatedAt,url` confirmed the private repo, `main` branch, non-archived status, and GitHub access.
+- `gh repo clone SirRadek/pdf-supervisor .codex-run/workers/pdf-supervisor` cloned commit `a3cf4fa`.
+- `py -3.11 -m venv .codex-run/venvs/pdf-supervisor` created the local worker venv.
+- `.codex-run/venvs/pdf-supervisor/Scripts/python.exe -m pip install -r .codex-run/workers/pdf-supervisor/requirements-commercial.txt` installed the commercial-safe dependencies successfully.
+- `npm.cmd run pdos:reader:document -- --check-only --supervisor-root .codex-run\workers\pdf-supervisor --python .codex-run\venvs\pdf-supervisor\Scripts\python.exe --format markdown` passed with runtime status OK and a warning that Tesseract is not in PATH.
+- `npm.cmd run pdos:reader:document -- --source .codex-run\smoke\document-reader\sample.csv --output-dir output\document-reader\pdf-supervisor-smoke --supervisor-root .codex-run\workers\pdf-supervisor --python .codex-run\venvs\pdf-supervisor\Scripts\python.exe --format markdown` passed and produced all expected Markdown/JSON review artifacts.
+- `npm.cmd test -- product-design-os-document-reader` passed: 1 Vitest file, 3 tests.
+- `npm.cmd run pdos:validate` passed: 51 checked files, 0 errors, 0 warnings.
+- `npm.cmd run typecheck` passed.
+- `npm.cmd run verify` passed: mesh check, Product & Design OS validation, typecheck, 23 Vitest files with 92 tests, Astro build, and 3 Playwright tests.
+- `git diff --check` passed.
+
+Risks:
+
+- Tesseract is still not available in PATH, so scanned PDFs that need OCR will fall back or report uncertainty until local OCR is installed and verified.
+- The smoke input was a common-document CSV. A real PDF smoke test should be run with a non-sensitive sample PDF before relying on PDF/OCR conversion quality.
+- The external worker remains a private repo dependency. Update it explicitly and rerun the adapter checks when `pdf-supervisor` changes.
+
+## 2026-06-03 Prompt Library Foundation And Mesh Application Plan
+
+Date: 2026-06-03
+Request or trigger: user asked to add a prompt-library layer based on official provider guidance plus DAIR.AI/GitHub inspiration, then plan how to apply that prompt layer into the Decision Mesh.
+Mode: WRITE_ALLOWED for local prompt-library contracts, typed governance policy, Decision Mesh nodes/rules/edges, tests, architecture, and work-log records. No cloud model, prompt-management SaaS, paid service, runtime selector, connector mutation, or leaked prompt source was added.
+Scope: create the phase-0 local `prompt-library/`, add provider-specific seed prompt contracts for GPT, Gemini, Claude, and Qwen/local workers, add prompt metadata schema and source catalog, add typed `promptLibrary` policy, add root/project mesh boundaries, and document the staged mesh application plan.
+Files changed:
+
+- `prompt-library/`
+- `src/data/delivery-system/promptLibrary.ts`
+- `tests/delivery-system/prompt-library-policy.test.ts`
+- `mesh/nodes/prompt_library_policy.yaml`
+- `mesh/rules.yaml`
+- `mesh/edges.yaml`
+- `mesh/generated/decision-mesh.json`
+- `docs/projects/autopilot-control-plane/decision-mesh/nodes/prompt_library_boundary.yaml`
+- `docs/projects/autopilot-control-plane/decision-mesh/rules.yaml`
+- `docs/projects/autopilot-control-plane/decision-mesh/edges.yaml`
+- `docs/autopilot/prompt-library-operating-model.md`
+- `docs/autopilot/delivery-system-model-policy.md`
+- `docs/projects/autopilot-control-plane/architecture.md`
+- `docs/projects/autopilot-control-plane/work-log.md`
+- `AGENTS.md`
+- `tests/decision-mesh/query.test.ts`
+- `tests/autopilot-delivery-system.spec.ts`
+
+Architecture impact: Autopilot now has a local prompt-library governance boundary. Reusable prompts are stored as Git/Markdown contracts with metadata, source authority, expected output, eval pointers, and model-family scope. Prompt work routes through `prompt_library_policy`, `model_spend_policy`, `reasoning_strategy`, `context_economy_policy`, and the Autopilot project `prompt_library_boundary`. This adds governance and memory only; it does not add prompt runtime execution or external prompt-management dependency.
+Decisions:
+
+- Use official OpenAI, Anthropic, Google, and Qwen documentation for provider-specific prompt behavior.
+- Use DAIR.AI and GitHub prompt catalogs as inspiration only.
+- Keep Git/Markdown as the initial prompt source of truth.
+- Block leaked system prompts, private prompts without permission, prompt changes without eval/version evidence, and paid prompt-management tools without owner exception.
+- Treat Gemini/free-cloud prompt output as advisory until verified.
+- Treat Qwen/local-worker prompt output as drafts requiring supervisor review and deterministic checks.
+
+External source evidence checked on 2026-06-03:
+
+- OpenAI prompt engineering, reasoning best practices, and structured output docs.
+- Anthropic prompt engineering overview, Claude prompting best practices, and hallucination-reduction guidance.
+- Google Vertex/Gemini prompt design strategies, multimodal prompt design, and prompt optimizer docs.
+- Qwen docs and Qwen2.5-Coder-14B-Instruct model card for chat template and local worker constraints.
+- Langfuse, Braintrust, PromptHub, DAIR.AI, and Awesome Prompt Engineering docs/catalogs as implementation or inspiration references only.
+
+Verification:
+
+- `npm.cmd run mesh:generate` regenerated `mesh/generated/decision-mesh.json`.
+- `npm.cmd test -- prompt-library-policy` passed: 1 Vitest file, 5 tests.
+- `npm.cmd test -- decision-mesh` passed: 2 Vitest files, 15 tests.
+- `npm.cmd run typecheck` passed.
+- `npm.cmd run test:e2e` passed after updating the expected graph count to `25 nodes / 46 links`.
+- `npm.cmd run verify` passed: mesh check, Product & Design OS validation, typecheck, 24 Vitest files with 99 tests, Astro build, and 3 Playwright tests.
+- `git diff --check` passed.
+
+Risks:
+
+- Prompt metadata validation is not automated yet; phase 2 must add a deterministic validator before prompts become defaults.
+- Seed prompts are contracts and starting points, not proven production prompts.
+- Agent-packet prompt selection is planned only; MCP remains read-only and does not yet serve prompt text.
+
+## 2026-06-03 Prompt Library V3 Alignment Pass
+
+Date: 2026-06-03
+Request or trigger: user asked to compare the new prompt-library layer with older prompts and lightly adjust rules for all agents, roles, token efficiency, plugins, libraries, assets, and GitHub.
+Mode: WRITE_ALLOWED for prompt-library rules, typed prompt policy, mesh metadata, tests, docs, and work-log only. No runtime prompt selector, connector mutation, GitHub mutation, paid service, cloud model call, or copied leaked prompt source was added.
+Scope: compare `docs/autopilot/v3-prompt-pack.md` with the new `prompt-library/`, keep V3 as historical operating guidance, and add shared prompt rules for role/scope, token efficiency, plugin/MCP capability checks, library/asset source checks, and GitHub issue/PR normalization.
+Files changed:
+
+- `prompt-library/00-rules/autopilot-global-routing.md`
+- `prompt-library/README.md`
+- `prompt-library/source-catalog.md`
+- `prompt-library/05-evaluation/v3-comparison-report.md`
+- `src/data/delivery-system/promptLibrary.ts`
+- `tests/delivery-system/prompt-library-policy.test.ts`
+- `tests/delivery-system/prompt-pack-policy.test.ts`
+- `mesh/nodes/prompt_library_policy.yaml`
+- `mesh/generated/decision-mesh.json`
+- `docs/projects/autopilot-control-plane/decision-mesh/nodes/prompt_library_boundary.yaml`
+- `docs/autopilot/prompt-library-operating-model.md`
+- `docs/autopilot/v3-prompt-pack.md`
+- `AGENTS.md`
+- `docs/projects/autopilot-control-plane/work-log.md`
+
+Architecture impact: Prompt Library now explicitly carries forward the strongest V3 prompt-pack rules instead of replacing them. Reusable prompts must declare role/scope, use token-efficiency routing, verify plugin/MCP availability and boundaries, normalize GitHub issue/PR/project-card inputs into bounded task contracts, and verify library/asset source/license/usage-rights before adoption. V3 remains historical operating guidance; reusable prompt contracts live in `prompt-library/` and migrate incrementally.
+Decisions:
+
+- Do not bulk-convert the V3 prompt pack into prompt-library files.
+- Add `autopilot-global-routing` as the shared first rule for roles, token efficiency, plugins, GitHub, libraries, and assets.
+- Treat GitHub as a control surface whose issue/PR text must be normalized before prompting agents.
+- Treat plugin and MCP references as capability requests, not prompt authority.
+- Treat assets, UI kits, libraries, generated media, icons, fonts, and model assets as source/license/performance/accessibility gated inputs.
+
+Verification:
+
+- `npm.cmd run mesh:generate` regenerated `mesh/generated/decision-mesh.json`.
+- `npm.cmd test -- prompt-library-policy` passed after fixing a routing bug where short `pr` matched inside `prompt`.
+- `npm.cmd test -- prompt-pack-policy` passed.
+- `npm.cmd test -- decision-mesh` passed.
+- `npm.cmd run typecheck` passed.
+- `npm.cmd run verify` passed: mesh check, Product & Design OS validation, typecheck, 24 Vitest files with 102 tests, Astro build, and 3 Playwright tests.
+- `git diff --check` passed after normalizing `tests/delivery-system/prompt-pack-policy.test.ts` line endings.
+
+Risks:
+
+- Prompt metadata validation is still planned, not automated.
+- Role-specific prompt extraction from V3 is intentionally deferred to avoid bulk migration errors.
+- Library/asset license checks are policy-level gates here; future automation should make them deterministic where possible.
+
+## 2026-06-04 Protective Supervision Layer
+
+Date: 2026-06-04
+Request or trigger: user asked for a protective guard above Autopilot that occasionally checks current information, turns agent outputs into clean input for the next agent, and tracks what is done, missing, blocked, waiting, and next.
+Mode: WRITE_ALLOWED for typed governance policy, read-only MCP routing, root/project Decision Mesh records, templates, tests, architecture, and work-log records. Attempted Codex app automation creation was read-only/report-first in intent, but the app handler was unavailable.
+Scope: add Protective Supervision as a report-first guardrail for currentness sentinel checks, agent handoff compilation, project progress ledger deltas, blocker review, waiting dependencies, and next action sequencing. This change does not add a runtime queue, remote mutation, connector mutation, GitHub mutation, deployment action, paid provider dependency, or delivery approval authority.
+Files changed:
+
+- `src/data/delivery-system/protectiveSupervision.ts`
+- `src/data/delivery-system/roles.ts`
+- `mcp/server.ts`
+- `tests/delivery-system/protective-supervision-policy.test.ts`
+- `tests/delivery-system/product-design-os-mcp.test.ts`
+- `tests/decision-mesh/query.test.ts`
+- `tests/autopilot-delivery-system.spec.ts`
+- `mesh/nodes/protective_supervision_policy.yaml`
+- `mesh/rules.yaml`
+- `mesh/edges.yaml`
+- `mesh/generated/decision-mesh.json`
+- `docs/projects/autopilot-control-plane/decision-mesh/nodes/protective_supervision_boundary.yaml`
+- `docs/projects/autopilot-control-plane/decision-mesh/rules.yaml`
+- `docs/projects/autopilot-control-plane/decision-mesh/edges.yaml`
+- `docs/autopilot/protective-supervision-operating-model.md`
+- `docs/autopilot/agent-handoff-packet-template.md`
+- `docs/autopilot/project-progress-ledger-template.md`
+- `docs/projects/autopilot-control-plane/architecture.md`
+- `docs/projects/autopilot-control-plane/work-log.md`
+- `AGENTS.md`
+
+Architecture impact: Autopilot now has a first-class Protective Supervisor role, typed routing policy, root Decision Mesh node, project mesh boundary, templates, and read-only MCP route. Agent outputs must be normalized into bounded handoff packets before another agent receives them. Project progress now has explicit states and must name blockers, owners, waiting dependencies, source pointers, and verification gaps.
+Decisions:
+
+- Keep Protective Supervision report-first and read-only unless the owner approves a scoped write.
+- Use Context7 when connected, or official docs/source pointers/local evidence as fallback for currentness claims.
+- Reject raw agent output as the next prompt.
+- Keep progress tracking in project work logs or explicit progress ledgers, not in a duplicate queue runtime.
+- Stop on missing next-agent scope, stale progress ledger, blocker without owner, waiting state without dependency, remote mutation without approval, paid/cloud-only guardrail dependency, or raw project logs copied into Autopilot.
+- Expose `select_protective_supervision_route` through the local MCP server as a read-only recommendation tool.
+
+Automation status:
+
+- Attempted to create a weekly Codex app sentinel named `Autopilot protective supervision sentinel`.
+- Creation was blocked by the app response: `No handler registered for tool: automation_update`.
+- No manual automation TOML was written, to avoid creating a second automation source of truth outside the Codex app API.
+
+Verification:
+
+- `npm.cmd run mesh:generate` regenerated the root Decision Mesh artifact.
+- Root graph count is now 26 nodes / 51 links.
+- `npm.cmd test -- protective-supervision-policy` passed: 1 file, 4 tests.
+- `npm.cmd test -- decision-mesh` passed: 2 files, 17 tests.
+- `npm.cmd test -- product-design-os-mcp` passed: 1 file, 1 test.
+- `npm.cmd run mesh:check` passed.
+- `npm.cmd run typecheck` passed.
+- `git diff --check` passed before full verification.
+- `npm.cmd run verify` passed: mesh check, Product & Design OS validation, typecheck, 25 Vitest files with 108 tests, Astro build, and 3 Playwright tests.
+
+Risks:
+
+- Weekly sentinel scheduling is not active until the Codex app automation handler is available.
+- Protective Supervision is still a governance/reporting layer; it does not yet write progress ledgers automatically.
+- Currentness checking still depends on Context7 availability or official-doc/source-pointer fallback at the time of each sentinel pass.
+
+## 2026-06-04 Context7 And Codex App Handler Investigation
+
+Date: 2026-06-04
+Request or trigger: user asked why Context7 was not available and why the sentinel automation handler was missing, then asked to investigate the handler.
+Mode: INSPECT_ONLY plus one owner-requested local MCP configuration change for Context7 and supported app-server remote-control probes. No repository runtime, GitHub, deployment, or automation TOML mutation was performed.
+Scope: inspect tool/plugin/app registry, local Codex config, Codex app cache, dynamic tool metadata, process state, logs, app-server protocol, and automation storage. Configure Context7 only through the official Codex MCP CLI path after a no-key local MCP handshake test passed.
+Files changed:
+
+- `docs/projects/autopilot-control-plane/architecture.md`
+- `docs/projects/autopilot-control-plane/work-log.md`
+
+Local config changed:
+
+- Backed up `C:\Users\sirok\.codex\config.toml` to `C:\Users\sirok\.codex\config.toml.bak-context7-20260604`.
+- Added global MCP server `context7` via `codex.exe mcp add context7 -- npx.cmd -y @upstash/context7-mcp`.
+
+Findings:
+
+- Context7 exists in the local app-directory cache as app id `asdk_app_69ef18c674308191a2f952431f91ea61`, but the cached app entry has `isAccessible: false`.
+- `list_available_plugins_to_install` did not return Context7, so it could not be installed as a Codex app connector from the available plugin installer list.
+- The connector MCP cache `codex_apps_tools` contains GitHub, Hugging Face, Figma, and Canva namespaces only; it has no Context7, no `automation_update`, and no `read_thread_terminal`.
+- Official Context7 docs list Codex configuration through `codex mcp add context7 -- npx -y @upstash/context7-mcp --api-key YOUR_API_KEY` or `[mcp_servers.context7]` in `~/.codex/config.toml`.
+- `npx.cmd -y @upstash/context7-mcp --help` worked and reported version `3.1.0`; `npm view` reported MIT license.
+- A direct MCP `initialize` probe against `npx.cmd -y @upstash/context7-mcp` succeeded without an API key.
+- `codex mcp list` now shows `context7` as an enabled global stdio MCP server.
+- Current running tool discovery still did not expose `mcp__context7`, so the active thread likely needs restart/reload before the new MCP server is usable.
+- The current thread has `automation_update` and `read_thread_terminal` in `state_5.sqlite.thread_dynamic_tools` under namespace `codex_app`, but calls to both returned `No handler registered`.
+- The current thread is recorded with `source = vscode`.
+- The local automation data layer exists in `C:\Users\sirok\.codex\sqlite\codex-dev.db` and contains the paused `all-project-codex-qwen-autopilot-watchdog` automation.
+- Codex app logs showed repeated `app-server remote control websocket ... initial_enabled=false` entries while local feature state had `remote_control` enabled.
+- On Windows, `codex app-server daemon version` fails with `codex app-server daemon lifecycle is only supported on Unix platforms`, so the Unix daemon restart/enable path is not available.
+- Generated app-server protocol bindings list `remoteControl/enable`, `remoteControl/status/read`, `mcpServer/tool/call`, and server-to-client `item/tool/call`; `item/tool/call` is the dynamic tool path that requires a host-side handler.
+- `codex app-server proxy` failed against the default Windows path because `C:\Users\sirok\.codex\app-server-control\app-server-control.sock` was absent and the socket connection returned OS error `10050`.
+- The active process tree shows the current runtime as `node_repl.exe` -> `codex.exe app-server --listen stdio://`; the desktop app also owns a separate `codex.exe app-server --analytics-default-enabled` child. Neither exposes the default proxy socket.
+- A standalone `codex.exe app-server --listen stdio://` probe reported remote-control status `disabled`. A supported `remoteControl/enable` request moved that standalone process to `connecting`, but a fresh status probe returned `disabled` again after that process exited.
+- Retesting `codex_app.read_thread_terminal` in the active thread still returned `No handler registered`, so the remote-control probe did not attach the missing `codex_app` handler.
+
+Conclusion:
+
+- Context7 was unavailable because it was not installed/accessible as a Codex app connector and was not configured as a local MCP server. It is now configured as a local global MCP server, pending thread/app reload.
+- The sentinel automation failed because the `codex_app` helper tool metadata exists for the thread, but the runtime handler for the `codex_app` namespace is not attached in this session. This appears to be a host/runtime mismatch, likely related to the VS Code-sourced thread or stale desktop app-server bridge, not an Autopilot mesh defect.
+- `remoteControl` is a separate app-server websocket feature. Enabling it in a standalone app-server process is not enough to bind `codex_app` dynamic tools in the active thread. Starting a parallel app-server would create another runtime and should not be used as the Autopilot workaround.
+
+Recommended next step:
+
+- Restart or fully reload the Codex desktop/thread, then retest `tool_search` for Context7 and call `codex_app.read_thread_terminal` or `codex_app.automation_update` through the official tool path.
+- Prefer a fresh desktop-local thread rooted at `C:\Programování\Codex` for the retest, because the current thread is recorded as `source = vscode` and has dynamic tool metadata without the matching runtime handler.
+- If `codex_app` still has no handler after restart, keep automations as blocked and use a Codex app/platform issue report with the evidence above.
+- Do not hand-edit automation TOML unless the owner explicitly accepts it as a temporary local-only workaround.
+
+Verification:
+
+- `codex mcp get context7` reports enabled stdio transport with command `npx.cmd` and args `-y @upstash/context7-mcp`.
+- `codex mcp list` includes `context7`.
+- `tool_search` in the active thread still did not expose Context7 tools, confirming reload is required.
+- Standalone app-server stdio protocol probe verified `remoteControl/status/read` and `remoteControl/enable` behavior without fixing the active thread's `codex_app` handler.
+
+## 2026-06-04 Supervisor Prompt Stack For Codex App Restarts
+
+Date: 2026-06-04
+Request or trigger: user asked to strengthen the Codex App restart prompt with more distinct design examples, more realistic playful cat-avatar behavior, supervisor watchpoints, and a reusable main prompt plus project-specific task prompt pattern.
+Mode: WRITE_ALLOWED for local prompt-library contracts, source catalog, operating-model documentation, architecture, and project work-log records. No runtime selector, connector mutation, GitHub mutation, paid service, or automation TOML mutation was added.
+Scope: add a reusable supervisor base prompt for fresh Codex App threads and a RadeQ-specific novel-design supervisor prompt that layers on top of it. The prompts are candidate contracts, not automatic execution.
+Files changed:
+
+- `prompt-library/06-supervisor/autopilot-supervisor-base.md`
+- `prompt-library/06-supervisor/radeq-novel-design-supervisor.md`
+- `prompt-library/05-evaluation/supervisor-startup-checklist.md`
+- `prompt-library/README.md`
+- `prompt-library/source-catalog.md`
+- `docs/autopilot/prompt-library-operating-model.md`
+- `docs/projects/autopilot-control-plane/architecture.md`
+- `docs/projects/autopilot-control-plane/work-log.md`
+- `docs/projects/radeq/work-log.md`
+
+Architecture impact: Prompt Library now has an explicit supervisor prompt stack: shared base prompt, project-specific prompt, then the owner's current instruction. The base prompt owns runtime bridge checks, Decision Mesh routing, source authority, handoff normalization, progress states, stop conditions, and QA gates. Project prompts add local repository, GitHub baseline, asset, workflow, and product constraints.
+Decisions:
+
+- Keep the supervisor base provider-neutral so it can be reused across projects.
+- Keep RadeQ-specific GitHub baseline, distinct design requirements, cat-avatar motion, SEO/performance, and lead-capture guards in a separate project prompt.
+- Distinguish `codex_app_bridge: verified`, `exposed_without_handler`, and `not_exposed`.
+- Treat `exposed_without_handler` and `not_exposed` as blockers for automation creation, heartbeat scheduling, thread-terminal verification, and full Codex App runtime verification claims.
+- Allow degraded supervisor planning from local files, GitHub, Decision Mesh, and deterministic checks when the current task does not depend on Codex App runtime tools.
+- Require mascot/canvas work to preserve source/license checks, reduced-motion fallback, WebGL fallback, and static SEO content.
+
+Verification:
+
+- `npm.cmd test -- prompt-library-policy prompt-pack-policy` passed: 2 files, 9 tests.
+- `npm.cmd run mesh:check` passed.
+- `git diff --check` passed.

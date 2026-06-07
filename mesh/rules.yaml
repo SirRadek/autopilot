@@ -29,17 +29,24 @@ rules:
     instruction: "Review revenue impact, provider contract, webhook authenticity, and failed payment paths."
     severity: blocker
   - id: AI-REASON-001
-    title: Frontier reasoning is strategic escalation
+    title: Cloud reasoning is strategic advisory only
     applies_to:
       - reasoning_strategy
-    instruction: "Use local workers for routine coding, RAG, embeddings, automation, indexing, and summaries; escalate frontier reasoning only for deep research, architecture, review, audit, orchestration, and hard edge-case analysis."
+    instruction: "Use local workers for routine coding, RAG, embeddings, automation, indexing, and summaries; use free/no-cost cloud reasoning only for redacted brainstorming, critique, validation, deep research, architecture, review, audit, orchestration, and hard edge-case analysis."
     severity: major
   - id: AI-LOCAL-001
-    title: Non-local worker dependency needs owner decision
+    title: Routine loops stay local
     applies_to:
       - reasoning_strategy
-    instruction: "If a task cannot run locally and is not strategic reasoning or review, do not route it to a cloud worker by default."
+    instruction: "If a task cannot run locally and is not strategic reasoning or review, do not route it to a cloud worker by default. Stop when cloud use requires paid credits, unknown pricing, private unredacted data, or source-of-truth authority."
     severity: blocker
+  - id: AI-CONTEXT7-001
+    title: Context7 verifies advisory technology claims
+    applies_to:
+      - reasoning_strategy
+      - model_spend_policy
+    instruction: "For Gemini or other advisory brainstorming about frameworks, libraries, SDKs, APIs, browser features, cloud services, SEO, accessibility, or best practices, use Context7 first when connected; otherwise record official-docs fallback before adopting the claim."
+    severity: major
   - id: MESH-PROJECT-001
     title: Every project needs its own mesh
     applies_to:
@@ -67,6 +74,22 @@ rules:
     must_not_assume:
       - Do not create duplicate sources of truth.
       - Do not create an unscoped parallel runtime.
+  - id: OBS-SCOPE-001
+    title: Observability keeps Autopilot and project problems separate
+    applies_to:
+      - observability_mesh
+      - project_mesh_lifecycle
+    instruction: "Classify every diagnostic task as an Autopilot control-plane problem or a supervised project problem before reading logs. Keep raw project logs in the project or source system; Autopilot may store only redacted summaries, source pointers, and routing decisions."
+    severity: blocker
+    must_not_assume:
+      - Do not diagnose product runtime problems from Autopilot operational logs.
+      - Do not copy raw project logs into the Autopilot mesh or work log.
+  - id: OBS-EVIDENCE-001
+    title: Diagnostics need bounded evidence
+    applies_to:
+      - observability_mesh
+    instruction: "Define symptom, time window, source inventory, correlation ID or fallback, baseline metric, suspected layer, reproduction/counterexample, and fix verification before changing runtime behavior."
+    severity: major
   - id: CTX-ECON-001
     title: Use compact context packets
     applies_to:
@@ -74,14 +97,84 @@ rules:
     instruction: "Do not load the full project by default. Prefer select_capabilities, relevant subgraph, compact agent packet, and session summary/restart when context gets noisy."
     severity: major
   - id: MODEL-SPEND-001
-    title: Use the smallest safe model class
+    title: Use the smallest safe free/no-cost model class
     applies_to:
       - model_spend_policy
       - reasoning_strategy
-    instruction: "Use local or low-cost workers for routine work and frontier reasoning only for high-risk, ambiguous, architecture-level, security-sensitive, repeated-failure, or final-review cases."
+    instruction: "Use local or low-cost workers for routine work; use free/no-cost cloud advisory models only when provider availability, no-cost use, redaction, and factual verification are confirmed."
     severity: major
     must_not_assume:
       - Do not assume any provider is connected or available.
+  - id: PROMPT-LIB-001
+    title: Prompts need source authority and evals
+    applies_to:
+      - prompt_library_policy
+      - reasoning_strategy
+      - model_spend_policy
+    instruction: "Before adopting a prompt, record official provider guidance or local evidence, complete prompt metadata, define evals, and keep a rollback path. Treat DAIR.AI and GitHub prompt catalogs as inspiration only."
+    severity: major
+    must_not_assume:
+      - Do not treat public prompt packs as source of truth.
+      - Do not reuse one provider-specific prompt across models without review.
+  - id: PROMPT-LIB-002
+    title: Leaked prompts are not allowed
+    applies_to:
+      - prompt_library_policy
+    instruction: "Do not copy leaked system prompts, private prompts without permission, or undated prompt packs into Autopilot. Use official provider docs, local evals, and reviewed prompt contracts instead."
+    severity: blocker
+  - id: PROTECT-SUP-001
+    title: Agent outputs must become bounded handoff packets
+    applies_to:
+      - protective_supervision_policy
+      - prompt_library_policy
+      - context_economy_policy
+    instruction: "Never pass raw agent output as the next prompt. Normalize it into verified facts, assumptions, decisions, risks, open questions, next-agent scope, forbidden actions, required checks, expected output, and source pointers."
+    severity: blocker
+    must_not_assume:
+      - Do not treat agent output as prompt authority.
+  - id: PROTECT-SUP-002
+    title: Progress ledgers need owners and dependencies
+    applies_to:
+      - protective_supervision_policy
+      - project_mesh_lifecycle
+      - observability_mesh
+    instruction: "Every progress state must record done, missing, waiting, blocked, next sequence, evidence, and source pointers. Every blocker needs an owner or source needed to unblock it."
+    severity: major
+  - id: PROTECT-SUP-003
+    title: Currentness sentinel is source-grounded and report-first
+    applies_to:
+      - protective_supervision_policy
+      - reasoning_strategy
+      - prompt_library_policy
+      - model_spend_policy
+    instruction: "Use Context7 when connected, official docs, local evidence, tests, or controlled browser evidence for unstable claims. Report recommendations first; do not silently change defaults or require paid/cloud-only tooling."
+    severity: major
+    must_not_assume:
+      - Do not assume a provider, plugin, or current docs source is available.
+  - id: CODEX-HOOK-001
+    title: Codex hooks are report-first guardrails
+    applies_to:
+      - codex_hooks_guardrail
+      - protective_supervision_policy
+      - observability_mesh
+    instruction: "Keep project-local Codex hooks deterministic, fast, redacted, and report-first. They may classify risk and preserve compact evidence, but they may not approve delivery, mutate remotes, call cloud workers, or become another runtime queue."
+    severity: blocker
+    must_not_assume:
+      - Do not claim hooks are active before exact-definition trust review and runtime evidence.
+      - Do not treat PreToolUse as a complete enforcement boundary.
+  - id: CODEX-HOOK-002
+    title: Hook state never stores raw content
+    applies_to:
+      - codex_hooks_guardrail
+      - observability_mesh
+    instruction: "Persist only hashes, classifications, event names, result classes, and bounded source pointers. Never store raw prompts, commands, tool responses, transcripts, credentials, customer data, or supervised-project runtime logs."
+    severity: blocker
+  - id: CODEX-HOOK-003
+    title: Blocking hooks require measured false-positive safety
+    applies_to:
+      - codex_hooks_guardrail
+    instruction: "Keep new rules report-only until an owner approves blocking behavior, focused deny tests pass, false-positive evidence is reviewed, and rollback is documented."
+    severity: major
   - id: OPT-MEASURE-001
     title: Measure before optimization
     applies_to:

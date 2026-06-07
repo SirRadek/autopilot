@@ -3,7 +3,15 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-const corePaths = ["AGENTS.md", "GEMINI.md", "mesh", "mcp", "scripts", "src"] as const;
+const corePaths = [
+  "AGENTS.md",
+  "GEMINI.md",
+  "mesh",
+  "mcp",
+  "scripts",
+  "src",
+  "product-design-os/scripts"
+] as const;
 const disallowedCorePatterns = [
   /[áčďéěíňóřšťúůýžÁČĎÉĚÍŇÓŘŠŤÚŮÝŽ]/,
   /\bneduveryhodny\b/i,
@@ -21,7 +29,7 @@ function listFiles(path: string): string[] {
 }
 
 describe("core language boundary", () => {
-  it("keeps core instructions, mesh, MCP, scripts, and source files in English", () => {
+  it("keeps core instructions, mesh, MCP, scripts, Product & Design OS scripts, and source files in English", () => {
     const files = corePaths.flatMap((path) => listFiles(join(process.cwd(), path)));
     const violations = files.flatMap((file) => {
       const content = readFileSync(file, "utf8");

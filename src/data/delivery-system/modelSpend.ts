@@ -3,8 +3,10 @@ export interface ModelSpendPolicy {
   readonly lowCostWorkerUse: readonly string[];
   readonly longContextResearchUse: readonly string[];
   readonly creativeReviewUse: readonly string[];
+  readonly freeCloudAdvisoryUse: readonly string[];
   readonly repoExecutorUse: readonly string[];
   readonly frontierOnlyWhen: readonly string[];
+  readonly requiredChecks: readonly string[];
   readonly stopConditions: readonly string[];
 }
 
@@ -27,6 +29,15 @@ export const modelSpendPolicy = {
     "broad_planning"
   ],
   creativeReviewUse: ["design_review", "ux_critique", "creative_direction", "architecture_critique"],
+  freeCloudAdvisoryUse: [
+    "brainstorming",
+    "architecture_second_opinion",
+    "design_critique",
+    "security_critique",
+    "planning_critique",
+    "agent_validation",
+    "research_synthesis"
+  ],
   repoExecutorUse: ["repo_editing", "tests", "refactors", "debugging", "patch_workflow"],
   frontierOnlyWhen: [
     "high_risk",
@@ -36,10 +47,23 @@ export const modelSpendPolicy = {
     "repeated_failure",
     "final_review"
   ],
+  requiredChecks: [
+    "provider_availability_verified",
+    "free_tier_or_no_cost_confirmed",
+    "redacted_context_only",
+    "context7_or_official_docs_verified",
+    "gemini_brainstorm_claims_labeled_and_verified",
+    "factual_claims_verified",
+    "smallest_safe_model_class"
+  ],
   stopConditions: [
     "provider_availability_unverified",
     "non_local_worker_dependency",
+    "cloud_model_for_routine_worker_loop",
     "frontier_used_for_simple_worker_task",
-    "model_choice_affects_risk_without_disclosure"
+    "model_choice_affects_risk_without_disclosure",
+    "paid_model_or_credit_required",
+    "technology_claim_without_context7_or_official_docs",
+    "gemini_claim_adopted_without_verification"
   ]
 } as const satisfies ModelSpendPolicy;

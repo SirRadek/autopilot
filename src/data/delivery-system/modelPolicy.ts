@@ -19,9 +19,26 @@ export interface ReasoningEscalationPolicy {
   defaultWorkerLayer: "local_swarm";
   strategicLayer: "frontier_reasoning";
   localDefaultUse: readonly string[];
+  freeCloudAdvisoryUse: readonly string[];
+  docsVerificationProviders: readonly string[];
   frontierEscalationUse: readonly string[];
   frontierForbiddenUse: readonly string[];
+  requiredChecks: readonly string[];
   stopConditions: readonly string[];
+}
+
+export interface ReasoningModelRouteInput {
+  readonly task: string;
+}
+
+export interface ReasoningModelRouteResult {
+  readonly route: "local_worker_default" | "free_cloud_advisory_review";
+  readonly advisoryProviders: readonly string[];
+  readonly docsVerificationProviders: readonly string[];
+  readonly allowedUse: readonly string[];
+  readonly forbiddenUse: readonly string[];
+  readonly requiredChecks: readonly string[];
+  readonly stopConditions: readonly string[];
 }
 
 export const modelPolicyRules = [
@@ -88,6 +105,23 @@ export const reasoningEscalationPolicy = {
     "automation loops",
     "routine summarization"
   ],
+  freeCloudAdvisoryUse: [
+    "brainstorming",
+    "architecture second opinion",
+    "design critique",
+    "security critique",
+    "planning critique",
+    "agent validation",
+    "edge-case review",
+    "research synthesis"
+  ],
+  docsVerificationProviders: [
+    "context7_when_available",
+    "official_docs_fallback",
+    "local_files",
+    "tests",
+    "controlled_browser_evidence"
+  ],
   frontierEscalationUse: [
     "deep research",
     "architecture review",
@@ -108,9 +142,97 @@ export const reasoningEscalationPolicy = {
     "local automation loops",
     "unreviewed worker execution"
   ],
+  requiredChecks: [
+    "provider_availability_verified",
+    "free_tier_or_no_cost_confirmed",
+    "redacted_context_only",
+    "context7_or_official_docs_verified",
+    "gemini_brainstorm_claims_labeled_and_verified",
+    "factual_claims_verified",
+    "smallest_safe_model_class",
+    "disclose_model_choice_when_risk_affects_delivery"
+  ],
   stopConditions: [
     "non_local_worker_dependency",
+    "cloud_model_for_routine_worker_loop",
     "frontier_used_for_simple_worker_task",
-    "provider_availability_unverified"
+    "provider_availability_unverified",
+    "paid_model_or_credit_required",
+    "private_data_not_redacted",
+    "model_output_used_as_source_of_truth",
+    "technology_claim_without_context7_or_official_docs",
+    "gemini_claim_adopted_without_verification"
   ]
 } as const satisfies ReasoningEscalationPolicy;
+
+export function selectReasoningModelRoute(input: ReasoningModelRouteInput): ReasoningModelRouteResult {
+  const normalizedTask = normalize(input.task);
+  const isRoutine = hasAny(normalizedTask, [
+    "autocomplete",
+    "boilerplate",
+    "dto",
+    "embeddings",
+    "indexing",
+    "automation loop",
+    "routine summarization",
+    "simple task"
+  ]);
+  const benefitsFromAdvisory = hasAny(normalizedTask, [
+    "brainstorm",
+    "critique",
+    "review",
+    "architecture",
+    "security",
+    "audit",
+    "planning",
+    "edge case",
+    "research",
+    "reasoning",
+    "validation"
+  ]);
+
+  if (benefitsFromAdvisory && !isRoutine) {
+    return {
+      route: "free_cloud_advisory_review",
+      advisoryProviders: ["gemini_cli", "provider_neutral_free_cloud_model", "local_llm_when_available"],
+      docsVerificationProviders: reasoningEscalationPolicy.docsVerificationProviders,
+      allowedUse: reasoningEscalationPolicy.freeCloudAdvisoryUse,
+      forbiddenUse: reasoningEscalationPolicy.frontierForbiddenUse,
+      requiredChecks: reasoningEscalationPolicy.requiredChecks,
+      stopConditions: reasoningEscalationPolicy.stopConditions
+    };
+  }
+
+  return {
+    route: "local_worker_default",
+    advisoryProviders: ["local_worker", "local_llm_when_available"],
+    docsVerificationProviders: reasoningEscalationPolicy.docsVerificationProviders,
+    allowedUse: reasoningEscalationPolicy.localDefaultUse,
+    forbiddenUse: [
+      "architecture decisions",
+      "business decisions",
+      "governance approval",
+      "security approval",
+      "unbounded autonomous execution",
+      "final delivery approval"
+    ],
+    requiredChecks: [
+      "local_worker_default",
+      "smallest_safe_model_class",
+      "disclose_model_choice_when_risk_affects_delivery"
+    ],
+    stopConditions: [
+      "cloud_model_for_routine_worker_loop",
+      "frontier_used_for_simple_worker_task",
+      "model_output_used_as_source_of_truth"
+    ]
+  };
+}
+
+function normalize(value: string): string {
+  return value.toLowerCase().replace(/[_-]/g, " ");
+}
+
+function hasAny(normalizedTask: string, terms: readonly string[]): boolean {
+  return terms.some((term) => normalizedTask.includes(normalize(term)));
+}

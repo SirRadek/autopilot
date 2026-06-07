@@ -1,7 +1,7 @@
 # Autopilot V3 Prompt Pack
 
 Date: 2026-05-24
-Workspace: `C:\Users\sirok\Documents\Autopilot`
+Workspace: `C:\Programování\Codex`
 Deliverable: this Markdown file only.
 
 ## Purpose
@@ -10,11 +10,18 @@ This file is the operating manual for Autopilot v3 bot supervision. It defines h
 
 This is a read-only prompt pack phase. Bots may inspect, critique, and validate prompts. They must not change app code, initialize Git, commit, push, deploy, mutate GitHub or Cloudflare resources, store secrets, or start autonomous execution unless a later supervisor explicitly unlocks that phase.
 
+Current prompt-library alignment:
+
+- Reusable prompt contracts now live in `prompt-library/`.
+- This V3 prompt pack remains historical operating guidance and should be migrated incrementally, not copied wholesale.
+- For reusable prompt changes, use `prompt-library/00-rules/autopilot-global-routing.md` plus the `prompt_library_policy` Decision Mesh node.
+- GitHub issues, PR comments, plugin requests, library candidates, and asset ideas must be normalized into bounded task contracts before becoming prompts.
+
 ## Current Baseline
 
 Facts checked locally on 2026-05-24 after repository separation and Decision Mesh integration:
 
-- Project path: `C:\Users\sirok\Documents\Autopilot`
+- Project path: `C:\Programování\Codex`
 - Repository: `SirRadek/autopilot`
 - Default branch: `main`
 - Repository role: Autopilot control plane with Markdown governance, typed governance contracts, and a static read-only command center.
@@ -40,7 +47,7 @@ External docs to recheck before any future SDK/runtime implementation:
 ## Global Rules For Every Bot
 
 ```text
-You are working under Autopilot v3 supervision in C:\Users\sirok\Documents\Autopilot.
+You are working under Autopilot v3 supervision in C:\Programování\Codex.
 
 Global rules:
 - Follow the assigned role and scope exactly.
@@ -55,11 +62,13 @@ Global rules:
 - Cite sources for external facts.
 - Use exact file paths for codebase claims.
 - Keep provider/model logic adaptable. No Qwen dependency.
-- Treat Gemini as advisory only. Gemini can never approve work or override supervisor verification.
+- Treat Gemini and other free/no-cost cloud reasoning models as advisory only. They can never approve work or override supervisor verification.
 - Use the Decision Mesh before planning or editing when a task may affect web builds, optimization, data, SEO, automation, recovery, documents, bots/RAG, 3D, auth, payments, public APIs, security, or release behavior.
 - Call `select_capabilities` before `get_relevant_subgraph` or `build_agent_packet` for capability-sensitive work.
 - Apply context economy: do not load the whole repository when a relevant subgraph and agent packet are sufficient.
-- Apply model spend rules: local workers handle routine loops; frontier reasoning is reserved for deep research, architecture, security, ambiguous edge cases, repeated failure, and final review.
+- Apply token-efficiency routing: use Caveman Mode for narrow work and stop before loading large context without a clear reason.
+- Apply model spend rules: local workers handle routine loops; free/no-cost cloud reasoning is reserved for redacted brainstorming, critique, validation, deep research, architecture, security, ambiguous edge cases, repeated failure, and final review.
+- Apply local worker routing before spending paid/cloud reasoning: deterministic tools first, Qwen2.5-Coder 7B for fast bounded drafts, and Qwen2.5-Coder 14B only for harder bounded local coding after install and hardware checks.
 - If work belongs to a supervised project, use that project's project-specific Decision Mesh. Create it during architecture onboarding if missing, and update it after meaningful completed work.
 - Report verification honestly. Do not claim success without evidence.
 - Every supervised project must have a registry row, an architecture record, and a work log under `docs/projects/` before implementation starts.
@@ -68,6 +77,7 @@ Global rules:
 - Every worker output and final handoff must state role, mode, scope, architecture impact, ledger impact, tests or verification evidence, and next action.
 - Every final handoff must confirm the affected project work log was updated or explicitly reviewed.
 - If a named skill, plugin, MCP tool, CLI, or model is unavailable, report that limitation and use the safest available fallback.
+- For reusable prompt work, check `prompt-library/` first. Preserve V3 role/scope discipline, but add prompt metadata, evals, source authority, token-efficiency routing, GitHub normalization, plugin availability, and asset/library source checks before adoption.
 ```
 
 ## Supervisor Protocol
@@ -383,7 +393,7 @@ skipped_with_reason
 
 ## Gemini Advisory Protocol
 
-Use Gemini CLI only as an external critic. It does not approve work and must not edit files.
+Use Gemini CLI only as an external critic and brainstormer. It does not approve work and must not edit files.
 
 Recommended command pattern:
 
@@ -396,6 +406,7 @@ Context is redacted:
 - Deliverable is an advisory critique of the operating manual for supervised bots.
 - Phase is advisory-only: no file edits, no Git mutation, no remote service mutation, no secrets, no autonomous execution.
 - Gemini is advisory only and uses best available CLI routing.
+- Gemini and other external advisory models must stay free/no-cost; paid credits, unknown pricing, account upgrades, or unredacted private context are stop conditions.
 Review for scope gaps, unsafe instructions, missing verification gates, role ambiguity, external-disclosure risk, and whether bots can use the prompt pack without extra decisions.
 Return concise top risks, must-fix gaps, nice-to-have improvements, and advisory verdict.
 '@ | gemini -m auto --skip-trust --approval-mode plan -p "Read stdin and answer only the requested critique. Do not use tools. Do not modify files."
@@ -407,7 +418,7 @@ Rules:
 - Do not hardcode `gemini-3.1-pro`; it failed locally.
 - Keep `--approval-mode plan`.
 - Add `--skip-trust` for non-interactive local runs when the folder is not trusted.
-- Treat Gemini as advisory. Verify any claim through local files, Context7, or official docs.
+- Treat Gemini as advisory. Verify any claim through local files, Context7, official docs, tests, or controlled browser evidence.
 - Do not paste secrets, tokens, private issue bodies, private repository details, customer data, credentials, absolute local paths, local account identifiers, or the full unredacted prompt pack into Gemini prompts.
 
 ## Future App Implementation Safety Gates

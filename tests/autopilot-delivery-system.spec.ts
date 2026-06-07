@@ -12,6 +12,13 @@ test.describe("Autopilot command center", () => {
     await expect(page.getByTestId("workflow-map")).toContainText("business review");
     await expect(page.getByTestId("decision-mesh-coverage")).toContainText("capability routing");
     await expect(page.getByTestId("decision-mesh-coverage")).toContainText("project meshes");
+    await expect(page.getByTestId("decision-mesh-graph")).toContainText("27 nodes / 55 links");
+    await expect(page.getByTestId("decision-mesh-graph")).toContainText("Observability Mesh");
+    await expect(page.getByTestId("mesh-svg")).toBeVisible();
+    await expect(page.getByTestId("project-delivery-workflow")).toContainText("8 ordered phases");
+    await expect(page.getByTestId("project-delivery-workflow")).toContainText("Owner");
+    await expect(page.getByTestId("project-delivery-workflow")).toContainText("Qwen Worker");
+    await expect(page.getByTestId("project-delivery-workflow")).toContainText("GitHub");
   });
 
   for (const viewport of [

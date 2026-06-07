@@ -1,6 +1,6 @@
 {
   "name": "autopilot-control-plane",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "description": "Typed governance contracts for the Autopilot control plane.",
@@ -10,11 +10,19 @@
     "preview": "astro preview",
     "test": "vitest run",
     "test:e2e": "playwright test",
+    "pdos:validate": "tsx product-design-os/scripts/validate-product-design-os.ts",
+    "pdos:route": "tsx product-design-os/scripts/route-product-design-os.ts",
+    "pdos:report": "tsx product-design-os/scripts/route-product-design-os.ts --format markdown",
+    "pdos:score": "tsx product-design-os/scripts/score-product-design-os.ts",
+    "pdos:visual-qa": "tsx product-design-os/scripts/visual-qa-product-design-os.ts",
+    "pdos:reader:capture": "tsx product-design-os/scripts/capture-design-reader.ts",
+    "pdos:reader:document": "tsx product-design-os/reader/document-reader-adapter.ts",
+    "pdos:library:projects": "tsx product-design-os/scripts/update-project-library.ts",
     "mesh:generate": "tsx scripts/generate-decision-mesh.ts",
     "mesh:check": "tsx scripts/generate-decision-mesh.ts --check",
     "mcp:mesh": "tsx mcp/server.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "verify": "npm run mesh:check && npm run typecheck && npm run test && npm run build && npm run test:e2e"
+    "verify": "npm run mesh:check && npm run pdos:validate && npm run typecheck && npm run test && npm run build && npm run test:e2e"
   },
   "devDependencies": {
     "@playwright/test": "1.60.0",

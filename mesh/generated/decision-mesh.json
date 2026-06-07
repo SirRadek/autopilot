@@ -25,6 +25,12 @@
       "label": "Capability routing"
     },
     {
+      "id": "codex_hooks_guardrail",
+      "group": "governance_policy",
+      "risk": 0.7,
+      "label": "Codex hooks guardrail"
+    },
+    {
       "id": "context_economy_policy",
       "group": "routing_policy",
       "risk": 0.7,
@@ -61,6 +67,12 @@
       "label": "Model spend policy"
     },
     {
+      "id": "observability_mesh",
+      "group": "capability_module",
+      "risk": 0.7,
+      "label": "Observability Mesh"
+    },
+    {
       "id": "optimization_mesh",
       "group": "capability_module",
       "risk": 0.7,
@@ -77,6 +89,18 @@
       "group": "governance_policy",
       "risk": 0.7,
       "label": "Project mesh lifecycle"
+    },
+    {
+      "id": "prompt_library_policy",
+      "group": "routing_policy",
+      "risk": 0.7,
+      "label": "Prompt library policy"
+    },
+    {
+      "id": "protective_supervision_policy",
+      "group": "routing_policy",
+      "risk": 0.7,
+      "label": "Protective supervision policy"
     },
     {
       "id": "public_api",
@@ -274,6 +298,12 @@
     },
     {
       "source": "capability_routing",
+      "target": "observability_mesh",
+      "relation": "activates",
+      "weight": 0.84
+    },
+    {
+      "source": "capability_routing",
       "target": "document_mesh",
       "relation": "activates",
       "weight": 0.76
@@ -307,6 +337,36 @@
       "target": "data_mesh",
       "relation": "may_require",
       "weight": 0.68
+    },
+    {
+      "source": "observability_mesh",
+      "target": "optimization_mesh",
+      "relation": "informs",
+      "weight": 0.86
+    },
+    {
+      "source": "observability_mesh",
+      "target": "recovery_mesh",
+      "relation": "sequences_into",
+      "weight": 0.78
+    },
+    {
+      "source": "observability_mesh",
+      "target": "automation_mesh",
+      "relation": "audits",
+      "weight": 0.74
+    },
+    {
+      "source": "observability_mesh",
+      "target": "public_api",
+      "relation": "may_trace",
+      "weight": 0.72
+    },
+    {
+      "source": "project_mesh_lifecycle",
+      "target": "observability_mesh",
+      "relation": "separates_scope",
+      "weight": 0.84
     },
     {
       "source": "recovery_mesh",
@@ -355,6 +415,84 @@
       "target": "reasoning_strategy",
       "relation": "refines",
       "weight": 0.82
+    },
+    {
+      "source": "prompt_library_policy",
+      "target": "reasoning_strategy",
+      "relation": "constrains",
+      "weight": 0.86
+    },
+    {
+      "source": "prompt_library_policy",
+      "target": "model_spend_policy",
+      "relation": "constrains",
+      "weight": 0.84
+    },
+    {
+      "source": "prompt_library_policy",
+      "target": "context_economy_policy",
+      "relation": "supports",
+      "weight": 0.78
+    },
+    {
+      "source": "prompt_library_policy",
+      "target": "bot_rag_mesh",
+      "relation": "supports",
+      "weight": 0.72
+    },
+    {
+      "source": "protective_supervision_policy",
+      "target": "project_mesh_lifecycle",
+      "relation": "updates",
+      "weight": 0.88
+    },
+    {
+      "source": "protective_supervision_policy",
+      "target": "observability_mesh",
+      "relation": "summarizes",
+      "weight": 0.84
+    },
+    {
+      "source": "protective_supervision_policy",
+      "target": "context_economy_policy",
+      "relation": "compacts",
+      "weight": 0.86
+    },
+    {
+      "source": "protective_supervision_policy",
+      "target": "reasoning_strategy",
+      "relation": "guards",
+      "weight": 0.82
+    },
+    {
+      "source": "protective_supervision_policy",
+      "target": "prompt_library_policy",
+      "relation": "feeds",
+      "weight": 0.8
+    },
+    {
+      "source": "codex_hooks_guardrail",
+      "target": "protective_supervision_policy",
+      "relation": "feeds_redacted_evidence",
+      "weight": 0.88
+    },
+    {
+      "source": "codex_hooks_guardrail",
+      "target": "observability_mesh",
+      "relation": "reports_control_plane_events",
+      "weight": 0.84
+    },
+    {
+      "source": "codex_hooks_guardrail",
+      "target": "context_economy_policy",
+      "relation": "preserves_compaction_context",
+      "weight": 0.82
+    },
+    {
+      "source": "codex_hooks_guardrail",
+      "target": "project_mesh_lifecycle",
+      "relation": "checks_boundary",
+      "weight": 0.8
     }
   ]
 }

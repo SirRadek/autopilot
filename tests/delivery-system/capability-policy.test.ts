@@ -16,6 +16,7 @@ describe("capability routing policy", () => {
       "seo_mesh",
       "automation_mesh",
       "recovery_mesh",
+      "observability_mesh",
       "document_mesh",
       "bot_rag_mesh",
       "three_d_experience_addon"
@@ -37,6 +38,28 @@ describe("capability routing policy", () => {
     expect(selection.avoid).toContain("three_d_experience_addon");
     expect(selection.requiredAgents).toEqual(expect.arrayContaining(["seo_performance", "frontend"]));
     expect(selection.reason).toContain("Measure first, then optimize against a target metric.");
+  });
+
+  it("routes diagnostics through observability while preserving Autopilot/project separation", () => {
+    const selection = selectCapabilityModules({
+      task: "Inspect runtime logs, tracing, and bottlenecks while separating Autopilot problems from project problems"
+    });
+
+    expect(selection.activate).toContain("observability_mesh");
+    expect(selection.optional).toEqual(
+      expect.arrayContaining(["optimization_mesh", "recovery_mesh", "automation_mesh", "data_mesh"])
+    );
+    expect(selection.requiredChecks).toEqual(
+      expect.arrayContaining([
+        "problem_scope_classified",
+        "autopilot_vs_project_boundary",
+        "redacted_log_summary",
+        "suspect_layer_identified"
+      ])
+    );
+    expect(selection.reason).toContain(
+      "Classify Autopilot-vs-project ownership first, then inspect redacted evidence for the narrowest failing layer."
+    );
   });
 
   it("routes data cleanup and migration work to data capability first", () => {

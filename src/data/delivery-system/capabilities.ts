@@ -5,6 +5,7 @@ export type CapabilityModuleId =
   | "seo_mesh"
   | "automation_mesh"
   | "recovery_mesh"
+  | "observability_mesh"
   | "document_mesh"
   | "bot_rag_mesh"
   | "three_d_experience_addon";
@@ -124,6 +125,50 @@ export const capabilityModules = [
     requiredChecks: ["backup_current_state", "identify_platform", "crawl_current_site", "scan_basic_security"]
   },
   {
+    id: "observability_mesh",
+    title: "Observability Mesh",
+    positioning: "supporting_service",
+    useFor: [
+      "runtime_logs",
+      "diagnostics",
+      "bottleneck_localization",
+      "error_triage",
+      "performance_tracing",
+      "incident_evidence"
+    ],
+    signals: [
+      "log",
+      "logs",
+      "runtime logs",
+      "logging",
+      "observability",
+      "diagnostic",
+      "diagnostics",
+      "trace",
+      "tracing",
+      "error",
+      "bottleneck",
+      "bottlenecks",
+      "problem",
+      "problems",
+      "monitoring",
+      "incident"
+    ],
+    requiredAgents: ["architect", "qa", "frontend", "backend_database", "seo_performance", "security"],
+    requiredChecks: [
+      "problem_scope_classified",
+      "autopilot_vs_project_boundary",
+      "project_slug_or_control_plane_identified",
+      "log_window_defined",
+      "source_inventory",
+      "redacted_log_summary",
+      "correlation_id_or_fallback",
+      "suspect_layer_identified",
+      "reproduction_or_counterexample",
+      "fix_verification"
+    ]
+  },
+  {
     id: "document_mesh",
     title: "Document Mesh",
     positioning: "supporting_service",
@@ -165,6 +210,31 @@ export const capabilityModules = [
 ] as const satisfies readonly CapabilityModule[];
 
 export const capabilityRoutingRules = [
+  {
+    id: "observability_diagnostics",
+    signals: [
+      "log",
+      "logs",
+      "runtime logs",
+      "logging",
+      "observability",
+      "diagnostic",
+      "diagnostics",
+      "trace",
+      "tracing",
+      "error",
+      "bottleneck",
+      "bottlenecks",
+      "problem",
+      "problems",
+      "monitoring",
+      "incident"
+    ],
+    activate: ["observability_mesh"],
+    optional: ["optimization_mesh", "recovery_mesh", "automation_mesh", "data_mesh"],
+    avoid: ["three_d_experience_addon"],
+    reason: "Classify Autopilot-vs-project ownership first, then inspect redacted evidence for the narrowest failing layer."
+  },
   {
     id: "slow_website",
     signals: ["slow", "performance", "core web vitals", "broken links", "seo issues", "optimize"],

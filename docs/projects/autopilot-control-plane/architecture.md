@@ -1,12 +1,13 @@
 # Autopilot Control Plane Architecture
 
-Last updated: 2026-05-24
-Next review: 2026-05-31
+Last updated: 2026-06-06
+Next review: 2026-06-11
 Status: active process layer
+Release: `v0.2.0`
 Slug: `autopilot-control-plane`
-Canonical local root: `C:\Users\sirok\Documents\Autopilot`
+Canonical local root: `C:\Programování\Codex`
 Canonical remote repository: `SirRadek/autopilot`
-Local workspace: `C:\Users\sirok\Documents\Autopilot`
+Local workspace: `C:\Programování\Codex`
 Separation status: `separated`
 Visibility: dedicated control-plane repository, with private inventory redacted when needed
 
@@ -34,17 +35,34 @@ In this project:
 - `docs/autopilot/project-architecture-standard.md`
 - `docs/autopilot/project-architecture-registry.md`
 - `docs/autopilot/repository-separation-policy.md`
+- `docs/autopilot/graphic-agent-operating-model.md`
+- `docs/autopilot/design-intelligence-operating-model.md`
+- `docs/autopilot/local-worker-operating-model.md`
+- `docs/autopilot/token-efficiency-operating-model.md`
+- `docs/autopilot/protective-supervision-operating-model.md`
+- `docs/autopilot/agent-handoff-packet-template.md`
+- `docs/autopilot/project-progress-ledger-template.md`
+- `product-design-os/` phase-1 Product & Design OS governance foundation
+- deterministic Product & Design OS foundation validator, intake router, console-only report generator, and scoring engine under `product-design-os/scripts/`
+- Product & Design OS local library under `product-design-os/library/` for reusable source reviews, inspiration-only reference records, clean-room reference templates, and generated project indexing
 - per-project architecture records under `docs/projects/`
 - minimal TypeScript/Vitest governance-contract package
 - typed registries under `src/data/delivery-system/`
+- typed design intelligence and architecture library policy under `src/data/delivery-system/designIntelligence.ts`
+- typed graphic-production policy under `src/data/delivery-system/graphicAgent.ts`
+- typed local-worker routing policy under `src/data/delivery-system/localWorkers.ts`
+- typed token-efficiency routing policy under `src/data/delivery-system/tokenEfficiency.ts`
+- typed protective-supervision routing policy under `src/data/delivery-system/protectiveSupervision.ts`
+- project-local report-first Codex lifecycle hooks under `.codex/`
 - typed capability routing, context economy, and model spend policy under `src/data/delivery-system/`
+- Product & Design OS templates, recipes, schemas, taste memory, and reports under `product-design-os/`
 - pure validators under `src/lib/delivery-system/`
 - Decision Mesh YAML/JSON source under `mesh/`
 - pure Decision Mesh query library under `src/lib/decision-mesh/`
 - local read-only stdio MCP server under `mcp/server.ts`
 - project-specific Decision Mesh seed graphs under `docs/projects/*/decision-mesh/`
 - deterministic mesh artifact generator under `scripts/generate-decision-mesh.ts`
-- static read-only command center at `src/pages/autopilot.astro`
+- static read-only command center with 2D Decision Mesh graph and project delivery workflow at `src/pages/autopilot.astro`
 - tests under `tests/delivery-system/`
 - Decision Mesh tests under `tests/decision-mesh/`
 - local Playwright smoke test at `tests/autopilot-delivery-system.spec.ts`
@@ -66,7 +84,7 @@ External to this project:
 Target local root:
 
 ```text
-C:\Users\sirok\Documents\Autopilot
+C:\Programování\Codex
 ```
 
 Target remote repository:
@@ -121,6 +139,10 @@ Current data is Markdown-first with a minimal typed governance mirror:
 - project work logs
 - plans and specs under `docs/superpowers/`
 - typed delivery-system contracts under `src/data/delivery-system/`
+- typed Design Intelligence policy and LLM/ML architecture library candidates under `src/data/delivery-system/designIntelligence.ts`
+- typed Graphic Production Agent policy under `src/data/delivery-system/graphicAgent.ts`
+- typed Local Worker policy under `src/data/delivery-system/localWorkers.ts`
+- typed Token Efficiency policy under `src/data/delivery-system/tokenEfficiency.ts`
 - pure delivery-system validators under `src/lib/delivery-system/`
 - Decision Mesh YAML nodes, edges, rules, schemas, and generated JSON artifact under `mesh/`
 - pure Decision Mesh query helpers under `src/lib/decision-mesh/`
@@ -129,7 +151,7 @@ Current data is Markdown-first with a minimal typed governance mirror:
 - seeded project-specific Decision Mesh records under `docs/projects/<project-slug>/decision-mesh/`
 - Vitest contract tests under `tests/delivery-system/`
 - Vitest Decision Mesh tests under `tests/decision-mesh/`
-- static `/autopilot` command-center page under `src/pages/`
+- static `/autopilot` command-center page with deterministic 2D Decision Mesh visualization and ordered project-delivery workflow under `src/pages/`
 - Playwright browser smoke test under `tests/`
 
 Planned typed data:
@@ -153,9 +175,23 @@ Decision Mesh:
 - Each supervised project must create and maintain its own `docs/projects/<project-slug>/decision-mesh/` during project architecture onboarding.
 - `mesh/generated/decision-mesh.json` is derived and must pass `npm run mesh:check`.
 - MCP tools return compact JSON context and never approve work.
+- The `/autopilot` page may render a read-only SVG view of `mesh/generated/decision-mesh.json`; the visualization is a control surface only and does not become a new mesh source of truth.
+- The `/autopilot` page may also render the owner-to-closeout delivery workflow, including agent handoffs, communication order, mesh checkpoints, outputs, and gates. This workflow view is read-only and does not become an execution engine.
 - MCP exposes `select_capabilities` so work can route through web build, optimization, data, SEO, automation, recovery, document, bot/RAG, and 3D add-on capabilities before planning.
 - MCP exposes `build_project_mesh_packet` so supervised project work can query that project's own mesh without treating the root Autopilot mesh as product context.
 - Strategic reasoning is modeled as an escalation/review/planning layer; routine worker tasks stay local by default.
+- Local worker routing is modeled explicitly: deterministic tools run first for search and verification, `qwen2.5-coder:7b` is the available fast local coding worker, and `qwen2.5-coder:14b` is the maximum local coding worker target for this PC after install and hardware checks.
+- Token-efficiency routing is modeled explicitly: narrow work uses Caveman Mode with one task, minimal context, `rg` first, deterministic tools first, local/no-cost workers before cloud, and escalation only when risk or repeated failure justifies it.
+- Protective supervision is modeled explicitly: currentness sentinel reviews, agent-output handoff compilation, progress ledger deltas, blockers, waiting dependencies, and next action sequence are handled as read-only guardrails until the owner approves a scoped write. Raw agent output must be normalized before it becomes another agent's input.
+- Codex lifecycle hooks are modeled explicitly as deterministic report-first guardrails. They add startup, prompt, tool, compaction, subagent, and completion checks; store only redacted hashes and classifications under ignored `.codex/state/`; and remain subordinate to Decision Mesh, architecture records, work logs, tests, and owner decisions.
+- Observability routing is modeled explicitly: diagnostic work must first classify whether the symptom belongs to Autopilot control-plane behavior or to a supervised project. Autopilot may store redacted log summaries, source pointers, routing decisions, and verification evidence, but raw project runtime logs remain in the project or source system.
+- Product & Design OS is modeled as a phase-1 governance/template layer for classifying product/design work, locking scope, running opposition, selecting recipes, scoring patterns/assets, tracking taste memory, and defining QA before implementation. It extends the mesh and typed governance policies without adding runtime behavior. Its deterministic router and scoring engine are also exposed through the local read-only MCP server as `route_product_design_os` and `score_product_design_os`.
+- Product & Design OS library records distinguish commercial-safe source pools from inspiration-only references. External assets require source, license, cost, commercial-use, provenance, fallback, performance, and QA evidence before project adoption. Reference screenshots, OCR, DOM/CSS inspection, and HTML captures are evidence only; implementation must use a clean-room brief and original code/assets unless a license explicitly permits reuse.
+- Visual Analyst and Design Critic are governed roles for pre-production visual analysis, post-production critique, research evidence, and architecture-library recommendations. They do not produce final assets, approve their own work, or approve runtime adoption.
+- The Graphic Production Agent is a governed execution role and typed policy for routing static graphics, motion backgrounds, physics visuals, model assets, and video storyboards. It defaults to local/free tools, allows cloud tools when the free/no-cost path is confirmed, and blocks paid tools such as Kling AI without a later owner exception.
+- Free/no-cost cloud reasoning models, including Gemini CLI when available, are allowed as redacted advisory support for brainstorming, critique, validation, and second opinions across agents. Routine worker loops remain local by default, paid credits are blocked, and model output is never source-of-truth evidence without local verification.
+- Context7 is the preferred docs-verification lane for reasoning, Gemini brainstorming, design critique, architecture-library review, and technology/best-practice recommendations when it is connected. If Context7 is unavailable or does not cover the topic, the handoff must record the fallback and verify the claim through official documentation, local files, tests, or controlled browser evidence.
+- Context7 is configured as a global local Codex MCP server via `npx.cmd -y @upstash/context7-mcp`, but a running thread may need restart or reload before the `mcp__context7` tools appear in the available tool list.
 - 3D visualization is deferred until the query/MCP layer is stable, and 3D remains a premium add-on capability rather than a default service path.
 - A parallel AI Production Studio remains a possible future architecture, but only after an explicit decision defines source-of-truth ownership, interop or migration, and maintenance cost.
 
@@ -174,7 +210,40 @@ Superpowers:
 MCP:
 
 - local stdio MCP server exposes read-only Decision Mesh tools for Codex context routing
+- local stdio MCP server exposes `select_graphic_route` as a read-only Graphic Production Agent routing tool
+- local stdio MCP server exposes `select_design_review_route` and `search_architecture_library` as read-only design intelligence tools
+- local stdio MCP server exposes `select_reasoning_model_route` and `select_local_worker_route` as read-only model and worker routing tools
+- local stdio MCP server exposes `select_token_efficiency_route` as a read-only Caveman/compact routing tool
+- local stdio MCP server exposes `select_protective_supervision_route` as a read-only protective-supervision route for currentness checks, handoffs, progress, and blocker review
+- local stdio MCP server exposes `route_product_design_os` as a read-only Product & Design OS intake/change-request routing tool
+- local stdio MCP server exposes `score_product_design_os` as a read-only Product & Design OS recipe/pattern/asset scoring tool
 - no remote MCP transport, connector-backed MCP server, or mutating MCP tool is approved
+
+Prompt Library:
+
+- local Git/Markdown prompt contracts live in `prompt-library/`
+- prompt source authority uses official provider docs first, then local policy/tests/evals, with DAIR.AI and GitHub catalogs as inspiration only
+- prompt work routes through `prompt_library_policy` and the Autopilot project `prompt_library_boundary`
+- supervisor startup prompts use a layered stack: shared base prompt, project-specific prompt, then the owner's current task instruction. The base layer owns runtime bridge checks, mesh routing, source authority, handoff normalization, progress states, and QA gates.
+- no prompt-management SaaS, runtime selector, paid tool, leaked-prompt source, or duplicate prompt source of truth is approved
+
+Protective Supervision:
+
+- reports currentness gaps for prompt, mesh, model, tool, Context7, GitHub, and architecture guidance
+- compiles reviewed agent outputs into bounded handoff packets before another agent receives them
+- tracks project state as `not_started`, `ready`, `in_progress`, `needs_review`, `blocked`, `waiting_owner`, `waiting_external`, `done`, or `cancelled`
+- stores source pointers, verification gaps, and progress deltas instead of raw logs or full agent transcripts
+- remains report-first and read-only unless the owner explicitly approves a scoped write
+
+Codex Hooks:
+
+- project configuration lives in `.codex/hooks.json`
+- the dependency-free handler lives in `.codex/hooks/autopilot-hook.mjs`
+- runtime evidence is local and ignored under `.codex/state/`
+- hook state excludes raw prompts, commands, responses, transcripts, credentials, customer data, and project runtime logs
+- hooks do not call cloud models, connectors, deployment tools, or remote mutation paths
+- exact hook definitions require Codex trust review after changes
+- file/test verification does not prove the active Codex App host loaded the hooks; a refreshed trusted session must produce lifecycle evidence
 
 Vercel:
 
@@ -199,6 +268,9 @@ Gemini:
 - advisory critique only
 - receives redacted context only
 - never approves work or overrides local verification
+- must remain free/no-cost; paid credits, account upgrades, or unknown pricing are stop conditions
+- can support brainstorming, critique, validation, and second opinions when claims are checked locally or against primary sources
+- must label brainstorm ideas separately from verified facts; framework, library, SDK, API, browser, cloud, SEO, accessibility, and best-practice claims require Context7 or official-docs verification before adoption
 
 ## Security And Privacy Controls
 
@@ -210,6 +282,10 @@ Gemini:
 - Every project must have a current architecture record before implementation starts.
 - Decision Mesh stop conditions require owner decision unless the task explicitly resolves the stop condition.
 - Missing project-specific mesh is a stop condition for project implementation work.
+- Ambiguous diagnostic ownership is a stop condition. Project runtime issues must route into that project's architecture record and decision mesh before implementation planning.
+- Raw project logs, CI logs, deployment logs, and runtime traces must not be copied into Autopilot as source-of-truth evidence; use redacted summaries and source pointers.
+- Raw agent output must not be used directly as the next prompt; Protective Supervision must normalize it into facts, assumptions, decisions, risks, open questions, allowed surfaces, forbidden actions, required checks, and source pointers.
+- Blocked or waiting progress states must name an owner, external dependency, source needed, or stop condition.
 - Non-local worker dependency is a stop condition unless the task is strategic reasoning or independent review.
 - MCP tools may not read product repositories or credentials.
 - Unapproved parallel systems or duplicate sources of truth are stop conditions.
@@ -244,10 +320,16 @@ Application verification is delegated to the affected project architecture recor
 - `/autopilot` static read-only command center exists; it is not an execution console.
 - Decision Mesh and local MCP server exist as read-only context routing; they are not approval, execution, connector, or remote mutation surfaces.
 - Delivery-system typed governance contracts exist; capability routing, context economy, model spend policy, and current project mesh seeds now exist.
+- Prompt Library phase-0 exists as local Git/Markdown contracts with source catalog, metadata schema, seed prompts for GPT/Gemini/Claude/Qwen, and a Decision Mesh boundary; deterministic prompt metadata validation and agent-packet prompt selection remain planned.
+- Protective Supervision phase-0 exists as typed read-only routing policy, root/project Decision Mesh boundaries, handoff/progress templates, and local MCP exposure; it is not a runtime queue and does not mutate remotes.
+- Project-local Codex hooks now exist as a phase-1 report-first lifecycle layer. They have deterministic tests and redacted local state, but active Codex App runtime loading remains unverified until hook trust review and a refreshed session produce `SessionStart` evidence.
 - Project, skill, agent, provider, and verification registries remain planned unless covered by the existing delivery-system contracts.
+- Product & Design OS now has an initial deterministic foundation validator, intake/change-request router, console-only Markdown reports, read-only MCP exposure, recipe/pattern/asset scoring, first marketing/creative, ecommerce, dashboard/data-heavy, internal-ops, public-sector, and client-portal registry seeds, a local Playwright Design Reader that captures screenshots, extracts DOM/CSS evidence, and feeds the structured Visual QA analyzer, plus a local external-worker adapter for the separate `pdf-supervisor` document/PDF reader; screenshot OCR, reference comparison, AI-agent UI, document-system recipes, automation UI, and advanced automation scripts remain planned.
+- Product & Design OS now has a local source/reference/project library and a project-index generator. It is not yet wired into a full automation loop; project records should run `npm run pdos:library:projects` after project onboarding or meaningful project-record changes.
 - Architecture records for external/private projects are not normalized yet.
-- Regular review cadence is documented but not automated.
-- No recurring Codex automation has been created for weekly architecture review.
+- Regular review cadence is documented. Weekly report-first sentinel automation is planned, but Codex app automation creation was blocked in this session because the automation handler was not registered.
+- `codex_app` helper tools such as `automation_update` and `read_thread_terminal` may appear in thread metadata without an active handler in VS Code-sourced or mismatched desktop/runtime sessions. When this occurs, do not write automation TOML by hand; restart/reload the Codex app/thread and retest the official handler.
+- `remoteControl/enable` is not a substitute for the `codex_app` host/runtime handler. A standalone `codex.exe app-server --listen stdio://` probe can move its own remote-control status from `disabled` to `connecting`, but that does not attach handlers to the active thread. `codex app-server proxy` also depends on an app-server control socket, which was absent in the observed Windows session. Do not start a parallel app-server as an Autopilot workaround; it would create a separate runtime instead of binding the current host dispatcher.
 - Vercel, Linear, and Docket are not integrated into the architecture registry.
 - The TypeScript package and Astro route must stay limited to pure governance validation and static read-only reporting until a later architecture decision changes the boundary.
 
