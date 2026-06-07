@@ -40,8 +40,13 @@ Verification:
   static build, and 3 Playwright Chromium tests.
 - `git diff --check` passed.
 - GitHub authentication and `SirRadek/autopilot` remote access were verified.
-- GitHub Actions, merge, tag, release, and post-merge checks remain pending
-  until the release branch is published.
+- Release commit `f493d7c` was pushed to `codex/autopilot-v0.2.0`.
+- Draft PR `https://github.com/SirRadek/autopilot/pull/2` was opened against
+  `main`.
+- GitHub Actions run `https://github.com/SirRadek/autopilot/actions/runs/27097229986`
+  passed the complete verify job in 1m22s.
+- Final evidence-commit CI, merge, tag, release, and post-merge checks remain
+  pending.
 Risks:
 
 - The release is a large accumulated control-plane change and therefore relies
