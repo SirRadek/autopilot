@@ -45,8 +45,18 @@ Verification:
   `main`.
 - GitHub Actions run `https://github.com/SirRadek/autopilot/actions/runs/27097229986`
   passed the complete verify job in 1m22s.
-- Final evidence-commit CI, merge, tag, release, and post-merge checks remain
-  pending.
+- Evidence-commit GitHub Actions run
+  `https://github.com/SirRadek/autopilot/actions/runs/27097280620` passed in
+  1m6s.
+- PR `#2` merged to `main` as `290753e`.
+- Post-merge GitHub Actions run
+  `https://github.com/SirRadek/autopilot/actions/runs/27097315994` passed in
+  1m6s and reported the GitHub-hosted Node 20 action-runtime deprecation.
+- Official `actions/checkout`, `actions/setup-node`, and
+  `actions/github-script` release documentation was checked on 2026-06-07.
+  The release-hardening patch upgrades them to Node 24-compatible majors
+  `checkout@v6`, `setup-node@v6`, and `github-script@v8`.
+- Final action-upgrade CI, tag, release, and post-release checks remain pending.
 Risks:
 
 - The release is a large accumulated control-plane change and therefore relies
