@@ -66,6 +66,23 @@ Blocker Review:
 - prevents loops when agents repeatedly produce proposals without verified
   progress
 
+Failure Repair Supervision:
+
+- applies when work investigates a broken, failed, or stuck running process,
+  worker, dev server, scan job, session, or supervised runtime
+- requires reproduction evidence or a source pointer before changing files
+- identifies the affected process/session and whether it belongs to Autopilot
+  control plane or to a supervised project
+- checkpoints progress, source pointers, and next resume state before the fix
+- stops or drains the affected running process before applying the repair; if
+  it cannot be stopped safely, the state becomes `blocked` or `waiting_owner`
+- applies the scoped fix only after the process is stopped, drained, or covered
+  by an explicit owner-approved live-patch exception
+- restarts or refreshes the affected session after the fix
+- updates continuity/progress evidence and resumes from the last verified state
+- records verification evidence that the failure no longer reproduces and that
+  related behavior still works
+
 ## Source Authority
 
 For Autopilot control-plane work:
@@ -120,3 +137,5 @@ A protective supervision pass is done when it returns:
 - next action sequence
 - source pointers
 - verification gaps
+- for failed-process repair, stop/drain evidence, restart evidence, continuity
+  update, and resumed-state pointer

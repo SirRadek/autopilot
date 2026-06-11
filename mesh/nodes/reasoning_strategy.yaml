@@ -54,6 +54,9 @@ required_checks:
   - subscription_entitlement_confirmed_for_subscription_tools
   - google_ai_subscription_entitlement_confirmed_for_gemini_cli
   - api_credit_or_self_hosting_cost_confirmed
+  - advisory_trust_hierarchy_applied
+  - claude_broad_read_scope_owner_scoped
+  - lower_trust_advisor_claims_verified_before_adoption
   - redacted_context_only
   - context7_or_official_docs_verified
   - gemini_brainstorm_claims_labeled_and_verified
@@ -80,17 +83,22 @@ stop_conditions:
   - model_output_used_as_source_of_truth
   - technology_claim_without_context7_or_official_docs
   - gemini_claim_adopted_without_verification
+  - lower_trust_model_overrides_claude_without_verified_evidence
+  - broad_private_context_sent_to_lower_trust_model
 must_not_assume:
   - Do not assume a cloud frontier model is available.
   - Do not assume a cloud model is free or safe to receive private context.
   - Do not treat Claude Code subscription access as metered API-credit access.
   - Do not treat Gemini CLI / Google AI subscription access as Gemini API budget or API-key access.
+  - Do not treat Gemini, Qwen, or DeepSeek advice as equal weight to scoped Claude Code subscription critique.
+  - Do not give Qwen or DeepSeek broad private repository context by default.
   - Do not treat a cached plugin bundle as callable model/tool availability.
   - Do not route routine worker tasks to non-local models by default.
   - Do not treat Gemini brainstorm output as verified technology guidance until Context7 or official docs verify it.
 objective:
   - Keep routine coding, embeddings, RAG, indexing, automation, and summarization local by default.
   - Use external advisory reasoning only as redacted critique, brainstorming, validation, or second opinion after matching its entitlement path.
+  - Prefer scoped Claude Code subscription critique over Gemini for high-risk advisory review when Claude is available and authorized; prefer Gemini over Qwen or DeepSeek for external brainstorming weight.
   - Route reasoning by task lane and provider policy before choosing GPT, Claude, Gemini, DeepSeek, Qwen, or deterministic tools.
   - Verify technology and best-practice claims through Context7 when connected, or official documentation as fallback.
   - Escalate to frontier reasoning only for deep research, architecture, review, audit, orchestration, and hard edge-case analysis.

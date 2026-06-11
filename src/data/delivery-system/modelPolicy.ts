@@ -35,6 +35,13 @@ export type ReasoningAccessMode =
   | "subscription_interactive"
   | "api_or_self_hosted";
 
+export type AdvisoryTrustTier =
+  | "local_evidence"
+  | "high_trust_advisory"
+  | "standard_advisory"
+  | "bounded_draft"
+  | "comparison_only";
+
 export interface ModelPolicyRule {
   layer: ModelPolicyLayer;
   preferredCapability: string;
@@ -58,6 +65,9 @@ export interface ReasoningProviderPolicy {
   readonly id: ReasoningProviderId;
   readonly provider: string;
   readonly accessMode: ReasoningAccessMode;
+  readonly advisoryTrustTier: AdvisoryTrustTier;
+  readonly advisoryWeight: number;
+  readonly contextScope: string;
   readonly bestFor: readonly string[];
   readonly avoidFor: readonly string[];
   readonly requiredChecks: readonly string[];
@@ -80,6 +90,9 @@ export interface CredentialedAdvisoryProviderPolicy {
   readonly accessMode: "subscription_interactive";
   readonly registration: "optional";
   readonly costGuard: string;
+  readonly advisoryTrustTier: AdvisoryTrustTier;
+  readonly advisoryWeight: number;
+  readonly contextScope: string;
   readonly allowedUse: readonly string[];
   readonly forbiddenUse: readonly string[];
   readonly requiredChecks: readonly string[];
@@ -238,6 +251,9 @@ export const reasoningProviderPolicies = [
     id: "deterministic_tools",
     provider: "local",
     accessMode: "deterministic",
+    advisoryTrustTier: "local_evidence",
+    advisoryWeight: 100,
+    contextScope: "local repository evidence, commands, tests, schemas, and generated artifacts inside the declared workspace",
     bestFor: ["repository search", "tests", "typecheck", "schema validation", "diff checks"],
     avoidFor: ["semantic architecture judgment", "ambiguous business decisions"],
     requiredChecks: ["local_command_scope_known", "no_secret_exfiltration", "results_recorded"],
@@ -248,6 +264,9 @@ export const reasoningProviderPolicies = [
     id: "qwen_local",
     provider: "qwen",
     accessMode: "local",
+    advisoryTrustTier: "bounded_draft",
+    advisoryWeight: 45,
+    contextScope: "bounded local file context for drafts and summaries; supervisor review and tests are required before adoption",
     bestFor: ["small file-local code drafts", "routine test drafts", "handoff summaries", "bounded refactor drafts"],
     avoidFor: ["architecture approval", "security approval", "business decisions", "final delivery approval"],
     requiredChecks: ["local_runtime_available", "bounded_file_scope", "independent_review", "test_evidence"],
@@ -258,6 +277,9 @@ export const reasoningProviderPolicies = [
     id: "openai_gpt",
     provider: "openai",
     accessMode: "api_or_self_hosted",
+    advisoryTrustTier: "high_trust_advisory",
+    advisoryWeight: 85,
+    contextScope: "redacted strategic or structured reasoning context after cost, entitlement, and official-doc checks",
     bestFor: ["structured outputs", "tool orchestration", "deep reasoning review", "Codex coding supervision"],
     avoidFor: ["unredacted private context without approval", "routine boilerplate loops", "unchecked pricing assumptions"],
     requiredChecks: [
@@ -279,6 +301,10 @@ export const reasoningProviderPolicies = [
     id: "anthropic_claude_subscription",
     provider: "anthropic",
     accessMode: "subscription_interactive",
+    advisoryTrustTier: "high_trust_advisory",
+    advisoryWeight: 90,
+    contextScope:
+      "broad repository read after owner scope, excluding secrets, credentials, customer data, raw logs, and unapproved remote mutation paths",
     bestFor: ["architecture second opinion", "security critique", "planning critique", "agent validation", "edge-case review"],
     avoidFor: ["API-credit execution without owner decision", "default routine worker", "local automation loops"],
     requiredChecks: [
@@ -286,6 +312,7 @@ export const reasoningProviderPolicies = [
       "subscription_entitlement_confirmed",
       "authentication_state_verified_without_token_disclosure",
       "redacted_context_only",
+      "claude_broad_read_scope_owner_scoped",
       "official_provider_docs_verified",
       "bounded_scope_declared",
       "local_verification_required"
@@ -310,6 +337,10 @@ export const reasoningProviderPolicies = [
     id: "gemini_cli",
     provider: "google",
     accessMode: "subscription_cli",
+    advisoryTrustTier: "standard_advisory",
+    advisoryWeight: 70,
+    contextScope:
+      "redacted strategy, brainstorming, multimodal, or selected long-context packets; no broad private repository dump by default",
     bestFor: ["long-context brainstorming", "multimodal critique", "architecture alternatives", "edge-case ideation"],
     avoidFor: [
       "source-of-truth claims",
@@ -346,6 +377,9 @@ export const reasoningProviderPolicies = [
     id: "deepseek_api_or_self_hosted",
     provider: "deepseek",
     accessMode: "api_or_self_hosted",
+    advisoryTrustTier: "comparison_only",
+    advisoryWeight: 40,
+    contextScope: "minimal redacted comparison context after cost or self-hosting checks; not a broad private-context lane",
     bestFor: ["cost-aware coding critique", "JSON output", "reasoning-model comparison", "function calling when supported"],
     avoidFor: ["routine local loops", "tool-calling assumptions on unsupported reasoning models", "unverified hosted cost"],
     requiredChecks: [
@@ -440,6 +474,10 @@ export const credentialedAdvisoryProviderPolicies = [
     accessMode: "subscription_interactive",
     registration: "optional",
     costGuard: "uses_owner_subscription_entitlement_not_api_credit",
+    advisoryTrustTier: "high_trust_advisory",
+    advisoryWeight: 90,
+    contextScope:
+      "broad repository read after owner scope, excluding secrets, credentials, customer data, raw logs, and unapproved remote mutation paths",
     allowedUse: [
       "architecture second opinion",
       "security critique",
@@ -463,6 +501,7 @@ export const credentialedAdvisoryProviderPolicies = [
       "subscription_entitlement_confirmed",
       "no_api_budget_or_credit_claim",
       "redacted_context_only",
+      "claude_broad_read_scope_owner_scoped",
       "official_provider_docs_verified",
       "bounded_scope_declared",
       "local_verification_required",

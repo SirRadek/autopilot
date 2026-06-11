@@ -157,6 +157,48 @@ describe("Codex Autopilot hooks", () => {
     expect(response.systemMessage).toContain("failed");
   });
 
+  it("writes a redacted investigator handoff for failed tool results", () => {
+    const stateDirectory = createStateDirectory();
+    const rawCommand = "npm test -- --runInBand";
+    const output = runHook(
+      {
+        hook_event_name: "PostToolUse",
+        turn_id: "turn-investigate",
+        tool_name: "Bash",
+        tool_use_id: "tool-failed",
+        tool_input: { command: rawCommand },
+        tool_response: { exit_code: 2, stderr: "secret raw failure text" }
+      },
+      stateDirectory
+    );
+    const response = JSON.parse(output) as {
+      hookSpecificOutput: { additionalContext: string };
+    };
+    const queue = readFileSync(join(stateDirectory, "investigation-queue.jsonl"), "utf8");
+    const handoff = JSON.parse(queue.trim()) as {
+      target_agent: string;
+      mode: string;
+      failure_type: string;
+      exit_code: number;
+      required_checks: string[];
+      forbidden_actions: string[];
+    };
+
+    expect(response.hookSpecificOutput.additionalContext).toContain("investigator handoff");
+    expect(handoff.target_agent).toBe("investigator");
+    expect(handoff.mode).toBe("INSPECT_ONLY");
+    expect(handoff.failure_type).toBe("nonzero_exit_code");
+    expect(handoff.exit_code).toBe(2);
+    expect(handoff.required_checks).toContain("rerun_narrowest_relevant_check");
+    expect(handoff.required_checks).toContain("stop_or_drain_affected_process_before_fix");
+    expect(handoff.required_checks).toContain("restart_refreshed_session_after_fix");
+    expect(handoff.required_checks).toContain("update_continuity_and_resume_from_last_state");
+    expect(handoff.forbidden_actions).toContain("raw_project_log_copy");
+    expect(handoff.forbidden_actions).toContain("fixing_live_process_without_stop_or_drain");
+    expect(queue).not.toContain(rawCommand);
+    expect(queue).not.toContain("secret raw failure text");
+  });
+
   it("does not classify successful HTTP-style status codes as failures", () => {
     const output = runHook({
       hook_event_name: "PostToolUse",

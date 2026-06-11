@@ -1,6 +1,6 @@
 # Autopilot Control Plane Architecture
 
-Last updated: 2026-06-06
+Last updated: 2026-06-11
 Next review: 2026-06-11
 Status: active process layer
 Release: `v0.2.0`
@@ -188,12 +188,15 @@ Decision Mesh:
 - Token-efficiency routing is modeled explicitly: narrow work uses Caveman Mode with one task, minimal context, `rg` first, deterministic tools first, local/no-cost workers before cloud, and escalation only when risk or repeated failure justifies it.
 - Protective supervision is modeled explicitly: currentness sentinel reviews, agent-output handoff compilation, progress ledger deltas, blockers, waiting dependencies, and next action sequence are handled as read-only guardrails until the owner approves a scoped write. Raw agent output must be normalized before it becomes another agent's input.
 - Codex lifecycle hooks are modeled explicitly as deterministic report-first guardrails. They add startup, prompt, tool, compaction, subagent, and completion checks; store only redacted hashes and classifications under ignored `.codex/state/`; and remain subordinate to Decision Mesh, architecture records, work logs, tests, and owner decisions.
+- Failed tool results also write a redacted investigator handoff under `.codex/state/investigation-queue.jsonl`. The handoff records hashes, failure class, scope, required checks, and forbidden actions only. It helps Protective Supervision assign an `INSPECT_ONLY` investigator, but hooks do not spawn agents, retry tools, call cloud models, stop or restart processes, or create a second runtime queue.
+- Failed-process repair is explicitly sequenced: reproduce or record the failure pointer, identify the affected process/session, checkpoint progress, stop or drain the process before the fix, apply the scoped fix, restart or refresh the session, update continuity/progress, and resume from the last verified state.
 - Observability routing is modeled explicitly: diagnostic work must first classify whether the symptom belongs to Autopilot control-plane behavior or to a supervised project. Autopilot may store redacted log summaries, source pointers, routing decisions, and verification evidence, but raw project runtime logs remain in the project or source system.
 - Product & Design OS is modeled as a phase-1 governance/template layer for classifying product/design work, locking scope, running opposition, selecting recipes, scoring patterns/assets, tracking taste memory, and defining QA before implementation. It extends the mesh and typed governance policies without adding runtime behavior. Its deterministic router and scoring engine are also exposed through the local read-only MCP server as `route_product_design_os` and `score_product_design_os`.
 - Product & Design OS library records distinguish commercial-safe source pools from inspiration-only references. External assets require source, license, cost, commercial-use, provenance, fallback, performance, and QA evidence before project adoption. Reference screenshots, OCR, DOM/CSS inspection, and HTML captures are evidence only; implementation must use a clean-room brief and original code/assets unless a license explicitly permits reuse.
 - Visual Analyst and Design Critic are governed roles for pre-production visual analysis, post-production critique, research evidence, and architecture-library recommendations. They do not produce final assets, approve their own work, or approve runtime adoption.
 - The Graphic Production Agent is a governed execution role and typed policy for routing static graphics, motion backgrounds, physics visuals, model assets, and video storyboards. It defaults to local/free tools, allows cloud tools when the free/no-cost path is confirmed, and blocks paid tools such as Kling AI without a later owner exception.
-- Reasoning agent routing is modeled explicitly as task lanes plus provider policies: deterministic tools, local Qwen, GPT/OpenAI, Claude Code subscription, Gemini CLI through Google AI subscription/license entitlement, and DeepSeek API/self-hosted each have separate checks and stop conditions.
+- Reasoning agent routing is modeled explicitly as task lanes plus provider policies: deterministic tools, local Qwen, GPT/OpenAI, Claude Code subscription, Gemini CLI through Google AI subscription/license entitlement, and DeepSeek API/self-hosted each have separate checks, advisory weights, context scopes, and stop conditions.
+- Advisory weight is ordered by source authority and owner preference: local deterministic evidence and project records outrank all models; scoped Claude Code subscription critique has higher advisory weight and broader repo-read scope than Gemini; Gemini has higher advisory weight than Qwen or DeepSeek drafts.
 - External advisory reasoning models are allowed as redacted advisory support for brainstorming, critique, validation, and second opinions across agents. Routine worker loops remain local by default, paid credits are blocked, subscription and license tools require entitlement checks, API/self-hosted tools require cost or infrastructure checks, and model output is never source-of-truth evidence without local verification.
 - Plugin and skill inventory is modeled explicitly. Current-session callable plugins and local skills can be routed through their exposed tools/workflows; cached plugin bundles are only availability leads until `tool_search` or active tools expose them.
 - Context7 is the preferred docs-verification lane for reasoning, Gemini brainstorming, design critique, architecture-library review, and technology/best-practice recommendations when it is connected. If Context7 is unavailable or does not cover the topic, the handoff must record the fallback and verify the claim through official documentation, local files, tests, or controlled browser evidence.
@@ -240,6 +243,7 @@ Protective Supervision:
 - compiles reviewed agent outputs into bounded handoff packets before another agent receives them
 - tracks project state as `not_started`, `ready`, `in_progress`, `needs_review`, `blocked`, `waiting_owner`, `waiting_external`, `done`, or `cancelled`
 - stores source pointers, verification gaps, and progress deltas instead of raw logs or full agent transcripts
+- for failed-process investigation, requires checkpoint, stop/drain before fix, restart/refreshed session after fix, continuity update, and resume from the last verified state
 - remains report-first and read-only unless the owner explicitly approves a scoped write
 
 Codex Hooks:
@@ -248,6 +252,9 @@ Codex Hooks:
 - the dependency-free handler lives in `.codex/hooks/autopilot-hook.mjs`
 - runtime evidence is local and ignored under `.codex/state/`
 - hook state excludes raw prompts, commands, responses, transcripts, credentials, customer data, and project runtime logs
+- failed tool evidence may create redacted investigator handoff rows in `.codex/state/investigation-queue.jsonl`; these rows are progress evidence, not execution authority
+- failed tool handoffs include the stop/drain, fix, restart, continuity, and resume checks for affected running processes
+- hooks do not stop, drain, restart, retry, or patch running processes automatically
 - hooks do not call cloud models, connectors, deployment tools, or remote mutation paths
 - exact hook definitions require Codex trust review after changes
 - file/test verification does not prove the active Codex App host loaded the hooks; a refreshed trusted session must produce lifecycle evidence
@@ -273,6 +280,8 @@ Cloudflare:
 Gemini:
 
 - advisory critique only
+- standard advisory weight below scoped Claude Code subscription critique and above Qwen or DeepSeek drafts
+- receives selected redacted context by default, not broad private repository context
 - receives redacted context only
 - never approves work or overrides local verification
 - owner clarified on 2026-06-11 that Google AI/Gemini access is subscription-based, not Gemini API-budget based; API-key, Vertex/AI Studio paid routing, or API-limit assumptions remain blocked without a separate owner decision
@@ -283,6 +292,8 @@ Gemini:
 Claude Code:
 
 - optional subscription-interactive advisory provider only; not an API-credit worker, default worker, gateway, approval authority, or source of truth
+- higher-trust advisory reviewer than Gemini for owner-scoped architecture, security, planning, agent validation, and edge-case critique
+- may receive broad repository read scope after owner scope, except secrets, credentials, customer data, raw project logs, private account identifiers, and unapproved remote mutation paths
 - local setup evidence on 2026-06-11: installed through WinGet package `Anthropic.ClaudeCode`, `claude --version` reported `2.1.172`, and Windows Authenticode signature verified as `Anthropic, PBC`
 - authentication completed through an interactive Claude Code login window; do not print, store, or summarize token values
 - owner clarified on 2026-06-11 that Claude access is subscription-based, not Anthropic API-budget based; API-credit routing remains blocked without a separate owner decision
@@ -304,6 +315,8 @@ Claude Code:
 - Raw project logs, CI logs, deployment logs, and runtime traces must not be copied into Autopilot as source-of-truth evidence; use redacted summaries and source pointers.
 - Raw agent output must not be used directly as the next prompt; Protective Supervision must normalize it into facts, assumptions, decisions, risks, open questions, allowed surfaces, forbidden actions, required checks, and source pointers.
 - Blocked or waiting progress states must name an owner, external dependency, source needed, or stop condition.
+- A failed running process must be stopped or drained before a repair is applied unless the owner explicitly approves a live-patch exception; after the fix, the session must be restarted/refreshed, continuity updated, and work resumed from the last verified state.
+- Lower-weight advisory models may not override scoped Claude Code critique without verified local evidence, tests, Context7, or official documentation.
 - Non-local worker dependency is a stop condition unless the task is strategic reasoning or independent review.
 - MCP tools may not read product repositories or credentials.
 - Unapproved parallel systems or duplicate sources of truth are stop conditions.
@@ -344,7 +357,7 @@ Application verification is delegated to the affected project architecture recor
 - Delivery-system typed governance contracts exist; capability routing, context economy, model spend policy, evidence/completion JSON contracts, deterministic contract validation, and current project mesh seeds now exist.
 - Prompt Library phase-0 exists as local Git/Markdown contracts with human and machine-readable source catalogs, source-catalog schema validation, metadata schema, seed prompts for GPT/Gemini/Claude/Qwen, deterministic frontmatter/source/eval validation, and a Decision Mesh boundary; agent-packet prompt selection remains planned.
 - Protective Supervision phase-0 exists as typed read-only routing policy, root/project Decision Mesh boundaries, handoff/progress templates, and local MCP exposure; it is not a runtime queue and does not mutate remotes.
-- Project-local Codex hooks now exist as a phase-1 report-first lifecycle layer. They have deterministic tests and redacted local state, but active Codex App runtime loading remains unverified until hook trust review and a refreshed session produce `SessionStart` evidence.
+- Project-local Codex hooks now exist as a phase-1 report-first lifecycle layer. They have deterministic tests, redacted local state, and a failed-tool investigator handoff ledger, but active Codex App runtime loading remains unverified until hook trust review and a refreshed session produce `SessionStart` evidence.
 - Project, skill, agent, provider, and verification registries remain planned unless covered by the existing delivery-system contracts. Reasoning provider lanes and plugin/skill inventory are now covered by delivery-system contracts, but the broader `src/data/autopilot/*` registries remain planned.
 - Product & Design OS now has deterministic foundation, schema, provenance, source-link, relationship, unique-ID, status-enum, and project-index validation; intake/change-request router; console-only Markdown reports; read-only MCP exposure; recipe/pattern/asset scoring; first marketing/creative, ecommerce, dashboard/data-heavy, internal-ops, public-sector, and client-portal registry seeds; a local Playwright Design Reader that captures screenshots, extracts DOM/CSS evidence, and feeds the structured Visual QA analyzer; plus a local external-worker adapter for the separate `pdf-supervisor` document/PDF reader. Screenshot OCR, reference comparison, AI-agent UI, document-system recipes, automation UI, and advanced automation scripts remain planned.
 - Product & Design OS now has a local source/reference/project library and a project-index generator. It is not yet wired into a full automation loop; project records should run `npm run pdos:library:projects` after project onboarding or meaningful project-record changes.

@@ -159,6 +159,21 @@ describe("delivery system model policy", () => {
     expect(gemini?.sourceIds).toEqual(expect.arrayContaining(["gemini-code-assist-quotas", "gemini-subscriptions"]));
   });
 
+  it("orders advisory trust by owner preference while keeping outputs advisory", () => {
+    const claude = reasoningProviderPolicies.find((provider) => provider.id === "anthropic_claude_subscription");
+    const gemini = reasoningProviderPolicies.find((provider) => provider.id === "gemini_cli");
+    const qwen = reasoningProviderPolicies.find((provider) => provider.id === "qwen_local");
+    const deepseek = reasoningProviderPolicies.find((provider) => provider.id === "deepseek_api_or_self_hosted");
+
+    expect(claude?.advisoryTrustTier).toBe("high_trust_advisory");
+    expect(claude?.contextScope).toContain("broad repository read after owner scope");
+    expect(claude?.requiredChecks).toContain("claude_broad_read_scope_owner_scoped");
+    expect((claude?.advisoryWeight ?? 0) > (gemini?.advisoryWeight ?? 0)).toBe(true);
+    expect((gemini?.advisoryWeight ?? 0) > (qwen?.advisoryWeight ?? 0)).toBe(true);
+    expect((gemini?.advisoryWeight ?? 0) > (deepseek?.advisoryWeight ?? 0)).toBe(true);
+    expect(claude?.stopConditions).toContain("model_output_used_as_source_of_truth");
+  });
+
   it("registers Claude Code as an optional subscription advisory provider", () => {
     const claude = credentialedAdvisoryProviderPolicies.find((provider) => provider.id === "claude_code");
 
@@ -167,8 +182,11 @@ describe("delivery system model policy", () => {
       tool: "claude",
       accessMode: "subscription_interactive",
       costGuard: "uses_owner_subscription_entitlement_not_api_credit",
+      advisoryTrustTier: "high_trust_advisory",
+      advisoryWeight: 90,
       registration: "optional"
     });
+    expect(claude?.contextScope).toContain("broad repository read after owner scope");
     expect(claude?.allowedUse).toContain("architecture second opinion");
     expect(claude?.forbiddenUse).toContain("default routine worker");
     expect(claude?.forbiddenUse).toContain("local automation loops");
@@ -179,6 +197,7 @@ describe("delivery system model policy", () => {
         "subscription_entitlement_confirmed",
         "no_api_budget_or_credit_claim",
         "redacted_context_only",
+        "claude_broad_read_scope_owner_scoped",
         "official_provider_docs_verified"
       ])
     );

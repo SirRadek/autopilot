@@ -53,6 +53,9 @@ required_checks:
   - authentication_state_verified_without_token_disclosure
   - no_api_budget_or_credit_claim_for_subscription_tools
   - no_gemini_api_budget_or_key_claim_for_subscription_cli
+  - advisory_trust_hierarchy_applied
+  - claude_broad_read_scope_owner_scoped
+  - lower_trust_advisor_claims_verified_before_adoption
   - redacted_context_only
   - context7_or_official_docs_verified
   - gemini_brainstorm_claims_labeled_and_verified
@@ -73,10 +76,14 @@ stop_conditions:
   - model_output_used_as_source_of_truth
   - technology_claim_without_context7_or_official_docs
   - gemini_claim_adopted_without_verification
+  - lower_trust_model_overrides_claude_without_verified_evidence
+  - broad_private_context_sent_to_lower_trust_model
   - model_choice_affects_risk_without_disclosure
 must_not_assume:
   - Do not assume Claude Code subscription access is an API-credit budget.
   - Do not assume Gemini CLI / Google AI subscription access is Gemini API budget or API-key access.
+  - Do not treat Gemini, Qwen, or DeepSeek advice as equal weight to scoped Claude Code subscription critique.
+  - Do not give Qwen or DeepSeek broad private repository context by default.
   - Do not assume any external model is available, free, or safe for private context.
   - Do not assume a cached plugin bundle is callable in the current session.
   - Do not route routine worker loops to GPT, Claude, Gemini, DeepSeek, or another cloud model by default.
@@ -84,6 +91,7 @@ objective:
   - Use Gemini, Claude, and other external models as advisory reasoning when they add measurable review value and pass entitlement/auth/privacy checks.
   - Treat Claude Code as a subscription-interactive advisory provider unless an owner explicitly routes work to API credits.
   - Treat Gemini CLI as a Google AI subscription CLI provider unless an owner explicitly routes work to Gemini API credits.
+  - Use Claude Code subscription as the higher-trust broad-read advisory reviewer when owner-scoped and available; keep Gemini below Claude but above Qwen and DeepSeek drafts.
   - Route GPT/OpenAI, Claude, Gemini, DeepSeek, Qwen, and deterministic tools by task lane and provider policy.
   - Verify external technology and best-practice brainstorm claims through Context7 when connected, or official documentation as fallback.
   - Preserve local workers as the default execution path.

@@ -2162,4 +2162,110 @@ Verification:
   - `typecheck`
   - `vitest run` (`29` files, `146` tests)
   - `astro build`
-  - `playwright test` (`4` Chromium tests, including basic accessibility labels)
+- `playwright test` (`4` Chromium tests, including basic accessibility labels)
+
+## 2026-06-11 Claude Advisory And Failed-Tool Investigation Handoff
+
+Date: 2026-06-11
+Request or trigger: owner asked why Claude Code was not used, requested a permanent fix, a Claude critique of the WordPress/WooCommerce lead-scanner plan, and report-first behavior where failed tool/model work is logged for an investigator agent.
+Mode: WRITE_ALLOWED for local user PATH, report-first Codex hook hardening, deterministic tests, architecture documentation, and work-log evidence. No connector mutation, cloud/API runtime dependency, deployment, GitHub mutation, or automatic investigator runtime was added.
+Scope:
+
+- Persistently add the WinGet portable links directory to the user PATH so `claude` resolves after refreshed shells.
+- Use Claude Code only as a redacted subscription-interactive advisory reviewer.
+- Keep Codex hooks local, deterministic, redacted, and report-first.
+- Add a failed-tool investigator handoff ledger that a supervisor can use to assign an `INSPECT_ONLY` investigator.
+
+Findings:
+
+- Claude Code was installed through WinGet as `Anthropic.ClaudeCode` version `2.1.172`.
+- The executable existed at `C:\Users\sirok\AppData\Local\Microsoft\WinGet\Links\claude.exe`, but that WinGet Links directory was missing from user PATH.
+- `claude mcp list` reports the `github` MCP server connected in read-only mode.
+- Existing hook definitions could flag `tool_result_failed` in `events.jsonl`, but active runtime evidence in `.codex/state/events.jsonl` was stale from 2026-06-06 and no refreshed-session `SessionStart` evidence exists yet for the current Codex App host.
+- Existing hooks did not create a structured investigator handoff. That gap is now covered by `.codex/state/investigation-queue.jsonl`.
+
+Files changed:
+
+- `.codex/hooks/autopilot-hook.mjs`
+- `tests/codex-hooks.test.ts`
+- `docs/autopilot/codex-hooks-operating-model.md`
+- `docs/projects/autopilot-control-plane/architecture.md`
+- `docs/projects/autopilot-control-plane/work-log.md`
+
+Architecture impact:
+
+- Failed `PostToolUse` results now write a redacted investigator handoff record with hashed input and response fingerprints, failure class, scope, target agent, required checks, forbidden actions, and expected output.
+- Hooks still do not spawn agents, call cloud models, retry tools, approve delivery, mutate remotes, or copy raw logs. The handoff ledger is evidence for Protective Supervision only.
+- Runtime activation remains separate from file verification: a refreshed trusted Codex session must produce new hook lifecycle evidence before claiming hooks are active in the host.
+
+Claude advisory highlights:
+
+- Add ownership or authorization verification for customer-submitted URLs before scanner work.
+- Treat SSRF protection as DNS rebinding and redirect-chain validation, not just private-IP blocking.
+- Define failure taxonomy and structured failure schema before scanner implementation.
+- Keep investigator agents advisory and `INSPECT_ONLY`; remediation remains owner/supervisor controlled.
+- Add false-negative disclaimers and exact mini-audit scope before selling scanner-backed outputs.
+
+Verification:
+
+- `claude --version` resolves in the current PowerShell process after PATH update: `2.1.172 (Claude Code)`.
+- `claude mcp list` reports `github ... --read-only - Connected`.
+- `npm.cmd test -- codex-hooks` passed: `1` file, `7` tests.
+- Synthetic hook smoke test wrote both redacted `events.jsonl` and `investigation-queue.jsonl`; the queue contained `target_agent: investigator` and did not contain the raw command or raw response text.
+
+Remaining follow-up:
+
+- Restart or refresh Codex desktop/thread, review/trust the exact hook definitions, and confirm a fresh `SessionStart` row in `.codex/state/events.jsonl`.
+- Use `investigation-queue.jsonl` as a supervisor cue to spawn or assign an `INSPECT_ONLY` investigator; do not make hooks spawn agents automatically.
+
+## 2026-06-11 Failed-Process Repair Protocol And Advisory Hierarchy
+
+Date: 2026-06-11
+Request or trigger: owner clarified that investigations of non-working processes must stop/drain the affected process before applying a fix, restart or refresh the session after the fix, update continuity, and continue from the last state; owner also clarified Claude Code should have higher advisory trust and broader read scope than Gemini, with Gemini weighted above Qwen or DeepSeek.
+Mode: WRITE_ALLOWED for local governance contracts, Decision Mesh nodes, deterministic hook/test updates, architecture documentation, and work-log evidence. No remote mutation, runtime process kill/restart, connector mutation, deployment, or model API path was added.
+Scope:
+
+- Add process-repair sequencing to failed-tool investigator handoffs.
+- Add a Protective Supervision `failure_repair_supervision` lane for failed process/session repair.
+- Encode advisory model hierarchy in TypeScript policy, model spend policy, root mesh, and Autopilot project mesh.
+- Preserve report-first boundaries: hooks and supervision record requirements but do not automatically mutate runtimes.
+
+Files changed:
+
+- `.codex/hooks/autopilot-hook.mjs`
+- `tests/codex-hooks.test.ts`
+- `src/data/delivery-system/protectiveSupervision.ts`
+- `tests/delivery-system/protective-supervision-policy.test.ts`
+- `src/data/delivery-system/modelPolicy.ts`
+- `src/data/delivery-system/modelSpend.ts`
+- `tests/delivery-system/model-policy.test.ts`
+- `tests/delivery-system/context-economy-policy.test.ts`
+- `mesh/nodes/reasoning_strategy.yaml`
+- `mesh/nodes/model_spend_policy.yaml`
+- `mesh/nodes/protective_supervision_policy.yaml`
+- `mesh/nodes/codex_hooks_guardrail.yaml`
+- `docs/projects/autopilot-control-plane/decision-mesh/nodes/model_reasoning_boundary.yaml`
+- `docs/projects/autopilot-control-plane/decision-mesh/nodes/protective_supervision_boundary.yaml`
+- `docs/projects/autopilot-control-plane/decision-mesh/nodes/codex_hooks_boundary.yaml`
+- `docs/autopilot/protective-supervision-operating-model.md`
+- `docs/autopilot/codex-hooks-operating-model.md`
+- `docs/autopilot/delivery-system-model-policy.md`
+- `docs/projects/autopilot-control-plane/architecture.md`
+- `docs/projects/autopilot-control-plane/work-log.md`
+
+Architecture impact:
+
+- Failed-process remediation now has an explicit governance sequence: reproduce or source-pointer the failure, identify the affected process/session, checkpoint progress, stop or drain before fix, apply the scoped fix, restart or refresh, update continuity/progress, and resume from the last verified state.
+- Hook-generated investigator handoffs now include the stop/drain, restart, continuity, and resume checks plus forbidden actions for live-process fixing without stop/drain.
+- Claude Code subscription is now the higher-trust broad-read advisory reviewer after owner scope, while Gemini is standard advisory below Claude and above Qwen or DeepSeek draft/comparison lanes.
+- Local files, tests, architecture records, work logs, owner decisions, Context7, and official docs remain the source-of-truth layers; model output cannot approve delivery or override verified local evidence.
+
+Verification:
+
+- `npm.cmd test -- codex-hooks` passed: `1` file, `7` tests.
+- `npm.cmd test -- delivery-system/model-policy delivery-system/context-economy-policy delivery-system/protective-supervision-policy` passed: `3` files, `18` tests.
+- `npm.cmd run mesh:generate` regenerated `mesh/generated/decision-mesh.json` after YAML source updates.
+- `npm.cmd run mesh:check` passed.
+- `npm.cmd run typecheck` passed.
+- `git diff --check` passed.
+- `npm.cmd test` passed: `30` files, `157` tests.

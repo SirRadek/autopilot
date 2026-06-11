@@ -2,7 +2,8 @@ export type ProtectiveSupervisionLane =
   | "currentness_sentinel"
   | "handoff_compiler"
   | "progress_ledger"
-  | "blocker_review";
+  | "blocker_review"
+  | "failure_repair_supervision";
 
 export type ProjectProgressState =
   | "not_started"
@@ -41,12 +42,35 @@ export interface ProtectiveSupervisionRouteResult {
   readonly outputContract: readonly string[];
 }
 
+export const failureRepairSupervisionChecks = [
+  "failure_reproduced_or_failure_pointer_recorded",
+  "affected_process_identified",
+  "progress_checkpoint_created_before_fix",
+  "affected_process_stopped_or_drained_before_fix",
+  "fix_applied_after_process_safe",
+  "session_restarted_after_fix",
+  "continuity_updated_and_work_resumed"
+] as const;
+
+export const failureRepairSupervisionStopConditions = [
+  "affected_process_unknown",
+  "fix_applied_to_running_process_without_stop_or_drain",
+  "session_restart_missing_after_process_fix",
+  "continuity_missing_after_restart"
+] as const;
+
 export const protectiveSupervisionPolicy = {
   agentId: "protective-supervisor",
   sourceOfTruth: "decision_mesh_and_project_work_logs",
   mode: "read_only_guardrail_until_owner_approval",
   recurringCadence: "weekly_review_default",
-  lanes: ["currentness_sentinel", "handoff_compiler", "progress_ledger", "blocker_review"],
+  lanes: [
+    "currentness_sentinel",
+    "handoff_compiler",
+    "progress_ledger",
+    "blocker_review",
+    "failure_repair_supervision"
+  ],
   progressStates: [
     "not_started",
     "ready",
@@ -113,8 +137,14 @@ export function selectProtectiveSupervisionRoute(
     activateAgent: "protective-supervisor",
     lanes,
     progressStates: protectiveSupervisionPolicy.progressStates,
-    requiredChecks: protectiveSupervisionPolicy.requiredChecks,
-    stopConditions: protectiveSupervisionPolicy.stopConditions,
+    requiredChecks: unique([
+      ...protectiveSupervisionPolicy.requiredChecks,
+      ...(lanes.includes("failure_repair_supervision") ? failureRepairSupervisionChecks : [])
+    ]),
+    stopConditions: unique([
+      ...protectiveSupervisionPolicy.stopConditions,
+      ...(lanes.includes("failure_repair_supervision") ? failureRepairSupervisionStopConditions : [])
+    ]),
     outputContract: protectiveSupervisionPolicy.requiredOutputs
   };
 }
@@ -136,6 +166,24 @@ function selectLanes(normalizedTask: string): ProtectiveSupervisionLane[] {
 
   if (hasAny(normalizedTask, ["blocker", "blocked", "waiting owner", "stop condition", "risk"])) {
     lanes.push("blocker_review");
+  }
+
+  if (
+    hasAny(normalizedTask, [
+      "failed",
+      "failure",
+      "broken",
+      "not working",
+      "investigate",
+      "diagnostic",
+      "process",
+      "running",
+      "restart",
+      "session",
+      "resume"
+    ])
+  ) {
+    lanes.push("failure_repair_supervision");
   }
 
   return unique(lanes.length > 0 ? lanes : ["progress_ledger"]);

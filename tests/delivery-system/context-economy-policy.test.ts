@@ -43,10 +43,21 @@ describe("context economy and model spend policies", () => {
     expect(modelSpendPolicy.subscriptionInteractiveUse).toContain("claude_code_architecture_second_opinion");
     expect(modelSpendPolicy.apiOrSelfHostedUse).toContain("openai_structured_outputs");
     expect(modelSpendPolicy.apiOrSelfHostedUse).toContain("deepseek_self_hosted_candidate");
+    expect(modelSpendPolicy.advisoryHierarchy).toEqual(
+      expect.arrayContaining([
+        "deterministic_local_evidence_over_model_output",
+        "claude_code_subscription_high_trust_broad_repo_read_after_owner_scope",
+        "gemini_cli_standard_advisory_redacted_context_after_subscription_check",
+        "qwen_local_bounded_draft_requires_review",
+        "deepseek_comparison_only_after_cost_or_self_hosting_check"
+      ])
+    );
     expect(modelSpendPolicy.requiredChecks).toContain("free_tier_or_no_cost_confirmed");
     expect(modelSpendPolicy.requiredChecks).toContain("subscription_entitlement_confirmed_for_subscription_tools");
     expect(modelSpendPolicy.requiredChecks).toContain("google_ai_subscription_entitlement_confirmed_for_gemini_cli");
     expect(modelSpendPolicy.requiredChecks).toContain("api_credit_or_self_hosting_cost_confirmed");
+    expect(modelSpendPolicy.requiredChecks).toContain("advisory_trust_hierarchy_applied");
+    expect(modelSpendPolicy.requiredChecks).toContain("claude_broad_read_scope_owner_scoped");
     expect(modelSpendPolicy.requiredChecks).toContain("owner_cost_decision_for_credentialed_provider");
     expect(modelSpendPolicy.requiredChecks).toContain("disclose_model_choice_when_risk_affects_delivery");
     expect(modelSpendPolicy.repoExecutorUse).toContain("repo_editing");
@@ -57,6 +68,7 @@ describe("context economy and model spend policies", () => {
     expect(modelSpendPolicy.stopConditions).toContain("subscription_entitlement_unverified");
     expect(modelSpendPolicy.stopConditions).toContain("google_ai_subscription_entitlement_unverified");
     expect(modelSpendPolicy.stopConditions).toContain("api_credit_path_requested_without_owner_decision");
+    expect(modelSpendPolicy.stopConditions).toContain("lower_trust_model_overrides_claude_without_verified_evidence");
     expect(modelSpendPolicy.stopConditions).toContain(
       "gemini_api_key_or_paid_api_path_requested_without_owner_decision"
     );

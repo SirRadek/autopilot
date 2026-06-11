@@ -33,12 +33,27 @@ Runtime-only redacted state:
 ```text
 .codex/state/events.jsonl
 .codex/state/continuity.json
+.codex/state/investigation-queue.jsonl
 ```
 
 The state directory is ignored by Git. It stores event names, hashed session
 and turn identifiers, tool names, risk classifications, result classes, and
 input fingerprints. It must not store raw prompts, commands, tool responses,
 transcripts, credentials, project logs, or customer data.
+
+`investigation-queue.jsonl` stores a redacted handoff record when `PostToolUse`
+observes an unsuccessful tool result. It includes only hashed input/response
+fingerprints, failure class, scope, required checks, forbidden actions, and the
+recommended `INSPECT_ONLY` investigator target. It is evidence for Protective
+Supervision; hooks do not spawn agents or retry tools automatically.
+
+For failures involving an affected running process, the handoff required checks
+must force a supervisor-controlled repair sequence: reproduce or record the
+failure pointer, identify the affected process, checkpoint progress, stop or
+drain the process before applying the fix, restart or refresh the session after
+the fix, update continuity/progress, and resume from the last verified state.
+Hooks record this requirement only; they do not kill, restart, retry, or patch
+processes.
 
 ## Active Events
 
@@ -47,7 +62,8 @@ transcripts, credentials, project logs, or customer data.
 - `UserPromptSubmit`: flag sensitive input, currentness needs, and external scope.
 - `PreToolUse`: report destructive, remote, deployment, credential, cloud, and
   governance surfaces before execution.
-- `PostToolUse`: record redacted evidence and flag failed verification.
+- `PostToolUse`: record redacted evidence, flag failed verification, and write
+  a redacted investigator handoff for unsuccessful tool results.
 - `PreCompact`: save a compact continuity record.
 - `PostCompact`: require a fresh `AGENTS.md` and Decision Mesh pass.
 - `SubagentStop`: record bounded worker completion.
@@ -61,6 +77,10 @@ Phase 1 is report-first:
 - high-risk activity is classified and recorded in redacted form
 - hooks do not automatically approve, deny, rewrite, deploy, push, merge, or
   call external models
+- hooks do not automatically spawn investigator agents; the supervisor reads
+  redacted evidence and assigns a bounded investigator when useful
+- hooks do not automatically stop, drain, restart, retry, or patch running
+  processes
 - full tests are not run on every lifecycle event
 - hook output is evidence, not delivery approval
 
@@ -76,6 +96,8 @@ Hooks must not:
 - store prompt, command, response, transcript, credential, or customer content
 - call Gemini, OpenAI APIs, paid tools, connectors, or deployment systems
 - automatically update architecture, work logs, GitHub, or project runtimes
+- apply fixes to live running processes or continue after a restart without
+  continuity evidence
 - claim complete enforcement because `PreToolUse` does not intercept every
   possible tool path
 

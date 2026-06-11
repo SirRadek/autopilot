@@ -7,6 +7,7 @@ export interface ModelSpendPolicy {
   readonly subscriptionInteractiveUse: readonly string[];
   readonly apiOrSelfHostedUse: readonly string[];
   readonly repoExecutorUse: readonly string[];
+  readonly advisoryHierarchy: readonly string[];
   readonly frontierOnlyWhen: readonly string[];
   readonly requiredChecks: readonly string[];
   readonly stopConditions: readonly string[];
@@ -56,6 +57,14 @@ export const modelSpendPolicy = {
     "hosted_provider_review_after_cost_decision"
   ],
   repoExecutorUse: ["repo_editing", "tests", "refactors", "debugging", "patch_workflow"],
+  advisoryHierarchy: [
+    "deterministic_local_evidence_over_model_output",
+    "claude_code_subscription_high_trust_broad_repo_read_after_owner_scope",
+    "openai_gpt_high_trust_structured_or_deep_reasoning_after_cost_or_entitlement_check",
+    "gemini_cli_standard_advisory_redacted_context_after_subscription_check",
+    "qwen_local_bounded_draft_requires_review",
+    "deepseek_comparison_only_after_cost_or_self_hosting_check"
+  ],
   frontierOnlyWhen: [
     "high_risk",
     "ambiguous",
@@ -69,6 +78,9 @@ export const modelSpendPolicy = {
     "free_tier_or_no_cost_confirmed",
     "subscription_entitlement_confirmed_for_subscription_tools",
     "google_ai_subscription_entitlement_confirmed_for_gemini_cli",
+    "advisory_trust_hierarchy_applied",
+    "claude_broad_read_scope_owner_scoped",
+    "lower_trust_advisor_claims_verified_before_adoption",
     "api_credit_or_self_hosting_cost_confirmed",
     "redacted_context_only",
     "context7_or_official_docs_verified",
@@ -92,6 +104,7 @@ export const modelSpendPolicy = {
     "gemini_api_key_or_paid_api_path_requested_without_owner_decision",
     "authentication_missing",
     "technology_claim_without_context7_or_official_docs",
-    "gemini_claim_adopted_without_verification"
+    "gemini_claim_adopted_without_verification",
+    "lower_trust_model_overrides_claude_without_verified_evidence"
   ]
 } as const satisfies ModelSpendPolicy;
