@@ -1,5 +1,86 @@
 # Autopilot Control Plane Work Log
 
+## 2026-06-11 Reasoning Agent Mesh And Tool Inventory
+
+Date: 2026-06-11
+Request or trigger: owner asked to update available plugins and skills, use
+Gemini and Claude as advisory brainstormers, and add a reasoning-agent mesh for
+GPT/OpenAI, Anthropic Claude, Gemini, DeepSeek, Qwen, and deterministic/local
+workers. Owner clarified that Claude access is subscription-based, not an API
+budget.
+Mode: WRITE_ALLOWED for local governance code, read-only MCP routing, source
+catalog, Decision Mesh records, documentation, tests, and work log. No remote
+mutation, connector mutation, deployment, API key creation, paid provider
+configuration, or product runtime feature was added.
+Scope: add typed reasoning task lanes and provider policies, distinguish Claude
+Code subscription-interactive usage from API-credit usage, add plugin/skill
+inventory routing, expose the inventory through read-only MCP, record provider
+source IDs, and verify the new governance contracts.
+Files changed:
+
+- `src/data/delivery-system/modelPolicy.ts`
+- `src/data/delivery-system/modelSpend.ts`
+- `src/data/delivery-system/toolInventory.ts`
+- `mcp/server.ts`
+- `tests/delivery-system/model-policy.test.ts`
+- `tests/delivery-system/context-economy-policy.test.ts`
+- `tests/delivery-system/local-worker-policy.test.ts`
+- `tests/delivery-system/tool-inventory.test.ts`
+- `mesh/`
+- `docs/projects/autopilot-control-plane/decision-mesh/`
+- `prompt-library/source-catalog.json`
+- `prompt-library/source-catalog.md`
+- `docs/autopilot/delivery-system-model-policy.md`
+- `docs/projects/autopilot-control-plane/architecture.md`
+- `docs/projects/autopilot-control-plane/work-log.md`
+
+Architecture impact:
+
+- Reasoning model routing now has explicit task lanes for deterministic
+  verification, local routine work, bounded coding, structured/tool reasoning,
+  long-context synthesis, multimodal design review, architecture/security
+  review, agent validation, and sensitive private context.
+- Provider policy now distinguishes deterministic tools, local Qwen, GPT/OpenAI,
+  Claude Code subscription, Gemini CLI, and DeepSeek API/self-hosted lanes.
+- Claude Code is modeled as `subscription_interactive`; subscription entitlement
+  and no-API-credit checks replace the older generic paid-credit assumption for
+  Claude subscription use.
+- Plugin and skill inventory now distinguishes current-session callable tools,
+  local skills, and cached-only plugin bundles. Cached bundles are not callable
+  until active tools or `tool_search` expose them.
+- MCP now exposes `select_tool_inventory_route` as a read-only routing tool and
+  expands `select_reasoning_model_route` output with task lanes and provider
+  policies.
+
+Decisions:
+
+- Keep provider output advisory until verified by local files, tests, Context7
+  when connected, official docs, or controlled browser evidence.
+- Do not create a parallel AI Production Studio or runtime queue.
+- Keep broad `src/data/autopilot/*` project/agent/provider registries planned;
+  this slice only adds delivery-system governance contracts.
+- Treat Gemini and Claude brainstorming output as ideas. Use only verified
+  provider practices in the mesh and docs.
+
+Verification:
+
+- `npm.cmd test -- tests/delivery-system/model-policy.test.ts tests/delivery-system/context-economy-policy.test.ts tests/delivery-system/local-worker-policy.test.ts tests/delivery-system/tool-inventory.test.ts` passed: 4 files, 21 tests.
+- `npm.cmd run mesh:generate` regenerated `mesh/generated/decision-mesh.json`; the root graph is now 28 nodes / 58 links.
+- `npm.cmd run mesh:check` passed.
+- `npm.cmd run prompt:validate` passed: 34 files, 0 errors.
+- `npm.cmd run typecheck` passed.
+- `npm.cmd run diff:check` passed.
+- First full `npm.cmd run verify` caught an E2E snapshot expectation for the old 27 nodes / 55 links graph count; the E2E expectation was updated to 28 nodes / 58 links.
+- Final `npm.cmd run verify` passed: mesh check, prompt validation, PDOS validation, contract validation, diff check, typecheck, 30 Vitest files with 153 tests, Astro build, and 4 Playwright Chromium tests.
+- `npm.cmd run audit:deps` passed with 0 vulnerabilities.
+
+Risks:
+
+- Provider documentation and model availability are unstable; future use must
+  re-check current official docs and available session tools.
+- Cached plugin bundles may appear in local cache without being callable in the
+  active Codex session.
+
 ## 2026-06-11 Claude Code Provider Registration
 
 Date: 2026-06-11

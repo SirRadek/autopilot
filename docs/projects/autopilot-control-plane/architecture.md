@@ -145,6 +145,7 @@ Current data is Markdown-first with a minimal typed governance mirror:
 - typed Graphic Production Agent policy under `src/data/delivery-system/graphicAgent.ts`
 - typed Local Worker policy under `src/data/delivery-system/localWorkers.ts`
 - typed Token Efficiency policy under `src/data/delivery-system/tokenEfficiency.ts`
+- typed Plugin/Skill Tool Inventory policy under `src/data/delivery-system/toolInventory.ts`
 - pure delivery-system validators under `src/lib/delivery-system/`
 - Decision Mesh YAML nodes, edges, rules, schemas, and generated JSON artifact under `mesh/`
 - pure Decision Mesh query helpers under `src/lib/decision-mesh/`
@@ -192,7 +193,9 @@ Decision Mesh:
 - Product & Design OS library records distinguish commercial-safe source pools from inspiration-only references. External assets require source, license, cost, commercial-use, provenance, fallback, performance, and QA evidence before project adoption. Reference screenshots, OCR, DOM/CSS inspection, and HTML captures are evidence only; implementation must use a clean-room brief and original code/assets unless a license explicitly permits reuse.
 - Visual Analyst and Design Critic are governed roles for pre-production visual analysis, post-production critique, research evidence, and architecture-library recommendations. They do not produce final assets, approve their own work, or approve runtime adoption.
 - The Graphic Production Agent is a governed execution role and typed policy for routing static graphics, motion backgrounds, physics visuals, model assets, and video storyboards. It defaults to local/free tools, allows cloud tools when the free/no-cost path is confirmed, and blocks paid tools such as Kling AI without a later owner exception.
-- Free/no-cost cloud reasoning models, including Gemini CLI when available, are allowed as redacted advisory support for brainstorming, critique, validation, and second opinions across agents. Routine worker loops remain local by default, paid credits are blocked, and model output is never source-of-truth evidence without local verification.
+- Reasoning agent routing is modeled explicitly as task lanes plus provider policies: deterministic tools, local Qwen, GPT/OpenAI, Claude Code subscription, Gemini CLI, and DeepSeek API/self-hosted each have separate checks and stop conditions.
+- Free/no-cost cloud reasoning models, including Gemini CLI when available, are allowed as redacted advisory support for brainstorming, critique, validation, and second opinions across agents. Routine worker loops remain local by default, paid credits are blocked, subscription-interactive tools require entitlement checks, API/self-hosted tools require cost or infrastructure checks, and model output is never source-of-truth evidence without local verification.
+- Plugin and skill inventory is modeled explicitly. Current-session callable plugins and local skills can be routed through their exposed tools/workflows; cached plugin bundles are only availability leads until `tool_search` or active tools expose them.
 - Context7 is the preferred docs-verification lane for reasoning, Gemini brainstorming, design critique, architecture-library review, and technology/best-practice recommendations when it is connected. If Context7 is unavailable or does not cover the topic, the handoff must record the fallback and verify the claim through official documentation, local files, tests, or controlled browser evidence.
 - Context7 is configured as a global local Codex MCP server via `npx.cmd -y @upstash/context7-mcp`, but a running thread may need restart or reload before the `mcp__context7` tools appear in the available tool list.
 - 3D visualization is deferred until the query/MCP layer is stable, and 3D remains a premium add-on capability rather than a default service path.
@@ -215,7 +218,7 @@ MCP:
 - local stdio MCP server exposes read-only Decision Mesh tools for Codex context routing
 - local stdio MCP server exposes `select_graphic_route` as a read-only Graphic Production Agent routing tool
 - local stdio MCP server exposes `select_design_review_route` and `search_architecture_library` as read-only design intelligence tools
-- local stdio MCP server exposes `select_reasoning_model_route` and `select_local_worker_route` as read-only model and worker routing tools
+- local stdio MCP server exposes `select_reasoning_model_route`, `select_tool_inventory_route`, and `select_local_worker_route` as read-only model, plugin/skill, and worker routing tools
 - local stdio MCP server exposes `select_token_efficiency_route` as a read-only Caveman/compact routing tool
 - local stdio MCP server exposes `select_protective_supervision_route` as a read-only protective-supervision route for currentness checks, handoffs, progress, and blocker review
 - local stdio MCP server exposes `route_product_design_os` as a read-only Product & Design OS intake/change-request routing tool
@@ -278,9 +281,10 @@ Gemini:
 
 Claude Code:
 
-- optional credentialed advisory provider only; not a default worker, gateway, approval authority, or source of truth
+- optional subscription-interactive advisory provider only; not an API-credit worker, default worker, gateway, approval authority, or source of truth
 - local setup evidence on 2026-06-11: installed through WinGet package `Anthropic.ClaudeCode`, `claude --version` reported `2.1.172`, and Windows Authenticode signature verified as `Anthropic, PBC`
 - authentication completed through an interactive Claude Code login window; do not print, store, or summarize token values
+- owner clarified on 2026-06-11 that Claude access is subscription-based, not Anthropic API-budget based; API-credit routing remains blocked without a separate owner decision
 - allowed uses are architecture/security/planning critique, agent validation, edge-case review, and bounded repo sessions after owner scope
 - forbidden uses are routine local-worker loops, final approval, governance approval, unredacted context, unbounded autonomous execution, and remote mutation without explicit approval
 - project `CLAUDE.md` defines the local memory contract and points Claude back to `AGENTS.md`, Decision Mesh routing, local checks, and Autopilot boundaries
@@ -340,7 +344,7 @@ Application verification is delegated to the affected project architecture recor
 - Prompt Library phase-0 exists as local Git/Markdown contracts with human and machine-readable source catalogs, source-catalog schema validation, metadata schema, seed prompts for GPT/Gemini/Claude/Qwen, deterministic frontmatter/source/eval validation, and a Decision Mesh boundary; agent-packet prompt selection remains planned.
 - Protective Supervision phase-0 exists as typed read-only routing policy, root/project Decision Mesh boundaries, handoff/progress templates, and local MCP exposure; it is not a runtime queue and does not mutate remotes.
 - Project-local Codex hooks now exist as a phase-1 report-first lifecycle layer. They have deterministic tests and redacted local state, but active Codex App runtime loading remains unverified until hook trust review and a refreshed session produce `SessionStart` evidence.
-- Project, skill, agent, provider, and verification registries remain planned unless covered by the existing delivery-system contracts.
+- Project, skill, agent, provider, and verification registries remain planned unless covered by the existing delivery-system contracts. Reasoning provider lanes and plugin/skill inventory are now covered by delivery-system contracts, but the broader `src/data/autopilot/*` registries remain planned.
 - Product & Design OS now has deterministic foundation, schema, provenance, source-link, relationship, unique-ID, status-enum, and project-index validation; intake/change-request router; console-only Markdown reports; read-only MCP exposure; recipe/pattern/asset scoring; first marketing/creative, ecommerce, dashboard/data-heavy, internal-ops, public-sector, and client-portal registry seeds; a local Playwright Design Reader that captures screenshots, extracts DOM/CSS evidence, and feeds the structured Visual QA analyzer; plus a local external-worker adapter for the separate `pdf-supervisor` document/PDF reader. Screenshot OCR, reference comparison, AI-agent UI, document-system recipes, automation UI, and advanced automation scripts remain planned.
 - Product & Design OS now has a local source/reference/project library and a project-index generator. It is not yet wired into a full automation loop; project records should run `npm run pdos:library:projects` after project onboarding or meaningful project-record changes.
 - Architecture records for external/private projects are not normalized yet.

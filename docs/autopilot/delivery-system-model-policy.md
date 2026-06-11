@@ -120,6 +120,40 @@ Required checks:
 
 Free cloud advisory output is never source of truth and never approval evidence by itself.
 
+## Reasoning Agent Routing Mesh
+
+Reasoning routing is a lane decision first and a provider decision second.
+
+Task lanes:
+
+| Lane | Primary use | Preferred providers or tools | Hard boundary |
+| --- | --- | --- | --- |
+| `deterministic_verification` | tests, typecheck, build, schema validation, diff checks | deterministic local tools | never replace review or owner decisions |
+| `local_routine_worker` | boilerplate, DTOs, small patches, indexing, routine summaries | deterministic tools, local Qwen | no cloud/frontier worker loop |
+| `bounded_coding_worker` | focused bugfixes, bounded refactors, test drafts | local Qwen, deterministic tools | draft only until diff review and tests pass |
+| `structured_tool_reasoning` | JSON, structured outputs, tool/function calling, MCP schemas | GPT/OpenAI, DeepSeek, deterministic validation | provider-specific claims require official docs |
+| `long_context_synthesis` | broad planning, long documents, research synthesis | Gemini CLI, Claude Code subscription, GPT/OpenAI | redacted advisory only |
+| `multimodal_design_review` | screenshots, UX critique, visual/multimodal review | Gemini CLI, Claude Code subscription, GPT/OpenAI | visual claims require evidence |
+| `architecture_security_review` | architecture, security, privacy, edge cases | GPT/OpenAI, Claude Code subscription, Gemini CLI, DeepSeek | model output is not source of truth |
+| `agent_validation` | supervisor, handoff, orchestration, routing critique | GPT/OpenAI, Claude Code subscription, Gemini CLI, local Qwen | normalize output before reuse |
+| `sensitive_private_context` | credentials, secrets, customer data, private repo facts | deterministic tools, local Qwen | cloud use requires explicit owner exception |
+
+Provider policies:
+
+| Provider policy | Access mode | Best fit | Required boundary |
+| --- | --- | --- | --- |
+| `deterministic_tools` | local deterministic | search, tests, build, schema validation | command scope and workspace boundary known |
+| `qwen_local` | local LLM | small code drafts, test drafts, summaries | bounded scope, review, tests |
+| `openai_gpt` | API or platform session | structured outputs, tool orchestration, deep reasoning review | cost/entitlement, official docs, redaction |
+| `anthropic_claude_subscription` | subscription interactive | architecture/security/planning critique and agent validation | subscription entitlement, no API-credit claim, redaction |
+| `gemini_cli` | session CLI/free-cloud advisory | long-context brainstorming, multimodal critique, edge cases | free/no-cost check, ideas labeled until verified |
+| `deepseek_api_or_self_hosted` | API or self-hosted | JSON/reasoning comparison and cost-aware critique | hosted cost or self-hosting checks, official docs |
+
+Gemini and Claude brainstorming output remains advisory. It can propose options,
+risks, and critique, but any factual, API, library, model, pricing, or tool-use
+claim must be verified through Context7 when connected, official provider docs,
+local files, tests, or controlled browser evidence before it enters a plan.
+
 ## Model Spend Policy
 
 Model selection is provider-neutral. DeepSeek, Qwen, Gemini, OpenAI, Claude, or any cheaper GPT-class worker may be useful when available, but no workflow may silently depend on one of them.
@@ -151,6 +185,22 @@ Use free/no-cost cloud advisory models for:
 - agent validation
 - research synthesis
 
+Use subscription-interactive providers for:
+
+- Claude Code architecture second opinion
+- Claude Code security critique
+- Claude Code planning critique
+- Claude Code agent validation
+- bounded interactive repository session after owner scope
+
+Use API or self-hosted providers for:
+
+- OpenAI structured outputs
+- OpenAI tool orchestration
+- DeepSeek JSON or reasoning comparison
+- DeepSeek self-hosted candidate evaluation
+- hosted provider review after cost decision
+
 Use repo execution agents for:
 
 - repository editing
@@ -169,6 +219,11 @@ Use frontier reasoning only when:
 - final independent review is needed
 
 Stop if provider availability is unverified, if free/no-cost use is unconfirmed, if a routine local-worker task depends on a non-local model, if paid credits are required, or if model choice affects risk without disclosure.
+
+For subscription tools, stop if subscription entitlement is unverified or if the
+task silently switches into an API-credit path. For API/self-hosted providers,
+stop unless API cost, account boundary, or self-hosted infrastructure has been
+explicitly checked.
 
 Technology and best-practice recommendations from any advisory model must pass the docs-verification lane before adoption:
 
@@ -289,8 +344,9 @@ For technology or best-practice brainstorming, Gemini must be paired with the do
 
 ## Claude Code Policy
 
-Claude Code is registered as an optional credentialed advisory provider, not a
-default worker, gateway, approval authority, or source of truth.
+Claude Code is registered as an optional subscription-interactive advisory
+provider, not an API-credit worker, default worker, gateway, approval authority,
+or source of truth.
 
 Allowed after the required checks pass:
 
@@ -314,7 +370,8 @@ Required checks:
 
 - provider availability verified
 - authentication state verified without printing or storing tokens
-- owner cost decision for credentialed provider use
+- subscription entitlement confirmed
+- no API budget or credit claim for subscription use
 - redacted context only
 - official Anthropic docs verified for Claude-specific behavior
 - bounded scope declared
@@ -325,7 +382,8 @@ Stop conditions:
 
 - `provider_availability_unverified`
 - `authentication_missing`
-- `paid_model_or_credit_required_without_owner_decision`
+- `subscription_entitlement_unverified`
+- `api_credit_path_requested_without_owner_decision`
 - `private_data_not_redacted`
 - `model_output_used_as_source_of_truth`
 - `cloud_model_for_routine_worker_loop`
@@ -340,6 +398,33 @@ file was present; token contents were not read, printed, or stored in the
 repository. No Claude model call was made during registration. The project
 `CLAUDE.md` file is the local memory contract Claude Code should load for this
 repository.
+
+Owner clarification on 2026-06-11: Claude access is through a subscription, not
+an Anthropic API budget. Do not use `--max-budget-usd` or API-credit language as
+the default Claude Code boundary for this project.
+
+## Plugin And Skill Inventory
+
+Autopilot distinguishes:
+
+- session-callable plugins exposed in the current Codex session
+- local skills listed in the current session
+- cached plugin bundles found on disk but not exposed as callable tools
+
+Current inventory is captured in `src/data/delivery-system/toolInventory.ts` and
+exposed by the read-only MCP tool `select_tool_inventory_route`.
+
+Rules:
+
+- Use current session callable plugins before cached-only bundles.
+- Use `tool_search` for deferred MCP tools when the task names a plugin capability.
+- Do not claim a cached plugin is callable until it is surfaced by active tools or `tool_search`.
+- Read the relevant `SKILL.md` before applying a skill workflow.
+- Treat connector/provider output as advisory until verified by local files, official docs, tests, or connector evidence.
+
+Cached-only examples observed on 2026-06-11 include ClickUp, Shopify, Remotion,
+and OpenAI Developers bundles. They are installation or availability leads, not
+active capabilities.
 
 ## Connector And Tool Facts
 
