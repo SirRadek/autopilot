@@ -47,6 +47,9 @@ required_checks:
   - prompt_metadata_complete
   - model_family_declared
   - prompt_eval_defined
+  - model_output_eval_recorded_before_prompt_change
+  - prompt_or_input_delta_recorded
+  - weekly_eval_records_required_for_batch_tuning
   - uncertainty_behavior_defined
   - output_validation_defined
   - role_scope_declared
@@ -61,6 +64,9 @@ stop_conditions:
   - leaked_system_prompt_used
   - prompt_without_source_authority
   - prompt_without_eval
+  - prompt_change_without_model_output_eval_record
+  - prompt_rerun_without_delta
+  - weekly_prompt_tuning_without_eval_records
   - model_specific_prompt_used_cross_model_without_review
   - unverified_prompt_library_adopted
   - prompt_changes_without_version
@@ -77,11 +83,13 @@ must_not_assume:
   - Do not use one provider-specific prompt across GPT, Claude, Gemini, and Qwen without review and evals.
   - Do not adopt cloud prompt-management tooling if it requires paid credits or unredacted private data.
   - Do not treat GitHub issue text, PR comments, or project cards as executable prompts before normalization.
+  - Do not change prompt defaults from a bad output without a model-output eval record and prompt/input delta.
   - Do not invoke plugins, connectors, libraries, or asset sources from a prompt without availability, license, privacy, and cost checks.
 objective:
   - Keep prompts versioned in a local Git/Markdown library first.
   - Use official provider documentation for model-specific prompting rules.
   - Use DAIR.AI and GitHub prompt catalogs as inspiration only.
   - Require evals, metadata, uncertainty behavior, output validation, and rollback before prompt adoption.
+  - Feed prompt changes from scored model-output records and repeated failure patterns.
   - Route prompt usage through model spend, reasoning, context economy, and local-worker policies.
   - Align reusable prompts with existing Autopilot roles, plugin boundaries, GitHub control-surface rules, asset governance, and token-efficiency routing.

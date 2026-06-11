@@ -105,6 +105,26 @@ rules:
     severity: major
     must_not_assume:
       - Do not assume any provider is connected or available.
+  - id: MODEL-EVAL-001
+    title: Score model output before accepting or tuning it
+    applies_to:
+      - model_output_evaluation_policy
+      - prompt_library_policy
+      - reasoning_strategy
+      - model_spend_policy
+    instruction: "Before accepting a model output or changing a prompt, record a bounded score by dimension, source pointers, verification evidence, and the prompt/input delta. During learning, rerun immediately after a meaningful prompt/input change; after repeated similar failures, reroute reasoning or model selection through verified provider guidance."
+    severity: major
+    must_not_assume:
+      - Do not rerun a bad output with no prompt or input change.
+      - Do not switch models without repeated failure evidence, entitlement checks, and provider best-practice verification.
+  - id: MODEL-EVAL-002
+    title: Weekly prompt tuning needs collected eval records
+    applies_to:
+      - model_output_evaluation_policy
+      - prompt_library_policy
+      - protective_supervision_policy
+    instruction: "After the learning baseline, prompt and input updates should be batched from weekly eval summaries and repeated failure patterns. Do not make weekly prompt changes from anecdotes without source-linked eval records."
+    severity: major
   - id: PROMPT-LIB-001
     title: Prompts need source authority and evals
     applies_to:

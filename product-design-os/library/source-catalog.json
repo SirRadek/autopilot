@@ -88,6 +88,26 @@
       "notes": "Use only after model optimization and canvas fallback plan."
     },
     {
+      "id": "quaternius-animated-animals",
+      "name": "Quaternius Ultimate Animated Animals",
+      "category": "3d_model",
+      "status": "candidate_source",
+      "source_url": "https://quaternius.com/packs/ultimateanimatedanimals.html",
+      "evidence_urls": ["https://quaternius.com/packs/ultimateanimatedanimals.html"],
+      "license": {
+        "name": "Creative Commons Zero v1.0 Universal per source page",
+        "type": "cc0",
+        "url": "https://creativecommons.org/publicdomain/zero/1.0/"
+      },
+      "commercial_use": "allowed",
+      "cost": "free",
+      "last_reviewed": "2026-06-10",
+      "allowed_uses": ["animated 3D mascot prototypes", "static mascot fallback renders", "Three.js experiments"],
+      "blocked_uses": ["primary content hidden in WebGL", "shipping unoptimized GLB assets", "using without fallback and nonblank canvas evidence"],
+      "adoption_requirements": ["record exact model file", "optimize GLB for web", "verify mobile, reduced-motion, and static fallback"],
+      "notes": "Exact source for the current animated animal candidate; project adoption still needs per-file evidence."
+    },
+    {
       "id": "polyhaven",
       "name": "Poly Haven",
       "category": "texture",
@@ -191,7 +211,7 @@
       "id": "haikei",
       "name": "Haikei",
       "category": "svg_generator",
-      "status": "candidate_source",
+      "status": "inspiration_only",
       "source_url": "https://haikei.app/",
       "evidence_urls": ["https://haikei.app/"],
       "license": {
@@ -211,7 +231,7 @@
       "id": "astrowind",
       "name": "AstroWind",
       "category": "ui_template",
-      "status": "candidate_source",
+      "status": "inspiration_only",
       "source_url": "https://github.com/arthelokyo/astrowind",
       "evidence_urls": ["https://github.com/arthelokyo/astrowind"],
       "license": {

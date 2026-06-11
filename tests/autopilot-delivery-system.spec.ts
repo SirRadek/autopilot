@@ -12,7 +12,7 @@ test.describe("Autopilot command center", () => {
     await expect(page.getByTestId("workflow-map")).toContainText("business review");
     await expect(page.getByTestId("decision-mesh-coverage")).toContainText("capability routing");
     await expect(page.getByTestId("decision-mesh-coverage")).toContainText("project meshes");
-    await expect(page.getByTestId("decision-mesh-graph")).toContainText("27 nodes / 55 links");
+    await expect(page.getByTestId("decision-mesh-graph")).toContainText("29 nodes / 64 links");
     await expect(page.getByTestId("decision-mesh-graph")).toContainText("Observability Mesh");
     await expect(page.getByTestId("mesh-svg")).toBeVisible();
     await expect(page.getByTestId("project-delivery-workflow")).toContainText("8 ordered phases");
@@ -36,4 +36,26 @@ test.describe("Autopilot command center", () => {
       expect(hasHorizontalOverflow).toBe(false);
     });
   }
+
+  test("has basic accessibility labels on interactive and media elements", async ({ page }) => {
+    await page.goto("/autopilot");
+
+    const unlabeledInteractiveCount = await page.evaluate(() => {
+      const controls = [...document.querySelectorAll("a, button, input, select, textarea")];
+      return controls.filter((control) => {
+        const ariaLabel = control.getAttribute("aria-label")?.trim();
+        const labelledBy = control.getAttribute("aria-labelledby")?.trim();
+        const text = control.textContent?.trim();
+        const title = control.getAttribute("title")?.trim();
+        return !ariaLabel && !labelledBy && !text && !title;
+      }).length;
+    });
+
+    const imageWithoutAltCount = await page.evaluate(
+      () => [...document.querySelectorAll("img")].filter((image) => !image.hasAttribute("alt")).length
+    );
+
+    expect(unlabeledInteractiveCount).toBe(0);
+    expect(imageWithoutAltCount).toBe(0);
+  });
 });

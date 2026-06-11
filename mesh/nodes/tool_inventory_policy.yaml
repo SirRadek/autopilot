@@ -1,0 +1,58 @@
+id: tool_inventory_policy
+type: routing_policy
+name: Tool inventory policy
+question: "Which plugins, skills, and MCP tools are actually available for this task?"
+why: "Autopilot can see session-callable plugins, local skills, and cached plugin bundles; only the active session tools are callable, while cached bundles are evidence that still requires tool_search or installation before use."
+signals:
+  - plugin
+  - skill
+  - tool inventory
+  - callable
+  - cached plugin
+  - tool_search
+  - mcp tool
+  - browser
+  - github
+  - figma
+  - data analytics
+  - cloudflare
+  - vercel
+  - hugging face
+  - product design
+  - clickup
+  - shopify
+  - remotion
+related_agents:
+  - orchestrator
+  - architect
+  - qa
+  - protective-supervisor
+related_files:
+  - src/data/delivery-system/toolInventory.ts
+  - mcp/server.ts
+  - docs/autopilot/delivery-system-model-policy.md
+  - AGENTS.md
+required_checks:
+  - current_session_tools_checked
+  - tool_search_confirms_deferred_tool
+  - skill_workflow_read
+  - cached_plugin_not_treated_as_callable
+  - connector_scope_declared
+  - no_secret_exfiltration
+  - local_verification_required
+stop_conditions:
+  - cached_plugin_treated_as_callable
+  - requested_plugin_unavailable
+  - remote_mutation_without_approval
+  - secret_in_prompt
+  - workflow_requires_unavailable_tool
+must_not_assume:
+  - Do not assume a cached plugin bundle is callable in the current session.
+  - Do not use a plugin capability until it is exposed by the active tools or tool_search.
+  - Do not skip the relevant SKILL.md workflow when a skill applies.
+  - Do not treat connector output as source of truth without local, official-docs, test, or connector evidence.
+objective:
+  - Keep plugin and skill routing tied to observed current-session availability.
+  - Prefer session-callable tools over cached-only bundles.
+  - Use cached-only bundles only as installation or availability leads.
+  - Expose inventory as read-only routing guidance through MCP.

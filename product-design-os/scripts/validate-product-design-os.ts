@@ -2,6 +2,8 @@ import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { basename, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { validateJsonSchema } from "../../src/lib/delivery-system/validation";
+
 export interface PdosValidationIssue {
   readonly file: string;
   readonly message: string;
@@ -93,6 +95,18 @@ const REQUIRED_STRICT_PROCESS_TERMS = [
   "QA Lock"
 ] as const;
 
+const PROJECT_STATUSES = [
+  "not_started",
+  "ready",
+  "in_progress",
+  "needs_review",
+  "blocked",
+  "waiting_owner",
+  "waiting_external",
+  "done",
+  "cancelled"
+] as const;
+
 export function validateProductDesignOs(repoRoot = process.cwd()): PdosValidationReport {
   const pdosRoot = join(repoRoot, "product-design-os");
   const errors: PdosValidationIssue[] = [];
@@ -125,6 +139,8 @@ export function validateProductDesignOs(repoRoot = process.cwd()): PdosValidatio
 
   validateBriefSchema(join(pdosRoot, "briefs/project-brief.schema.json"), repoRoot, errors);
   validateManifests(pdosRoot, repoRoot, errors);
+  validateSchemaCatalogs(pdosRoot, repoRoot, errors);
+  validateLibraryRelationships(pdosRoot, repoRoot, errors);
   validateTasteMemory(pdosRoot, repoRoot, errors);
   validateRecipes(join(pdosRoot, "recipes"), repoRoot, errors);
   validateMarkdown(pdosRoot, repoRoot, errors, warnings);
@@ -209,6 +225,300 @@ function validateManifests(pdosRoot: string, repoRoot: string, errors: PdosValid
       errors.push({
         file: toRepoPath(repoRoot, manifest.file),
         message: `Manifest must contain an array field named ${manifest.key}.`
+      });
+    }
+  }
+}
+
+function validateSchemaCatalogs(pdosRoot: string, repoRoot: string, errors: PdosValidationIssue[]): void {
+  validateCatalogEntries({
+    pdosRoot,
+    repoRoot,
+    errors,
+    schemaPath: "assets/asset.schema.json",
+    catalogPath: "assets/asset-manifest.json",
+    key: "assets"
+  });
+  validateCatalogEntries({
+    pdosRoot,
+    repoRoot,
+    errors,
+    schemaPath: "patterns/pattern.schema.json",
+    catalogPath: "patterns/pattern-manifest.json",
+    key: "patterns"
+  });
+  validateCatalogEntries({
+    pdosRoot,
+    repoRoot,
+    errors,
+    schemaPath: "library/source.schema.json",
+    catalogPath: "library/source-catalog.json",
+    key: "sources"
+  });
+  validateCatalogEntries({
+    pdosRoot,
+    repoRoot,
+    errors,
+    schemaPath: "library/reference.schema.json",
+    catalogPath: "library/reference-catalog.json",
+    key: "references"
+  });
+  validateCatalogEntries({
+    pdosRoot,
+    repoRoot,
+    errors,
+    schemaPath: "library/project-entry.schema.json",
+    catalogPath: "library/project-index.json",
+    key: "projects"
+  });
+}
+
+function validateCatalogEntries(input: {
+  readonly pdosRoot: string;
+  readonly repoRoot: string;
+  readonly errors: PdosValidationIssue[];
+  readonly schemaPath: string;
+  readonly catalogPath: string;
+  readonly key: string;
+}): void {
+  const schemaFile = join(input.pdosRoot, input.schemaPath);
+  const catalogFile = join(input.pdosRoot, input.catalogPath);
+  const schema = readJsonFile(schemaFile, input.repoRoot, input.errors);
+  const catalog = readJsonFile(catalogFile, input.repoRoot, input.errors);
+
+  if (!isRecord(schema) || !isRecord(catalog)) {
+    return;
+  }
+
+  const entries = catalog[input.key];
+  if (!Array.isArray(entries)) {
+    return;
+  }
+
+  entries.forEach((entry, index) => {
+    for (const issue of validateJsonSchema(entry, schema)) {
+      input.errors.push({
+        file: toRepoPath(input.repoRoot, catalogFile),
+        message: `${input.key}[${index}] ${issue.path}: ${issue.message}`
+      });
+    }
+  });
+}
+
+function validateLibraryRelationships(pdosRoot: string, repoRoot: string, errors: PdosValidationIssue[]): void {
+  const sourceCatalogFile = join(pdosRoot, "library/source-catalog.json");
+  const referenceCatalogFile = join(pdosRoot, "library/reference-catalog.json");
+  const assetManifestFile = join(pdosRoot, "assets/asset-manifest.json");
+  const patternManifestFile = join(pdosRoot, "patterns/pattern-manifest.json");
+  const projectIndexFile = join(pdosRoot, "library/project-index.json");
+
+  const sourceCatalog = readJsonFile(sourceCatalogFile, repoRoot, errors);
+  const referenceCatalog = readJsonFile(referenceCatalogFile, repoRoot, errors);
+  const assetManifest = readJsonFile(assetManifestFile, repoRoot, errors);
+  const patternManifest = readJsonFile(patternManifestFile, repoRoot, errors);
+  const projectIndex = readJsonFile(projectIndexFile, repoRoot, errors);
+
+  const sources = getRecordArray(sourceCatalog, "sources");
+  const references = getRecordArray(referenceCatalog, "references");
+  const assets = getRecordArray(assetManifest, "assets");
+  const patterns = getRecordArray(patternManifest, "patterns");
+  const projects = getRecordArray(projectIndex, "projects");
+  const sourceById = new Map(sources.map((source) => [String(source.id), source]));
+  const referenceBySourceUrl = new Map(
+    references
+      .filter((reference) => typeof reference.source_url === "string")
+      .map((reference) => [String(reference.source_url), reference])
+  );
+  const sourceIds = new Set(sourceById.keys());
+  const referenceIds = new Set(references.map((reference) => String(reference.id)));
+  const assetIds = new Set(assets.map((asset) => String(asset.id)));
+  const patternIds = new Set(patterns.map((pattern) => String(pattern.id)));
+
+  validateUniqueCatalogKeys(sourceCatalogFile, repoRoot, "sources", "id", sources, errors);
+  validateUniqueCatalogKeys(referenceCatalogFile, repoRoot, "references", "id", references, errors);
+  validateUniqueCatalogKeys(assetManifestFile, repoRoot, "assets", "id", assets, errors);
+  validateUniqueCatalogKeys(patternManifestFile, repoRoot, "patterns", "id", patterns, errors);
+  validateUniqueCatalogKeys(projectIndexFile, repoRoot, "projects", "slug", projects, errors);
+  validateSourceProvenance(sourceCatalogFile, repoRoot, sources, errors);
+  validateAssetProvenance(assetManifestFile, repoRoot, assets, sourceById, sourceIds, referenceBySourceUrl, referenceIds, errors);
+  validateProjectLibraryLinks(projectIndexFile, repoRoot, projects, sourceIds, referenceIds, assetIds, patternIds, errors);
+}
+
+function validateUniqueCatalogKeys(
+  file: string,
+  repoRoot: string,
+  catalogName: string,
+  key: string,
+  entries: readonly Record<string, unknown>[],
+  errors: PdosValidationIssue[]
+): void {
+  const seen = new Set<string>();
+
+  entries.forEach((entry, index) => {
+    const value = entry[key];
+    if (typeof value !== "string") {
+      return;
+    }
+
+    if (seen.has(value)) {
+      errors.push({
+        file: toRepoPath(repoRoot, file),
+        message: `${catalogName}[${index}] duplicates ${key} ${value}.`
+      });
+      return;
+    }
+
+    seen.add(value);
+  });
+}
+
+function validateSourceProvenance(
+  file: string,
+  repoRoot: string,
+  sources: readonly Record<string, unknown>[],
+  errors: PdosValidationIssue[]
+): void {
+  for (const source of sources) {
+    const id = String(source.id);
+    const license = isRecord(source.license) ? source.license : {};
+    const licenseType = license.type;
+    const commercialUse = source.commercial_use;
+    const status = source.status;
+
+    if ((licenseType === "unknown" || commercialUse === "unknown") && !["inspiration_only", "blocked"].includes(String(status))) {
+      errors.push({
+        file: toRepoPath(repoRoot, file),
+        message: `Source ${id} has unknown license/commercial use and must remain inspiration_only or blocked.`
+      });
+    }
+  }
+}
+
+function validateAssetProvenance(
+  file: string,
+  repoRoot: string,
+  assets: readonly Record<string, unknown>[],
+  sourceById: ReadonlyMap<string, Record<string, unknown>>,
+  sourceIds: ReadonlySet<string>,
+  referenceBySourceUrl: ReadonlyMap<string, Record<string, unknown>>,
+  referenceIds: ReadonlySet<string>,
+  errors: PdosValidationIssue[]
+): void {
+  for (const asset of assets) {
+    const id = String(asset.id);
+    const source = typeof asset.source === "string" ? asset.source : "";
+    const librarySourceId = typeof asset.library_source_id === "string" ? asset.library_source_id : "";
+    const provenanceStatus = typeof asset.provenance_status === "string" ? asset.provenance_status : "";
+    const assetReferenceIds = getStringArray(asset.reference_ids);
+
+    if (source.startsWith("http") && !librarySourceId) {
+      errors.push({
+        file: toRepoPath(repoRoot, file),
+        message: `Asset ${id} uses an external source and must declare library_source_id.`
+      });
+    }
+
+    if (librarySourceId && !sourceIds.has(librarySourceId)) {
+      errors.push({
+        file: toRepoPath(repoRoot, file),
+        message: `Asset ${id} references missing library_source_id ${librarySourceId}.`
+      });
+    }
+
+    validateKnownIds(file, repoRoot, `Asset ${id}`, "reference_ids", assetReferenceIds, referenceIds, errors);
+
+    if (provenanceStatus === "source-recorded" && !librarySourceId) {
+      errors.push({
+        file: toRepoPath(repoRoot, file),
+        message: `Asset ${id} has source-recorded provenance without library_source_id.`
+      });
+    }
+
+    if (provenanceStatus === "internal" && source.startsWith("http")) {
+      errors.push({
+        file: toRepoPath(repoRoot, file),
+        message: `Asset ${id} cannot use internal provenance for an external URL.`
+      });
+    }
+
+    const linkedSource = librarySourceId ? sourceById.get(librarySourceId) : undefined;
+    if (linkedSource?.status === "inspiration_only" && provenanceStatus !== "inspiration-only") {
+      errors.push({
+        file: toRepoPath(repoRoot, file),
+        message: `Asset ${id} uses inspiration-only source ${librarySourceId} and must stay inspiration-only.`
+      });
+    }
+
+    if (provenanceStatus === "source-recorded" && linkedSource !== undefined && !isAdoptableSource(linkedSource)) {
+      errors.push({
+        file: toRepoPath(repoRoot, file),
+        message: `Asset ${id} cannot use non-adoptable source ${librarySourceId} for source-recorded provenance.`
+      });
+    }
+
+    const linkedReference = referenceBySourceUrl.get(source);
+    if (provenanceStatus === "source-recorded" && linkedReference?.status === "inspiration_only") {
+      errors.push({
+        file: toRepoPath(repoRoot, file),
+        message: `Asset ${id} cannot use inspiration-only reference ${String(linkedReference.id)} as source-recorded provenance.`
+      });
+    }
+  }
+}
+
+function isAdoptableSource(source: Record<string, unknown>): boolean {
+  const license = isRecord(source.license) ? source.license : {};
+
+  return (
+    source.status !== "inspiration_only" &&
+    license.type !== "unknown" &&
+    !["inspiration_only", "unknown", "blocked"].includes(String(source.commercial_use))
+  );
+}
+
+function validateProjectLibraryLinks(
+  file: string,
+  repoRoot: string,
+  projects: readonly Record<string, unknown>[],
+  sourceIds: ReadonlySet<string>,
+  referenceIds: ReadonlySet<string>,
+  assetIds: ReadonlySet<string>,
+  patternIds: ReadonlySet<string>,
+  errors: PdosValidationIssue[]
+): void {
+  const allowedStatuses = new Set<string>(PROJECT_STATUSES);
+
+  for (const project of projects) {
+    const slug = String(project.slug);
+    if (typeof project.status === "string" && !allowedStatuses.has(project.status)) {
+      errors.push({
+        file: toRepoPath(repoRoot, file),
+        message: `Project ${slug} has invalid status ${project.status}; use status_label for free-form labels.`
+      });
+    }
+
+    const links = isRecord(project.library_links) ? project.library_links : {};
+    validateKnownIds(file, repoRoot, `Project ${slug}`, "source_ids", getStringArray(links.source_ids), sourceIds, errors);
+    validateKnownIds(file, repoRoot, `Project ${slug}`, "reference_ids", getStringArray(links.reference_ids), referenceIds, errors);
+    validateKnownIds(file, repoRoot, `Project ${slug}`, "asset_ids", getStringArray(links.asset_ids), assetIds, errors);
+    validateKnownIds(file, repoRoot, `Project ${slug}`, "pattern_ids", getStringArray(links.pattern_ids), patternIds, errors);
+  }
+}
+
+function validateKnownIds(
+  file: string,
+  repoRoot: string,
+  owner: string,
+  field: string,
+  values: readonly string[],
+  knownIds: ReadonlySet<string>,
+  errors: PdosValidationIssue[]
+): void {
+  for (const value of values) {
+    if (!knownIds.has(value)) {
+      errors.push({
+        file: toRepoPath(repoRoot, file),
+        message: `${owner} references unknown ${field} value ${value}.`
       });
     }
   }
@@ -386,6 +696,22 @@ function getNestedArray(value: Record<string, unknown>, path: readonly string[])
   }
 
   return Array.isArray(current) ? current : [];
+}
+
+function getRecordArray(value: unknown, key: string): readonly Record<string, unknown>[] {
+  if (!isRecord(value) || !Array.isArray(value[key])) {
+    return [];
+  }
+
+  return value[key].filter(isRecord);
+}
+
+function getStringArray(value: unknown): readonly string[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.filter((item) => typeof item === "string");
 }
 
 const currentFile = fileURLToPath(import.meta.url);

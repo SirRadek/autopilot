@@ -1,5 +1,6 @@
 export { loadDecisionMesh, loadDecisionMeshFromRoot, loadProjectDecisionMeshFromRoot } from "./load";
 export { buildDecisionMeshGraph } from "./graph";
+export { validateCapabilityRoutingMirror } from "./capabilityMirror";
 export {
   buildAgentPacket,
   buildProjectMeshPacket,
@@ -24,6 +25,7 @@ export type {
   NodeExplanation,
   ProjectMeshPacket,
   ProjectMeshPacketInput,
+  ProjectMeshPacketRule,
   RelevantSubgraph,
   RelevantSubgraphInput,
   RequiredAgentsResult,

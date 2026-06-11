@@ -20,6 +20,9 @@ describe("prompt library policy", () => {
         "official_provider_docs_verified",
         "prompt_metadata_complete",
         "prompt_eval_defined",
+        "model_output_eval_recorded_before_prompt_change",
+        "prompt_or_input_delta_recorded",
+        "weekly_eval_records_required_for_batch_tuning",
         "role_scope_declared",
         "token_efficiency_route_selected",
         "plugin_capability_verified",
@@ -30,6 +33,9 @@ describe("prompt library policy", () => {
       ])
     );
     expect(promptLibraryPolicy.stopConditions).toContain("prompt_without_eval");
+    expect(promptLibraryPolicy.stopConditions).toContain("prompt_change_without_model_output_eval_record");
+    expect(promptLibraryPolicy.stopConditions).toContain("prompt_rerun_without_delta");
+    expect(promptLibraryPolicy.stopConditions).toContain("weekly_prompt_tuning_without_eval_records");
     expect(promptLibraryPolicy.stopConditions).toContain("paid_prompt_management_tool_required");
     expect(promptLibraryPolicy.stopConditions).toContain("raw_github_issue_used_as_prompt");
     expect(promptLibraryPolicy.stopConditions).toContain("plugin_invoked_without_availability_check");

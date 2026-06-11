@@ -1,7 +1,7 @@
 # Prompt Source Catalog
 
 Status: reviewed source index
-Last reviewed: 2026-06-03
+Last reviewed: 2026-06-11
 
 This catalog records acceptable reference sources for prompt-library work. It
 does not approve copying prompts verbatim.
@@ -10,6 +10,10 @@ does not approve copying prompts verbatim.
 
 OpenAI:
 
+- Evals:
+  https://developers.openai.com/api/docs/guides/evals
+- Model optimization:
+  https://developers.openai.com/api/docs/guides/model-optimization
 - Prompt engineering guide:
   https://platform.openai.com/docs/guides/prompt-engineering
 - Reasoning best practices:
@@ -17,8 +21,8 @@ OpenAI:
 - Structured Outputs:
   https://platform.openai.com/docs/guides/structured-outputs
 
-Use for GPT, Codex, structured outputs, tool workflows, and reasoning model
-prompt differences.
+Use for GPT, Codex, structured outputs, tool workflows, model-output evals,
+prompt iteration, and reasoning model prompt differences.
 
 Anthropic / Claude:
 
@@ -26,24 +30,66 @@ Anthropic / Claude:
   https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/overview
 - Prompting best practices:
   https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices
+- Define success criteria and build evaluations:
+  https://platform.claude.com/docs/en/test-and-evaluate/develop-tests
 - Guardrails / hallucination reduction:
   https://platform.claude.com/docs/en/build-with-claude/strengthen-guardrails/reduce-hallucinations
+- Claude Code setup:
+  https://code.claude.com/docs/en/setup
+- Claude Code authentication:
+  https://code.claude.com/docs/en/iam
+- Claude Code memory:
+  https://code.claude.com/docs/en/memory
+- Context windows:
+  https://docs.anthropic.com/en/docs/build-with-claude/context-windows
+- Tool use:
+  https://docs.anthropic.com/en/docs/agents-and-tools/tool-use/implement-tool-use
 
-Use for Claude-specific structure, XML-style organization, examples, tool
-behavior, agentic work, and quote-first document analysis.
+Use for Claude-specific structure, success criteria, eval rubrics, XML-style
+organization, examples, tool behavior, agentic work, quote-first document
+analysis, Claude Code install, authentication, project memory behavior,
+context-window constraints, and tool use boundaries.
 
 Google / Gemini:
 
+- Gemini Code Assist quotas:
+  https://developers.google.com/gemini-code-assist/resources/quotas
+- Google Gemini subscriptions:
+  https://gemini.google/subscriptions/
 - Vertex AI prompt design strategies:
   https://docs.cloud.google.com/vertex-ai/generative-ai/docs/learn/prompts/prompt-design-strategies
 - Multimodal prompt design:
   https://docs.cloud.google.com/vertex-ai/generative-ai/docs/multimodal/design-multimodal-prompts
 - Prompt optimizer:
   https://docs.cloud.google.com/vertex-ai/generative-ai/docs/learn/prompts/prompt-optimizer
+- Gemini API models:
+  https://ai.google.dev/gemini-api/docs/models
+- Gemini API long context:
+  https://ai.google.dev/gemini-api/docs/long-context
+- Gemini API prompt design strategies:
+  https://ai.google.dev/gemini-api/docs/prompting-strategies
 
-Use for Gemini brainstorming, multimodal analysis, test-driven prompt iteration,
-and prompt optimization concepts. Cloud use still requires free/no-cost and
-redaction checks.
+Use for Gemini brainstorming, multimodal analysis, clear/direct prompt design,
+test-driven prompt iteration, prompt optimization concepts, and Gemini CLI/Code
+Assist quota boundaries.
+Gemini CLI use in this Autopilot setup is treated as owner subscription or
+license entitlement, not Gemini API budget, unless an owner explicitly routes a
+task to an API path.
+
+DeepSeek:
+
+- Reasoning model:
+  https://api-docs.deepseek.com/guides/reasoning_model
+- Thinking mode:
+  https://api-docs.deepseek.com/guides/thinking_mode
+- JSON output:
+  https://api-docs.deepseek.com/guides/json_mode
+- Function calling:
+  https://api-docs.deepseek.com/guides/function_calling
+
+Use for DeepSeek-specific reasoning, thinking effort, JSON output, and
+function-calling constraints. Hosted API use requires cost/auth checks;
+self-hosted use requires infrastructure and model-availability checks.
 
 Qwen:
 
@@ -51,6 +97,8 @@ Qwen:
   https://qwen.readthedocs.io/en/v2.0/inference/chat.html
 - Qwen function calling:
   https://qwen.readthedocs.io/en/stable/framework/function_call.html
+- Qwen2.5-7B-Instruct model card:
+  https://huggingface.co/Qwen/Qwen2.5-7B-Instruct
 - Qwen2.5-Coder-14B-Instruct model card:
   https://huggingface.co/Qwen/Qwen2.5-Coder-14B-Instruct
 
@@ -130,7 +178,6 @@ fallbacks, and private-reference boundaries.
 
 DAIR.AI Prompt Engineering Guide:
 
-- https://dair.ai/projects/prompt-engineering/
 - https://www.promptingguide.ai/
 
 Use as a general learning reference and inspiration source for techniques,

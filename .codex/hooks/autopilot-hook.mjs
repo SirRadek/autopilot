@@ -20,6 +20,7 @@ const STATE_DIRECTORY =
   process.env.AUTOPILOT_HOOK_STATE_DIR || join(REPOSITORY_ROOT, ".codex", "state");
 const LEDGER_PATH = join(STATE_DIRECTORY, "events.jsonl");
 const CONTINUITY_PATH = join(STATE_DIRECTORY, "continuity.json");
+const INVESTIGATION_QUEUE_PATH = join(STATE_DIRECTORY, "investigation-queue.jsonl");
 
 const REQUIRED_CONTROL_PLANE_PATHS = [
   "AGENTS.md",
@@ -154,6 +155,34 @@ function responseLooksFailed(response) {
   return /(?:exit code|process exited with code)\s*[:=]?\s*[1-9]\d*/i.test(text);
 }
 
+function classifyFailure(response) {
+  if (!response || typeof response !== "object") {
+    return { failure_type: "unknown_failure" };
+  }
+
+  if (response.isError === true || response.ok === false) {
+    return { failure_type: "tool_error_flag" };
+  }
+
+  for (const field of ["exit_code", "exitCode"]) {
+    if (typeof response[field] === "number" && response[field] !== 0) {
+      return { failure_type: "nonzero_exit_code", exit_code: response[field] };
+    }
+  }
+
+  if (typeof response.statusCode === "number" && response.statusCode >= 400) {
+    return { failure_type: "http_error_status", status_code: response.statusCode };
+  }
+
+  const text = toJsonText(response, 8_000);
+  const exitCodeMatch = text.match(/(?:exit code|process exited with code)\s*[:=]?\s*([1-9]\d*)/i);
+  if (exitCodeMatch) {
+    return { failure_type: "text_reported_exit_code", exit_code: Number(exitCodeMatch[1]) };
+  }
+
+  return { failure_type: "unknown_failure" };
+}
+
 function eventRecord(input, flags = [], result = "observed") {
   const inputFingerprint =
     input.hook_event_name === "UserPromptSubmit"
@@ -174,22 +203,70 @@ function eventRecord(input, flags = [], result = "observed") {
   };
 }
 
+function investigationRecord(input, flags = []) {
+  const failure = classifyFailure(input.tool_response);
+  return {
+    version: HOOK_VERSION,
+    timestamp: new Date().toISOString(),
+    status: "ready",
+    source: "codex_hook_post_tool_use",
+    target_agent: "investigator",
+    mode: "INSPECT_ONLY",
+    scope: classifyScope(input.cwd),
+    session: hash(input.session_id),
+    turn: hash(input.turn_id),
+    tool: typeof input.tool_name === "string" ? input.tool_name : null,
+    flags: [...new Set(flags)].sort(),
+    ...failure,
+    input_fingerprint: hash(getToolText(input)),
+    response_fingerprint: hash(toJsonText(input.tool_response, 8_000)),
+    required_checks: [
+      "classify_autopilot_vs_project_boundary",
+      "inspect_failure_without_raw_log_copy",
+      "reproduce_or_record_failure_pointer",
+      "rerun_narrowest_relevant_check",
+      "identify_affected_running_process",
+      "checkpoint_progress_before_fix",
+      "stop_or_drain_affected_process_before_fix",
+      "apply_fix_only_after_process_stopped_or_drained",
+      "restart_refreshed_session_after_fix",
+      "update_continuity_and_resume_from_last_state",
+      "summarize_redacted_root_cause",
+      "report_owner_or_external_dependency"
+    ],
+    forbidden_actions: [
+      "remote_mutation",
+      "raw_prompt_or_response_storage",
+      "raw_project_log_copy",
+      "secret_or_pii_disclosure",
+      "fixing_live_process_without_stop_or_drain",
+      "continuing_after_restart_without_state_update",
+      "delivery_approval"
+    ],
+    expected_output: "redacted_failure_summary_with_reproduction_or_blocker"
+  };
+}
+
 function ensureStateDirectory() {
   mkdirSync(STATE_DIRECTORY, { recursive: true });
 }
 
-function trimLedgerIfNeeded() {
-  if (!existsSync(LEDGER_PATH) || statSync(LEDGER_PATH).size <= MAX_LEDGER_BYTES) {
+function trimJsonlIfNeeded(path) {
+  if (!existsSync(path) || statSync(path).size <= MAX_LEDGER_BYTES) {
     return;
   }
 
-  const lines = readFileSync(LEDGER_PATH, "utf8")
+  const lines = readFileSync(path, "utf8")
     .split(/\r?\n/)
     .filter(Boolean)
     .slice(-MAX_LEDGER_ENTRIES);
-  const temporaryPath = `${LEDGER_PATH}.tmp`;
+  const temporaryPath = `${path}.tmp`;
   writeFileSync(temporaryPath, `${lines.join("\n")}\n`, "utf8");
-  renameSync(temporaryPath, LEDGER_PATH);
+  renameSync(temporaryPath, path);
+}
+
+function trimLedgerIfNeeded() {
+  trimJsonlIfNeeded(LEDGER_PATH);
 }
 
 function record(input, flags = [], result = "observed") {
@@ -197,6 +274,21 @@ function record(input, flags = [], result = "observed") {
     ensureStateDirectory();
     appendFileSync(LEDGER_PATH, `${JSON.stringify(eventRecord(input, flags, result))}\n`, "utf8");
     trimLedgerIfNeeded();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function recordInvestigation(input, flags = []) {
+  try {
+    ensureStateDirectory();
+    appendFileSync(
+      INVESTIGATION_QUEUE_PATH,
+      `${JSON.stringify(investigationRecord(input, flags))}\n`,
+      "utf8"
+    );
+    trimJsonlIfNeeded(INVESTIGATION_QUEUE_PATH);
     return true;
   } catch {
     return false;
@@ -414,6 +506,19 @@ function handlePostToolUse(input) {
     messages.push(
       "The tool result appears unsuccessful. Do not treat it as verification evidence; inspect the failure and rerun the narrowest relevant check."
     );
+  }
+
+  if (failed) {
+    const investigationRecorded = recordInvestigation(input, flags);
+    if (investigationRecorded) {
+      messages.push(
+        "A redacted investigator handoff was written to .codex/state/investigation-queue.jsonl. Supervisor should assign an INSPECT_ONLY investigator with bounded scope."
+      );
+    } else {
+      messages.push(
+        "The redacted investigator handoff could not be written; track this failure manually before continuing."
+      );
+    }
   }
 
   if (flags.includes("remote_mutation")) {

@@ -1,0 +1,54 @@
+id: tool_inventory_boundary
+type: routing_policy
+name: Plugin and skill inventory boundary
+question: "Does Autopilot use only current-session plugins, skills, and MCP tools that are actually available?"
+why: "The control plane can observe active plugins, local skills, and cached plugin bundles, but cached bundles must not become assumed capabilities or hidden dependencies."
+signals:
+  - plugin
+  - skill
+  - tool inventory
+  - current session
+  - cached plugin
+  - tool_search
+  - mcp tool
+  - browser
+  - github
+  - figma
+  - data analytics
+  - cloudflare
+  - vercel
+  - hugging face
+  - product design
+related_agents:
+  - orchestrator
+  - architect
+  - qa
+  - protective-supervisor
+related_files:
+  - src/data/delivery-system/toolInventory.ts
+  - mcp/server.ts
+  - docs/autopilot/delivery-system-model-policy.md
+  - AGENTS.md
+required_checks:
+  - current_session_tools_checked
+  - tool_search_confirms_deferred_tool
+  - skill_workflow_read
+  - cached_plugin_not_treated_as_callable
+  - connector_scope_declared
+  - remote_mutation_scope_declared
+  - no_secret_exfiltration
+stop_conditions:
+  - cached_plugin_treated_as_callable
+  - requested_plugin_unavailable
+  - remote_mutation_without_approval
+  - secret_in_prompt
+  - workflow_requires_unavailable_tool
+must_not_assume:
+  - Do not assume cached plugin bundles are callable.
+  - Do not use connector or plugin claims as source of truth without verification.
+  - Do not skip skill workflow instructions when a skill applies.
+  - Do not mutate remote services through a connector without explicit owner approval.
+objective:
+  - Keep plugin and skill routing read-only until a callable tool is confirmed.
+  - Expose inventory guidance through the local MCP server without creating an execution authority.
+  - Preserve source-of-truth boundaries for connector data, provider docs, local tests, and architecture records.

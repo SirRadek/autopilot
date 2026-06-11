@@ -42,6 +42,24 @@ describe("protective supervision policy", () => {
     expect(protectiveSupervisionPolicy.stopConditions).toContain("stale_progress_ledger");
   });
 
+  it("requires stop, restart, continuity, and resume checks for failed process repair", () => {
+    const route = selectProtectiveSupervisionRoute({
+      task: "Investigate a failed running process, apply a fix, restart the session, and resume progress"
+    });
+
+    expect(route.lanes).toContain("failure_repair_supervision");
+    expect(route.requiredChecks).toEqual(
+      expect.arrayContaining([
+        "failure_reproduced_or_failure_pointer_recorded",
+        "affected_process_stopped_or_drained_before_fix",
+        "session_restarted_after_fix",
+        "continuity_updated_and_work_resumed"
+      ])
+    );
+    expect(route.stopConditions).toContain("fix_applied_to_running_process_without_stop_or_drain");
+    expect(route.stopConditions).toContain("continuity_missing_after_restart");
+  });
+
   it("registers the protective supervisor role without delivery approval authority", () => {
     const role = findRole("protective-supervisor");
 

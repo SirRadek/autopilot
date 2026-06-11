@@ -2,7 +2,7 @@
 id: gemini-radeq-design-brainstorming
 title: Gemini RadeQ Design Brainstorming
 model_family: gemini
-task_type: design-brainstorming
+task_type: brainstorming
 version: v0.1.0
 status: candidate
 last_reviewed: 2026-06-05

@@ -120,6 +120,57 @@ Required checks:
 
 Free cloud advisory output is never source of truth and never approval evidence by itself.
 
+## Reasoning Agent Routing Mesh
+
+Reasoning routing is a lane decision first and a provider decision second.
+
+Task lanes:
+
+| Lane | Primary use | Preferred providers or tools | Hard boundary |
+| --- | --- | --- | --- |
+| `deterministic_verification` | tests, typecheck, build, schema validation, diff checks | deterministic local tools | never replace review or owner decisions |
+| `local_routine_worker` | boilerplate, DTOs, small patches, indexing, routine summaries | deterministic tools, local Qwen | no cloud/frontier worker loop |
+| `bounded_coding_worker` | focused bugfixes, bounded refactors, test drafts | local Qwen, deterministic tools | draft only until diff review and tests pass |
+| `structured_tool_reasoning` | JSON, structured outputs, tool/function calling, MCP schemas | GPT/OpenAI, DeepSeek, deterministic validation | provider-specific claims require official docs |
+| `long_context_synthesis` | broad planning, long documents, research synthesis | Gemini CLI, Claude Code subscription, GPT/OpenAI | redacted advisory only |
+| `multimodal_design_review` | screenshots, UX critique, visual/multimodal review | Gemini CLI, Claude Code subscription, GPT/OpenAI | visual claims require evidence |
+| `architecture_security_review` | architecture, security, privacy, edge cases | GPT/OpenAI, Claude Code subscription, Gemini CLI, DeepSeek | model output is not source of truth |
+| `agent_validation` | supervisor, handoff, orchestration, routing critique | GPT/OpenAI, Claude Code subscription, Gemini CLI, local Qwen | normalize output before reuse |
+| `sensitive_private_context` | credentials, secrets, customer data, private repo facts | deterministic tools, local Qwen | cloud use requires explicit owner exception |
+
+Provider policies:
+
+| Provider policy | Access mode | Best fit | Required boundary |
+| --- | --- | --- | --- |
+| `deterministic_tools` | local deterministic | search, tests, build, schema validation | command scope and workspace boundary known |
+| `qwen_local` | local LLM | small code drafts, test drafts, summaries | bounded scope, review, tests |
+| `openai_gpt` | API or platform session | structured outputs, tool orchestration, deep reasoning review | cost/entitlement, official docs, redaction |
+| `anthropic_claude_subscription` | subscription interactive | high-trust architecture/security/planning critique, broad repo-read review after owner scope, and agent validation | subscription entitlement, no API-credit claim, redaction, no secrets/customer data/raw logs |
+| `gemini_cli` | Google AI subscription CLI | standard advisory long-context brainstorming, multimodal critique, edge cases | subscription/license entitlement, no API-key claim, selected redacted context, ideas labeled until verified |
+| `deepseek_api_or_self_hosted` | API or self-hosted | JSON/reasoning comparison and cost-aware critique | hosted cost or self-hosting checks, official docs, minimal redacted context |
+
+Gemini and Claude brainstorming output remains advisory. It can propose options,
+risks, and critique, but any factual, API, library, model, pricing, or tool-use
+claim must be verified through Context7 when connected, official provider docs,
+local files, tests, or controlled browser evidence before it enters a plan.
+
+Advisory trust hierarchy:
+
+1. Local repository facts, deterministic checks, tests, architecture records,
+   work logs, and owner decisions outrank every model.
+2. Claude Code subscription is the preferred high-trust advisory reviewer when
+   broad repository reading is useful, the owner scope is explicit, and secrets,
+   credentials, customer data, raw project logs, and remote mutation paths are
+   excluded.
+3. GPT/OpenAI remains a high-trust structured/deep reasoning route when its
+   cost or entitlement path is approved and redaction checks pass.
+4. Gemini CLI is a standard advisory reviewer for brainstorming, long-context
+   synthesis, multimodal critique, and edge cases. It receives selected redacted
+   context by default and its claims require verification before adoption.
+5. Qwen local workers and DeepSeek comparison routes produce bounded drafts or
+   comparison notes. They do not override Claude or Gemini advice without
+   verified local evidence, tests, or primary-source documentation.
+
 ## Model Spend Policy
 
 Model selection is provider-neutral. DeepSeek, Qwen, Gemini, OpenAI, Claude, or any cheaper GPT-class worker may be useful when available, but no workflow may silently depend on one of them.
@@ -151,6 +202,23 @@ Use free/no-cost cloud advisory models for:
 - agent validation
 - research synthesis
 
+Use subscription-interactive providers for:
+
+- Gemini CLI advisory through Google AI subscription or license entitlement
+- Claude Code architecture second opinion
+- Claude Code security critique
+- Claude Code planning critique
+- Claude Code agent validation
+- bounded interactive repository session after owner scope
+
+Use API or self-hosted providers for:
+
+- OpenAI structured outputs
+- OpenAI tool orchestration
+- DeepSeek JSON or reasoning comparison
+- DeepSeek self-hosted candidate evaluation
+- hosted provider review after cost decision
+
 Use repo execution agents for:
 
 - repository editing
@@ -168,14 +236,68 @@ Use frontier reasoning only when:
 - previous attempts failed repeatedly
 - final independent review is needed
 
-Stop if provider availability is unverified, if free/no-cost use is unconfirmed, if a routine local-worker task depends on a non-local model, if paid credits are required, or if model choice affects risk without disclosure.
+Stop if provider availability is unverified, if free/no-cost use is unconfirmed for a free route, if a routine local-worker task depends on a non-local model, if paid credits are required, or if model choice affects risk without disclosure.
+
+For subscription tools, stop if subscription entitlement is unverified or if the
+task silently switches into an API-credit path. For API/self-hosted providers,
+stop unless API cost, account boundary, or self-hosted infrastructure has been
+explicitly checked.
+
+For Gemini CLI in this project, the default entitlement path is Google AI
+subscription or Code Assist license, not Gemini API budget. Stop on
+`gemini_api_key_or_paid_api_path_requested_without_owner_decision` if a task
+tries to switch Gemini work to an API key, Vertex/AI Studio paid route, or API
+rate-limit assumption without owner approval.
 
 Technology and best-practice recommendations from any advisory model must pass the docs-verification lane before adoption:
 
 1. Query Context7 when it is connected and covers the library, framework, SDK, browser API, cloud API, SEO rule, or accessibility topic.
 2. If Context7 is unavailable or does not cover the topic, record the fallback and use official documentation, release notes, local code, tests, or controlled browser evidence.
-3. Treat unverified Gemini or free-cloud brainstorm output as a hypothesis, not a plan or source of truth.
+3. Treat unverified Gemini, subscription, or free-cloud brainstorm output as a hypothesis, not a plan or source of truth.
 4. Stop on `technology_claim_without_context7_or_official_docs` or `gemini_claim_adopted_without_verification`.
+
+## Model Output Evaluation
+
+Autopilot is currently in a learning phase for multi-model supervision. Model
+and local-worker outputs must be scored before acceptance when they affect
+prompts, handoffs, model routing, governance, architecture, security, or delivery
+decisions.
+
+Use `src/data/delivery-system/modelOutputEvaluation.ts` and
+`docs/autopilot/model-output-evaluation-operating-model.md` for the route and
+operating contract. Real eval records use
+`model-output-evals/model-output-eval-record.schema.json` and must pass
+`npm run model-output:validate`, which is part of `npm run verify`.
+
+Learning-loop rule:
+
+1. Score output by task fit, instruction following, source grounding, format
+   contract, verification readiness, privacy/safety, handoff clarity, token
+   efficiency, and workflow compatibility.
+2. If the score is weak, select Caveman or compact routing before adding more
+   context or model spend.
+3. Verify provider-specific prompt or reasoning claims through Context7 when
+   connected, otherwise official provider docs.
+4. Record the exact prompt or input-packet delta.
+5. Rerun until the output is acceptable or blocked.
+
+Repeated-failure rule:
+
+- after `3` similar weak outputs, rerun token-efficiency and reasoning-model
+  routing before changing reasoning effort, model, or provider
+- changing model/provider still requires entitlement, cost, redaction, and
+  source checks
+- the new output must be scored and verified again
+
+Weekly tuning rule:
+
+- once enough eval records exist, routine prompt/input updates move to weekly
+  batch review
+- weekly changes must be based on collected eval records and repeated failure
+  patterns, not anecdotes or raw model preference
+- eval records must pass deterministic schema, source-catalog, privacy, delta,
+  route-review, and aggregate validation
+- prompt changes need versioning, evals, source authority, and rollback
 
 ## Prompt Library Policy
 
@@ -262,7 +384,9 @@ Use of Qwen2.5-Coder 14B additionally requires:
 
 ## Gemini Policy
 
-Gemini CLI or Gemini models may be used as advisory critique and brainstorming only.
+Gemini CLI may be used as advisory critique and brainstorming only through the
+owner's Google AI subscription or Code Assist license entitlement unless an
+owner explicitly routes work to a Gemini API path.
 
 Allowed:
 
@@ -281,11 +405,118 @@ Forbidden:
 - delivery approval
 - receiving unredacted private data
 - overriding local repository facts
-- consuming paid credits or requiring an account upgrade
+- consuming Gemini API credits, API keys, Vertex/AI Studio paid paths, or
+  requiring an account upgrade without owner decision
+
+Required checks:
+
+- provider availability verified
+- Google AI subscription or Code Assist license entitlement confirmed
+- authentication state verified without printing or storing tokens
+- redacted context only
+- official Google docs verified for Gemini-specific behavior and quota limits
+- local verification required after any output
 
 Gemini output must be treated as external advice and checked against local files, official docs, or connector snapshots.
 
 For technology or best-practice brainstorming, Gemini must be paired with the docs-verification lane. Context7 is preferred when connected; official documentation is the fallback. Gemini may suggest options, tradeoffs, and critique, but those claims cannot enter an implementation plan until verified.
+
+Gemini has lower advisory weight than scoped Claude Code subscription review and
+higher advisory weight than Qwen or DeepSeek drafts. It should receive selected
+redacted packets rather than broad private repository context by default.
+
+## Claude Code Policy
+
+Claude Code is registered as an optional subscription-interactive advisory
+provider, not an API-credit worker, default worker, gateway, approval authority,
+or source of truth.
+
+Allowed after the required checks pass:
+
+- architecture second opinion
+- security critique
+- planning critique
+- agent validation
+- edge-case review
+- bounded broad repository read after the owner declares scope
+
+Forbidden:
+
+- default routine worker use
+- local automation loops
+- final approval or governance approval
+- unredacted private context
+- secrets, credentials, customer data, raw project logs, or private account
+  identifiers
+- unbounded autonomous execution
+- remote mutation without explicit approval
+
+Required checks:
+
+- provider availability verified
+- authentication state verified without printing or storing tokens
+- subscription entitlement confirmed
+- no API budget or credit claim for subscription use
+- redacted context only
+- broad-read scope declared by the owner
+- official Anthropic docs verified for Claude-specific behavior
+- bounded scope declared
+- local verification required after any output
+- model choice disclosed when it affects risk, cost, or delivery
+
+Stop conditions:
+
+- `provider_availability_unverified`
+- `authentication_missing`
+- `subscription_entitlement_unverified`
+- `api_credit_path_requested_without_owner_decision`
+- `private_data_not_redacted`
+- `model_output_used_as_source_of_truth`
+- `cloud_model_for_routine_worker_loop`
+- `remote_mutation_without_approval`
+
+Local setup evidence on 2026-06-11: Claude Code was installed through the
+official WinGet package `Anthropic.ClaudeCode`, `claude --version` reported
+`2.1.172`, and the Windows Authenticode signature verified as `Anthropic, PBC`.
+The first non-interactive `claude doctor` attempt timed out on interactive auth.
+After a visible PowerShell login window completed, the local Claude credentials
+file was present; token contents were not read, printed, or stored in the
+repository. No Claude model call was made during registration. The project
+`CLAUDE.md` file is the local memory contract Claude Code should load for this
+repository.
+
+Owner clarification on 2026-06-11: Claude access is through a subscription, not
+an Anthropic API budget. Do not use `--max-budget-usd` or API-credit language as
+the default Claude Code boundary for this project.
+
+Owner preference on 2026-06-11: Claude Code has higher advisory trust and a
+broader allowed read scope than Gemini when owner-scoped. Gemini remains useful
+below Claude for brainstorming and critique. Qwen and DeepSeek are lower-weight
+draft or comparison lanes and must not override Claude/Gemini advice without
+verified local evidence, tests, Context7, or official documentation.
+
+## Plugin And Skill Inventory
+
+Autopilot distinguishes:
+
+- session-callable plugins exposed in the current Codex session
+- local skills listed in the current session
+- cached plugin bundles found on disk but not exposed as callable tools
+
+Current inventory is captured in `src/data/delivery-system/toolInventory.ts` and
+exposed by the read-only MCP tool `select_tool_inventory_route`.
+
+Rules:
+
+- Use current session callable plugins before cached-only bundles.
+- Use `tool_search` for deferred MCP tools when the task names a plugin capability.
+- Do not claim a cached plugin is callable until it is surfaced by active tools or `tool_search`.
+- Read the relevant `SKILL.md` before applying a skill workflow.
+- Treat connector/provider output as advisory until verified by local files, official docs, tests, or connector evidence.
+
+Cached-only examples observed on 2026-06-11 include ClickUp, Shopify, Remotion,
+and OpenAI Developers bundles. They are installation or availability leads, not
+active capabilities.
 
 ## Connector And Tool Facts
 

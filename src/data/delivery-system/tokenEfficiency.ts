@@ -129,6 +129,7 @@ export const tokenEfficiencyProfiles = [
       "deterministic_tools",
       "local_search_index",
       "human_or_frontier_review",
+      "external_advisory_review",
       "free_cloud_advisory_review"
     ],
     outputRules: [
@@ -165,6 +166,7 @@ export const tokenEfficiencyProfiles = [
       "official_docs",
       "github_repository_search",
       "local_architecture_library",
+      "external_advisory_review",
       "free_cloud_advisory_review"
     ],
     outputRules: [

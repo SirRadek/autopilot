@@ -18,11 +18,16 @@
     "pdos:reader:capture": "tsx product-design-os/scripts/capture-design-reader.ts",
     "pdos:reader:document": "tsx product-design-os/reader/document-reader-adapter.ts",
     "pdos:library:projects": "tsx product-design-os/scripts/update-project-library.ts",
+    "prompt:validate": "tsx scripts/validate-prompt-library.ts",
+    "model-output:validate": "tsx scripts/validate-model-output-evals.ts",
+    "contracts:validate": "tsx scripts/validate-contracts.ts",
     "mesh:generate": "tsx scripts/generate-decision-mesh.ts",
     "mesh:check": "tsx scripts/generate-decision-mesh.ts --check",
     "mcp:mesh": "tsx mcp/server.ts",
+    "audit:deps": "npm audit --audit-level=high",
+    "diff:check": "git diff --check",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "verify": "npm run mesh:check && npm run pdos:validate && npm run typecheck && npm run test && npm run build && npm run test:e2e"
+    "verify": "npm run mesh:check && npm run prompt:validate && npm run model-output:validate && npm run pdos:validate && npm run contracts:validate && npm run diff:check && npm run typecheck && npm run test && npm run build && npm run test:e2e"
   },
   "devDependencies": {
     "@playwright/test": "1.60.0",

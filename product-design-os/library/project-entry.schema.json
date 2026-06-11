@@ -8,6 +8,7 @@
     "slug",
     "name",
     "status",
+    "status_label",
     "architecture_path",
     "work_log_path",
     "project_mesh_path",
@@ -25,7 +26,11 @@
     },
     "status": {
       "type": "string",
-      "enum": ["not_started", "ready", "in_progress", "needs_review", "blocked", "waiting_owner", "waiting_external", "done", "cancelled", "unknown"]
+      "enum": ["not_started", "ready", "in_progress", "needs_review", "blocked", "waiting_owner", "waiting_external", "done", "cancelled"]
+    },
+    "status_label": {
+      "type": "string",
+      "minLength": 1
     },
     "architecture_path": {
       "type": "string"

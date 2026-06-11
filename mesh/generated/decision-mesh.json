@@ -61,6 +61,12 @@
       "label": "Frontend form"
     },
     {
+      "id": "model_output_evaluation_policy",
+      "group": "governance_policy",
+      "risk": 0.7,
+      "label": "Model output evaluation policy"
+    },
+    {
       "id": "model_spend_policy",
       "group": "routing_policy",
       "risk": 0.7,
@@ -149,6 +155,12 @@
       "group": "capability_addon",
       "risk": 0.7,
       "label": "3D Experience Add-on"
+    },
+    {
+      "id": "tool_inventory_policy",
+      "group": "routing_policy",
+      "risk": 0.7,
+      "label": "Tool inventory policy"
     },
     {
       "id": "user_profile",
@@ -415,6 +427,60 @@
       "target": "reasoning_strategy",
       "relation": "refines",
       "weight": 0.82
+    },
+    {
+      "source": "model_output_evaluation_policy",
+      "target": "reasoning_strategy",
+      "relation": "feeds_route_review",
+      "weight": 0.88
+    },
+    {
+      "source": "model_output_evaluation_policy",
+      "target": "model_spend_policy",
+      "relation": "constrains",
+      "weight": 0.84
+    },
+    {
+      "source": "model_output_evaluation_policy",
+      "target": "prompt_library_policy",
+      "relation": "feeds_prompt_updates",
+      "weight": 0.86
+    },
+    {
+      "source": "model_output_evaluation_policy",
+      "target": "context_economy_policy",
+      "relation": "requires",
+      "weight": 0.82
+    },
+    {
+      "source": "model_output_evaluation_policy",
+      "target": "protective_supervision_policy",
+      "relation": "reports",
+      "weight": 0.82
+    },
+    {
+      "source": "model_output_evaluation_policy",
+      "target": "tool_inventory_policy",
+      "relation": "checks_compatibility",
+      "weight": 0.76
+    },
+    {
+      "source": "tool_inventory_policy",
+      "target": "capability_routing",
+      "relation": "refines",
+      "weight": 0.82
+    },
+    {
+      "source": "tool_inventory_policy",
+      "target": "reasoning_strategy",
+      "relation": "constrains",
+      "weight": 0.78
+    },
+    {
+      "source": "model_spend_policy",
+      "target": "tool_inventory_policy",
+      "relation": "coordinates_with",
+      "weight": 0.74
     },
     {
       "source": "prompt_library_policy",

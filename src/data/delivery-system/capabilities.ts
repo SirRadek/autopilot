@@ -49,7 +49,7 @@ export interface CapabilitySelectionResult {
 export interface CapabilitySourceOfTruth {
   readonly canonical: "mesh_yaml";
   readonly executableMirror: "typescript_routing_index";
-  readonly driftCheck: "capability_ids_match_mesh_nodes";
+  readonly driftCheck: "capability_ids_signals_agents_checks_match_mesh_yaml";
 }
 
 export interface ParallelSystemPolicy {
@@ -66,7 +66,7 @@ export const capabilityModules = [
     title: "Web Build Mesh",
     positioning: "primary_service",
     useFor: ["landing_page", "company_website", "portfolio", "web_application", "client_portal", "admin_panel"],
-    signals: ["website", "landing", "web app", "frontend", "company website", "portal", "admin"],
+    signals: ["website", "landing", "web app", "frontend", "company website", "portfolio", "portal", "admin"],
     requiredAgents: ["web_architect", "frontend", "seo_performance", "qa"],
     requiredChecks: ["responsive_check", "accessibility_check", "seo_metadata_check", "speed_check", "mobile_check"]
   },
@@ -75,7 +75,7 @@ export const capabilityModules = [
     title: "Optimization Mesh",
     positioning: "primary_service",
     useFor: ["page_speed", "core_web_vitals", "conversion_path", "ux_friction", "database_bottlenecks"],
-    signals: ["slow", "performance", "optimize", "core web vitals", "conversion", "ux friction", "caching"],
+    signals: ["slow", "performance", "optimize", "core web vitals", "conversion", "ux friction", "caching", "bottleneck"],
     requiredAgents: ["seo_performance", "frontend", "backend_database", "qa"],
     requiredChecks: ["baseline_metric", "target_metric", "backup", "rollback_plan", "performance_check"]
   },
@@ -102,7 +102,7 @@ export const capabilityModules = [
     title: "Automation Mesh",
     positioning: "primary_service",
     useFor: ["email_automation", "form_to_database", "crm_sync", "api_integrations", "notifications", "reporting"],
-    signals: ["automation", "workflow", "crm", "google sheets", "api integration", "notifications", "scraping"],
+    signals: ["automation", "workflow", "crm", "google sheets", "api integration", "notifications", "scraping", "monitoring"],
     requiredAgents: ["automation", "backend_database", "qa"],
     requiredChecks: ["process_mapping", "retry_policy", "error_logging", "manual_override", "test_data"]
   },
@@ -139,8 +139,8 @@ export const capabilityModules = [
     signals: [
       "log",
       "logs",
-      "runtime logs",
       "logging",
+      "runtime logs",
       "observability",
       "diagnostic",
       "diagnostics",
@@ -152,7 +152,11 @@ export const capabilityModules = [
       "problem",
       "problems",
       "monitoring",
-      "incident"
+      "incident",
+      "request id",
+      "deploy log",
+      "ci log",
+      "runtime log"
     ],
     requiredAgents: ["architect", "qa", "frontend", "backend_database", "seo_performance", "security"],
     requiredChecks: [
@@ -163,6 +167,7 @@ export const capabilityModules = [
       "source_inventory",
       "redacted_log_summary",
       "correlation_id_or_fallback",
+      "baseline_metric",
       "suspect_layer_identified",
       "reproduction_or_counterexample",
       "fix_verification"
@@ -297,7 +302,7 @@ export const capabilityRoutingRules = [
 export const capabilitySourceOfTruth = {
   canonical: "mesh_yaml",
   executableMirror: "typescript_routing_index",
-  driftCheck: "capability_ids_match_mesh_nodes"
+  driftCheck: "capability_ids_signals_agents_checks_match_mesh_yaml"
 } as const satisfies CapabilitySourceOfTruth;
 
 export const parallelSystemPolicy = {
@@ -327,8 +332,21 @@ export function selectCapabilityModules(input: CapabilitySelectionInput): Capabi
   const matchedRules: readonly CapabilityRoutingRule[] = capabilityRoutingRules.filter((rule) =>
     rule.signals.some((signal) => containsTerm(normalizedTask, signal))
   );
-  const rules: readonly CapabilityRoutingRule[] =
-    matchedRules.length > 0 ? matchedRules : [capabilityRoutingRules[1]];
+  if (matchedRules.length === 0) {
+    return {
+      task: input.task,
+      activate: [],
+      optional: [],
+      avoid: [],
+      requiredAgents: [],
+      requiredChecks: [],
+      reason: [
+        "No capability signals matched. Return a neutral routing result and ask for bounded context if implementation cannot continue."
+      ]
+    };
+  }
+
+  const rules: readonly CapabilityRoutingRule[] = matchedRules;
   const activate = uniqueCapabilities(rules.flatMap((rule) => rule.activate));
   const optional = uniqueCapabilities(rules.flatMap((rule) => rule.optional ?? []));
   const avoid = uniqueCapabilities(rules.flatMap((rule) => rule.avoid ?? []));

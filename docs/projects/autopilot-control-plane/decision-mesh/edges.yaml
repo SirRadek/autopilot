@@ -59,6 +59,21 @@ edges:
     relation: exposed_through
     weight: 0.76
     why: "Model routing can be exposed as a read-only MCP recommendation without creating execution authority."
+  - from: tool_inventory_boundary
+    to: read_only_mcp_boundary
+    relation: exposed_through
+    weight: 0.8
+    why: "Plugin and skill inventory is exposed as read-only routing guidance, not a connector execution authority."
+  - from: tool_inventory_boundary
+    to: capability_routing_layer
+    relation: refines
+    weight: 0.8
+    why: "Capability routing must know whether a plugin or skill is session-callable before depending on it."
+  - from: tool_inventory_boundary
+    to: model_reasoning_boundary
+    relation: constrains
+    weight: 0.76
+    why: "Model and provider routing must distinguish available tools, subscription-interactive tools, API/self-hosted providers, and cached-only bundles."
   - from: model_reasoning_boundary
     to: design_intelligence_boundary
     relation: supports
@@ -94,6 +109,36 @@ edges:
     relation: exposed_through
     weight: 0.8
     why: "Token-efficiency routing is a read-only MCP recommendation, not an execution surface."
+  - from: model_output_evaluation_boundary
+    to: model_reasoning_boundary
+    relation: feeds_route_review
+    weight: 0.88
+    why: "Repeated weak outputs should trigger a reviewed reasoning or model route change instead of blind reruns."
+  - from: model_output_evaluation_boundary
+    to: prompt_library_boundary
+    relation: feeds_prompt_updates
+    weight: 0.86
+    why: "Scored outputs and failure patterns provide evidence for prompt version changes, evals, and rollback."
+  - from: model_output_evaluation_boundary
+    to: token_efficiency_boundary
+    relation: requires
+    weight: 0.84
+    why: "Every model-output retry should start from Caveman or compact routing before adding context or spend."
+  - from: model_output_evaluation_boundary
+    to: protective_supervision_boundary
+    relation: reports
+    weight: 0.82
+    why: "Protective supervision tracks blocked, retry, accepted, and weekly tuning states with source pointers."
+  - from: model_output_evaluation_boundary
+    to: tool_inventory_boundary
+    relation: checks_compatibility
+    weight: 0.78
+    why: "Prompt and handoff tuning must account for available plugins, skills, MCP tools, and Codex workflow compatibility."
+  - from: model_output_evaluation_boundary
+    to: read_only_mcp_boundary
+    relation: exposed_through
+    weight: 0.8
+    why: "Model-output evaluation routing is exposed as a read-only MCP recommendation, not an execution surface."
   - from: prompt_library_boundary
     to: model_reasoning_boundary
     relation: constrains

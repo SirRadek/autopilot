@@ -1,5 +1,281 @@
 # Autopilot Control Plane Work Log
 
+## 2026-06-11 Model Output Eval Record Validation
+
+Date: 2026-06-11
+Request or trigger: owner asked to keep supervising model outputs during the
+learning phase, score poor outputs, tune prompts/input packets from evidence,
+retry until acceptable, and make the behavior automatic through mesh rather than
+ad hoc memory.
+Mode: WRITE_ALLOWED for local governance contracts, deterministic validator,
+Decision Mesh metadata, docs, tests, and work log only. No remote mutation,
+runtime queue, model gateway, connector mutation, prompt-management SaaS, or
+cloud/API worker was added.
+Scope:
+
+- Add a local JSON Schema contract for bounded model-output eval records.
+- Add a deterministic validator for records, examples, source-catalog IDs,
+  score dimensions, privacy review, retry deltas, repeated-failure route review,
+  and weekly tuning aggregates.
+- Wire the validator into `npm run verify`.
+- Add negative tests so invalid eval records fail locally and in CI.
+
+Files changed:
+
+- `model-output-evals/model-output-eval-record.schema.json`
+- `model-output-evals/README.md`
+- `model-output-evals/examples/learning-loop.accepted.example.json`
+- `model-output-evals/records/README.md`
+- `scripts/validate-model-output-evals.ts`
+- `tests/delivery-system/model-output-eval-validation.test.ts`
+- `src/data/delivery-system/modelOutputEvaluation.ts`
+- `tests/delivery-system/model-output-evaluation-policy.test.ts`
+- `package.json`
+- `mesh/nodes/model_output_evaluation_policy.yaml`
+- `docs/projects/autopilot-control-plane/decision-mesh/nodes/model_output_evaluation_boundary.yaml`
+- `docs/autopilot/model-output-evaluation-operating-model.md`
+- `docs/projects/autopilot-control-plane/architecture.md`
+- `docs/autopilot/project-architecture-registry.md`
+- `docs/projects/autopilot-control-plane/work-log.md`
+
+Architecture impact:
+
+- Model-output eval records now have a deterministic local source-of-truth
+  shape under `model-output-evals/`.
+- Eval records may store only redacted summaries, source pointers, score data,
+  deltas, and verification evidence.
+- `npm run verify` now fails on invalid model-output eval records before prompt
+  tuning or model/reasoning route changes can rely on them.
+- Weekly tuning remains blocked unless collected eval records and aggregate
+  failure patterns exist.
+
+Verification:
+
+- `npm.cmd run model-output:validate` passed: `3` checked files, `1`
+  checked record, `0` errors.
+- `npm.cmd test -- tests/delivery-system/model-output-eval-validation.test.ts tests/delivery-system/model-output-evaluation-policy.test.ts` passed:
+  `2` files, `12` tests.
+- `npm.cmd run mesh:generate` completed without YAML/TS drift errors; topology
+  was unchanged.
+- `npm.cmd run mesh:check` passed.
+- `npm.cmd run typecheck` passed.
+- `npm.cmd run diff:check` passed.
+- `npm.cmd run verify` passed:
+  - `mesh:check`
+  - `prompt:validate` (`34` files, `0` errors)
+  - `model-output:validate` (`3` files, `1` record, `0` errors)
+  - `pdos:validate` (`64` files, `0` errors, `0` warnings)
+  - `contracts:validate` (`5` files, `0` errors)
+  - `diff:check`
+  - `typecheck`
+  - `vitest run` (`32` files, `171` tests)
+  - `astro build`
+  - `playwright test` (`4` Chromium tests)
+- `npm.cmd run audit:deps` passed: `0` vulnerabilities.
+
+## 2026-06-11 Google AI Subscription Boundary
+
+Date: 2026-06-11
+Request or trigger: owner clarified that Google AI/Gemini access is also
+subscription-based, not API-budget based, with provider limits depending on the
+subscription/license path.
+Mode: WRITE_ALLOWED for local model-routing policy, mesh records, source
+catalog, documentation, tests, and work log only. No API key, connector
+mutation, remote service mutation, deployment, or paid provider configuration
+was added.
+Scope: correct Gemini CLI routing from free/API assumptions to Google AI
+subscription or Code Assist license entitlement, while preserving advisory-only,
+redacted-context, official-doc verification, and local verification boundaries.
+Files changed:
+
+- `src/data/delivery-system/modelPolicy.ts`
+- `src/data/delivery-system/modelSpend.ts`
+- `src/data/delivery-system/tokenEfficiency.ts`
+- `tests/delivery-system/model-policy.test.ts`
+- `tests/delivery-system/context-economy-policy.test.ts`
+- `tests/delivery-system/token-efficiency-policy.test.ts`
+- `mesh/`
+- `docs/projects/autopilot-control-plane/decision-mesh/`
+- `prompt-library/source-catalog.json`
+- `prompt-library/source-catalog.md`
+- `docs/autopilot/delivery-system-model-policy.md`
+- `docs/projects/autopilot-control-plane/architecture.md`
+- `docs/projects/autopilot-control-plane/work-log.md`
+
+Architecture impact:
+
+- Gemini CLI is now modeled as `subscription_cli`.
+- Required checks include
+  `google_ai_subscription_entitlement_confirmed_for_gemini_cli` and
+  authentication-state verification without token disclosure.
+- Stop conditions include
+  `google_ai_subscription_entitlement_unverified` and
+  `gemini_api_key_or_paid_api_path_requested_without_owner_decision`.
+- Official Google Gemini Code Assist quota and Gemini subscription sources were
+  added to the prompt source catalog.
+
+Verification:
+
+- Official Google sources checked on 2026-06-11: Gemini Code Assist quotas show
+  quota differences by license type, including individual/free and Google AI
+  Pro/Ultra paths; Gemini API model docs remain separate API documentation.
+- `npm.cmd run mesh:generate` regenerated `mesh/generated/decision-mesh.json`.
+- `npm.cmd test -- tests/delivery-system/model-policy.test.ts tests/delivery-system/context-economy-policy.test.ts tests/delivery-system/token-efficiency-policy.test.ts` passed: 3 files, 17 tests.
+- `npm.cmd run prompt:validate` passed: 34 files, 0 errors.
+- `npm.cmd run mesh:check` passed.
+- `npm.cmd run typecheck` passed.
+- `npm.cmd run diff:check` passed.
+- `npm.cmd run verify` passed: mesh check, prompt validation, PDOS validation, contract validation, diff check, typecheck, 30 Vitest files with 153 tests, Astro build, and 4 Playwright Chromium tests.
+
+## 2026-06-11 Reasoning Agent Mesh And Tool Inventory
+
+Date: 2026-06-11
+Request or trigger: owner asked to update available plugins and skills, use
+Gemini and Claude as advisory brainstormers, and add a reasoning-agent mesh for
+GPT/OpenAI, Anthropic Claude, Gemini, DeepSeek, Qwen, and deterministic/local
+workers. Owner clarified that Claude access is subscription-based, not an API
+budget.
+Mode: WRITE_ALLOWED for local governance code, read-only MCP routing, source
+catalog, Decision Mesh records, documentation, tests, and work log. No remote
+mutation, connector mutation, deployment, API key creation, paid provider
+configuration, or product runtime feature was added.
+Scope: add typed reasoning task lanes and provider policies, distinguish Claude
+Code subscription-interactive usage from API-credit usage, add plugin/skill
+inventory routing, expose the inventory through read-only MCP, record provider
+source IDs, and verify the new governance contracts.
+Files changed:
+
+- `src/data/delivery-system/modelPolicy.ts`
+- `src/data/delivery-system/modelSpend.ts`
+- `src/data/delivery-system/toolInventory.ts`
+- `mcp/server.ts`
+- `tests/delivery-system/model-policy.test.ts`
+- `tests/delivery-system/context-economy-policy.test.ts`
+- `tests/delivery-system/local-worker-policy.test.ts`
+- `tests/delivery-system/tool-inventory.test.ts`
+- `mesh/`
+- `docs/projects/autopilot-control-plane/decision-mesh/`
+- `prompt-library/source-catalog.json`
+- `prompt-library/source-catalog.md`
+- `docs/autopilot/delivery-system-model-policy.md`
+- `docs/projects/autopilot-control-plane/architecture.md`
+- `docs/projects/autopilot-control-plane/work-log.md`
+
+Architecture impact:
+
+- Reasoning model routing now has explicit task lanes for deterministic
+  verification, local routine work, bounded coding, structured/tool reasoning,
+  long-context synthesis, multimodal design review, architecture/security
+  review, agent validation, and sensitive private context.
+- Provider policy now distinguishes deterministic tools, local Qwen, GPT/OpenAI,
+  Claude Code subscription, Gemini CLI, and DeepSeek API/self-hosted lanes.
+- Claude Code is modeled as `subscription_interactive`; subscription entitlement
+  and no-API-credit checks replace the older generic paid-credit assumption for
+  Claude subscription use.
+- Plugin and skill inventory now distinguishes current-session callable tools,
+  local skills, and cached-only plugin bundles. Cached bundles are not callable
+  until active tools or `tool_search` expose them.
+- MCP now exposes `select_tool_inventory_route` as a read-only routing tool and
+  expands `select_reasoning_model_route` output with task lanes and provider
+  policies.
+
+Decisions:
+
+- Keep provider output advisory until verified by local files, tests, Context7
+  when connected, official docs, or controlled browser evidence.
+- Do not create a parallel AI Production Studio or runtime queue.
+- Keep broad `src/data/autopilot/*` project/agent/provider registries planned;
+  this slice only adds delivery-system governance contracts.
+- Treat Gemini and Claude brainstorming output as ideas. Use only verified
+  provider practices in the mesh and docs.
+
+Verification:
+
+- `npm.cmd test -- tests/delivery-system/model-policy.test.ts tests/delivery-system/context-economy-policy.test.ts tests/delivery-system/local-worker-policy.test.ts tests/delivery-system/tool-inventory.test.ts` passed: 4 files, 21 tests.
+- `npm.cmd run mesh:generate` regenerated `mesh/generated/decision-mesh.json`; the root graph is now 28 nodes / 58 links.
+- `npm.cmd run mesh:check` passed.
+- `npm.cmd run prompt:validate` passed: 34 files, 0 errors.
+- `npm.cmd run typecheck` passed.
+- `npm.cmd run diff:check` passed.
+- First full `npm.cmd run verify` caught an E2E snapshot expectation for the old 27 nodes / 55 links graph count; the E2E expectation was updated to 28 nodes / 58 links.
+- Final `npm.cmd run verify` passed: mesh check, prompt validation, PDOS validation, contract validation, diff check, typecheck, 30 Vitest files with 153 tests, Astro build, and 4 Playwright Chromium tests.
+- `npm.cmd run audit:deps` passed with 0 vulnerabilities.
+
+Risks:
+
+- Provider documentation and model availability are unstable; future use must
+  re-check current official docs and available session tools.
+- Cached plugin bundles may appear in local cache without being callable in the
+  active Codex session.
+
+## 2026-06-11 Claude Code Provider Registration
+
+Date: 2026-06-11
+Request or trigger: owner asked to connect Claude into the Autopilot workflow
+for later use, without assigning it to a specific task yet.
+Mode: WRITE_ALLOWED for local Claude Code installation, provider-policy
+registration, repository memory instructions, architecture, source catalog, and
+work-log records. No Claude model call, remote mutation, deployment, connector
+client, provider gateway, product runtime code, or stored secret was added.
+Scope: install and verify Claude Code locally, start interactive login for the
+owner, and register Claude as an optional credentialed advisory provider with
+auth, cost, privacy, and verification gates.
+Files changed:
+
+- `CLAUDE.md`
+- `src/data/delivery-system/modelPolicy.ts`
+- `tests/delivery-system/model-policy.test.ts`
+- `docs/autopilot/delivery-system-model-policy.md`
+- `docs/projects/autopilot-control-plane/architecture.md`
+- `docs/projects/autopilot-control-plane/work-log.md`
+- `prompt-library/source-catalog.md`
+- `prompt-library/source-catalog.json`
+
+Architecture impact: Claude Code is now a documented optional credentialed
+advisory provider for architecture/security/planning critique, agent
+validation, edge-case review, and bounded repo sessions after owner scope. It is
+not a default worker, final approver, governance authority, provider gateway,
+runtime queue, connector client, or source of truth. Routine worker loops remain
+local by default.
+Decisions:
+
+- Install the official Windows `Anthropic.ClaudeCode` WinGet package instead of
+  adding an npm project dependency.
+- Keep Claude Code credential state outside the repository and never print or
+  persist token values.
+- Require owner cost decision before credentialed Claude use; registration does
+  not approve paid credits or subscription usage for future tasks.
+- Add root `CLAUDE.md` so Claude Code receives local Autopilot boundaries,
+  `AGENTS.md`/Decision Mesh routing, and Windows `npm.cmd` check guidance.
+- Record official Anthropic Claude Code setup, authentication, and memory docs
+  in the prompt source catalog for future provider-specific changes.
+
+Verification:
+
+- Decision Mesh routed the task through `automation_mesh` and Autopilot
+  control-plane project mesh with provider availability, cost, privacy, and
+  source-of-truth stop conditions.
+- `winget install --id Anthropic.ClaudeCode --exact` downloaded
+  `claude.exe` from `downloads.claude.ai`, verified the installer hash, and
+  added the `claude` command alias.
+- `claude --version` reported `2.1.172 (Claude Code)`.
+- `Get-AuthenticodeSignature` reported a valid signature from `Anthropic, PBC`.
+- Existing shell did not yet see the new PATH entry, but the user PATH contains
+  `Microsoft\WinGet\Links`; a new PowerShell should find `claude`.
+- `claude doctor` in the non-interactive Codex shell timed out on interactive
+  auth, so the leftover `claude` process was stopped.
+- A visible PowerShell login window was started for the owner.
+- After the interactive login completed, the local Claude credentials file was
+  present. Token contents were not read, printed, or stored in the repository.
+- No Claude model call was made during registration.
+
+Risks:
+
+- Claude Code requires a credentialed account path; future model use remains
+  blocked on explicit owner cost/subscription approval and redacted context.
+- Claude output must be verified locally and cannot approve delivery or replace
+  architecture, mesh, tests, or owner decisions.
+
 ## 2026-06-07 Autopilot v0.2.0 Release
 
 Date: 2026-06-07
@@ -1901,3 +2177,250 @@ Verification:
 - `npm.cmd test -- prompt-library-policy prompt-pack-policy` passed: 2 files, 9 tests.
 - `npm.cmd run mesh:check` passed.
 - `git diff --check` passed.
+
+## 2026-06-11 Autopilot Foundation Hardening
+
+Date: 2026-06-11
+Request or trigger: handoff requested foundation hardening before any further Autopilot expansion, with no new product features or redesign.
+Mode: WRITE_ALLOWED for local governance code, deterministic validators, schemas, tests, local documentation, Decision Mesh records, architecture registry, and work log. No connector mutation, runtime queue, deployment, remote service change, or product feature work was added.
+Scope: verify and harden capability routing no-match behavior, lock project mesh packet rules in tests, add YAML/TS capability drift tests, validate prompt-library frontmatter and source catalogs, validate Product & Design OS schema/provenance relationships, add evidence/completion contracts, harden MCP output metadata, and keep local/CI verification gates deterministic.
+
+Primary files changed and created:
+
+- `src/lib/decision-mesh/index.ts`
+- `src/lib/decision-mesh/capabilityMirror.ts`
+- `scripts/generate-decision-mesh.ts`
+- `scripts/validate-prompt-library.ts`
+- `scripts/validate-contracts.ts`
+- `mcp/server.ts`
+- `docs/contracts/`
+- `docs/QUICKSTART.md`
+- `README.md`
+- `prompt-library/`
+- `product-design-os/`
+- `package.json`
+- `tests/`
+- `docs/projects/autopilot-control-plane/architecture.md`
+- `docs/autopilot/project-architecture-registry.md`
+
+Architecture impact:
+
+- Current routing/query behavior is now regression-tested so unknown capability tasks return neutral results with no SEO/optimization fallback and no false stop conditions.
+- `getRelevantSubgraph`, `findRisks`, `buildAgentPacket`, and `buildProjectMeshPacket` no-match behavior is covered by negative tests; exact node matches are asserted ahead of neighboring expansion at low `max_nodes`.
+- `build_project_mesh_packet` returns applicable rules with `id`, `title`, `severity`, `instruction`, `applies_to`, plus `must_not_assume`, and the project packet path remains read-only.
+- YAML/TypeScript capability drift validation is now a reusable pure module and fails on capability IDs, signals, required agents, required checks, and the `baseline_metric` regression case.
+- Prompt Library now validates YAML frontmatter against `prompt.schema.json`, source IDs against `source-catalog.json`, `source-catalog.json` against `source-catalog.schema.json`, eval existence, self-reference by path or prompt ID, and candidate-only status until real eval evidence exists.
+- Product & Design OS validation applies schema checks plus relationship checks for duplicate IDs, unknown source/reference/asset/pattern links, source-recorded provenance, inspiration-only references, non-adoptable sources, and project status enum usage.
+- Phase-0 evidence/completion contracts now live under `docs/contracts/`, are validated by `scripts/validate-contracts.ts`, and are wired into `npm run verify`.
+- MCP server version is sourced from `package.json`; server instructions, read-only annotations, per-tool output schemas, and structured content are present for tools.
+
+Decisions:
+
+- Keep TypeScript routing as an executable mirror for now, guarded by drift failure, rather than introducing generated routing in this slice.
+- Treat unknown-license or unknown-commercial-use PDOS sources as `inspiration_only` or `blocked`.
+- Normalize project library status to the Protective Supervision enum and keep free-form labels in `status_label`.
+- Keep prompt contracts as `candidate`; none were promoted to `approved` without real eval results.
+- Keep the current basic Playwright accessibility smoke test as the CI a11y gate for this slice; do not add an axe/pa11y dependency without a separate owner decision.
+- Keep hooks report-first. This work does not claim refreshed-session `SessionStart` evidence; a Codex restart/reload is still required for current hook runtime evidence.
+
+Verification:
+
+- `npm.cmd run audit:deps` passed: 0 vulnerabilities.
+- `npm.cmd run verify` passed:
+  - `mesh:check`
+  - `prompt:validate` (`34` files, `0` errors)
+  - `pdos:validate` (`64` files, `0` errors, `0` warnings)
+  - `contracts:validate` (`5` files, `0` errors)
+  - `git diff --check`
+  - `typecheck`
+  - `vitest run` (`29` files, `146` tests)
+  - `astro build`
+- `playwright test` (`4` Chromium tests, including basic accessibility labels)
+
+## 2026-06-11 Claude Advisory And Failed-Tool Investigation Handoff
+
+Date: 2026-06-11
+Request or trigger: owner asked why Claude Code was not used, requested a permanent fix, a Claude critique of the WordPress/WooCommerce lead-scanner plan, and report-first behavior where failed tool/model work is logged for an investigator agent.
+Mode: WRITE_ALLOWED for local user PATH, report-first Codex hook hardening, deterministic tests, architecture documentation, and work-log evidence. No connector mutation, cloud/API runtime dependency, deployment, GitHub mutation, or automatic investigator runtime was added.
+Scope:
+
+- Persistently add the WinGet portable links directory to the user PATH so `claude` resolves after refreshed shells.
+- Use Claude Code only as a redacted subscription-interactive advisory reviewer.
+- Keep Codex hooks local, deterministic, redacted, and report-first.
+- Add a failed-tool investigator handoff ledger that a supervisor can use to assign an `INSPECT_ONLY` investigator.
+
+Findings:
+
+- Claude Code was installed through WinGet as `Anthropic.ClaudeCode` version `2.1.172`.
+- The executable existed at `C:\Users\sirok\AppData\Local\Microsoft\WinGet\Links\claude.exe`, but that WinGet Links directory was missing from user PATH.
+- `claude mcp list` reports the `github` MCP server connected in read-only mode.
+- Existing hook definitions could flag `tool_result_failed` in `events.jsonl`, but active runtime evidence in `.codex/state/events.jsonl` was stale from 2026-06-06 and no refreshed-session `SessionStart` evidence exists yet for the current Codex App host.
+- Existing hooks did not create a structured investigator handoff. That gap is now covered by `.codex/state/investigation-queue.jsonl`.
+
+Files changed:
+
+- `.codex/hooks/autopilot-hook.mjs`
+- `tests/codex-hooks.test.ts`
+- `docs/autopilot/codex-hooks-operating-model.md`
+- `docs/projects/autopilot-control-plane/architecture.md`
+- `docs/projects/autopilot-control-plane/work-log.md`
+
+Architecture impact:
+
+- Failed `PostToolUse` results now write a redacted investigator handoff record with hashed input and response fingerprints, failure class, scope, target agent, required checks, forbidden actions, and expected output.
+- Hooks still do not spawn agents, call cloud models, retry tools, approve delivery, mutate remotes, or copy raw logs. The handoff ledger is evidence for Protective Supervision only.
+- Runtime activation remains separate from file verification: a refreshed trusted Codex session must produce new hook lifecycle evidence before claiming hooks are active in the host.
+
+Claude advisory highlights:
+
+- Add ownership or authorization verification for customer-submitted URLs before scanner work.
+- Treat SSRF protection as DNS rebinding and redirect-chain validation, not just private-IP blocking.
+- Define failure taxonomy and structured failure schema before scanner implementation.
+- Keep investigator agents advisory and `INSPECT_ONLY`; remediation remains owner/supervisor controlled.
+- Add false-negative disclaimers and exact mini-audit scope before selling scanner-backed outputs.
+
+Verification:
+
+- `claude --version` resolves in the current PowerShell process after PATH update: `2.1.172 (Claude Code)`.
+- `claude mcp list` reports `github ... --read-only - Connected`.
+- `npm.cmd test -- codex-hooks` passed: `1` file, `7` tests.
+- Synthetic hook smoke test wrote both redacted `events.jsonl` and `investigation-queue.jsonl`; the queue contained `target_agent: investigator` and did not contain the raw command or raw response text.
+
+Remaining follow-up:
+
+- Restart or refresh Codex desktop/thread, review/trust the exact hook definitions, and confirm a fresh `SessionStart` row in `.codex/state/events.jsonl`.
+- Use `investigation-queue.jsonl` as a supervisor cue to spawn or assign an `INSPECT_ONLY` investigator; do not make hooks spawn agents automatically.
+
+## 2026-06-11 Failed-Process Repair Protocol And Advisory Hierarchy
+
+Date: 2026-06-11
+Request or trigger: owner clarified that investigations of non-working processes must stop/drain the affected process before applying a fix, restart or refresh the session after the fix, update continuity, and continue from the last state; owner also clarified Claude Code should have higher advisory trust and broader read scope than Gemini, with Gemini weighted above Qwen or DeepSeek.
+Mode: WRITE_ALLOWED for local governance contracts, Decision Mesh nodes, deterministic hook/test updates, architecture documentation, and work-log evidence. No remote mutation, runtime process kill/restart, connector mutation, deployment, or model API path was added.
+Scope:
+
+- Add process-repair sequencing to failed-tool investigator handoffs.
+- Add a Protective Supervision `failure_repair_supervision` lane for failed process/session repair.
+- Encode advisory model hierarchy in TypeScript policy, model spend policy, root mesh, and Autopilot project mesh.
+- Preserve report-first boundaries: hooks and supervision record requirements but do not automatically mutate runtimes.
+
+Files changed:
+
+- `.codex/hooks/autopilot-hook.mjs`
+- `tests/codex-hooks.test.ts`
+- `src/data/delivery-system/protectiveSupervision.ts`
+- `tests/delivery-system/protective-supervision-policy.test.ts`
+- `src/data/delivery-system/modelPolicy.ts`
+- `src/data/delivery-system/modelSpend.ts`
+- `tests/delivery-system/model-policy.test.ts`
+- `tests/delivery-system/context-economy-policy.test.ts`
+- `mesh/nodes/reasoning_strategy.yaml`
+- `mesh/nodes/model_spend_policy.yaml`
+- `mesh/nodes/protective_supervision_policy.yaml`
+- `mesh/nodes/codex_hooks_guardrail.yaml`
+- `docs/projects/autopilot-control-plane/decision-mesh/nodes/model_reasoning_boundary.yaml`
+- `docs/projects/autopilot-control-plane/decision-mesh/nodes/protective_supervision_boundary.yaml`
+- `docs/projects/autopilot-control-plane/decision-mesh/nodes/codex_hooks_boundary.yaml`
+- `docs/autopilot/protective-supervision-operating-model.md`
+- `docs/autopilot/codex-hooks-operating-model.md`
+- `docs/autopilot/delivery-system-model-policy.md`
+- `docs/projects/autopilot-control-plane/architecture.md`
+- `docs/projects/autopilot-control-plane/work-log.md`
+
+Architecture impact:
+
+- Failed-process remediation now has an explicit governance sequence: reproduce or source-pointer the failure, identify the affected process/session, checkpoint progress, stop or drain before fix, apply the scoped fix, restart or refresh, update continuity/progress, and resume from the last verified state.
+- Hook-generated investigator handoffs now include the stop/drain, restart, continuity, and resume checks plus forbidden actions for live-process fixing without stop/drain.
+- Claude Code subscription is now the higher-trust broad-read advisory reviewer after owner scope, while Gemini is standard advisory below Claude and above Qwen or DeepSeek draft/comparison lanes.
+- Local files, tests, architecture records, work logs, owner decisions, Context7, and official docs remain the source-of-truth layers; model output cannot approve delivery or override verified local evidence.
+
+Verification:
+
+- `npm.cmd test -- codex-hooks` passed: `1` file, `7` tests.
+- `npm.cmd test -- delivery-system/model-policy delivery-system/context-economy-policy delivery-system/protective-supervision-policy` passed: `3` files, `18` tests.
+- `npm.cmd run mesh:generate` regenerated `mesh/generated/decision-mesh.json` after YAML source updates.
+- `npm.cmd run mesh:check` passed.
+- `npm.cmd run typecheck` passed.
+- `git diff --check` passed.
+- `npm.cmd test` passed: `30` files, `157` tests.
+
+## 2026-06-11 Model Output Evaluation And Prompt Tuning Loop
+
+Date: 2026-06-11
+Request or trigger: owner asked to introduce model-output scoring, immediate learning-phase prompt/input tuning for poor outputs, weekly tuning once enough eval data exists, Caveman/Context7/provider-best-practice routing for all models, and repeated-failure model/reasoning review governed by mesh.
+Mode: WRITE_ALLOWED for local governance contracts, Decision Mesh nodes/rules, read-only MCP route, docs, source catalog, and deterministic tests. No remote mutation, connector mutation, prompt-management SaaS, background runtime queue, model gateway, or automatic cloud/API worker was added.
+Scope:
+
+- Add typed model-output evaluation route and policy.
+- Expose a read-only MCP tool for model-output evaluation routing.
+- Add root and project mesh boundaries for output scoring, prompt/input deltas, reruns, repeated-failure route review, and weekly eval-based tuning.
+- Extend prompt-library and model-spend policies so prompt/model changes require scored output evidence.
+- Add provider-best-practice source IDs for OpenAI evals/model optimization, Anthropic evals, Gemini API prompting, DeepSeek thinking mode, and existing Qwen/DeepSeek structured-output sources.
+
+Source checks:
+
+- Context7 resolved OpenAI API docs and returned OpenAI eval/model-optimization guidance for using evals to iterate prompts.
+- Anthropic official docs on 2026-06-11 state that LLM application success starts by defining success criteria and building evaluations, and recommend task-specific evals and clear rubrics.
+- Google Gemini API prompt strategy docs on 2026-06-11 state prompt engineering is iterative and should be refined from observed model responses, with clear/specific instructions.
+- Qwen official docs on 2026-06-11 identify prompt engineering/templates as key for function/tool use and recommend Hermes-style tool use for Qwen3.
+- DeepSeek official docs on 2026-06-11 describe JSON mode requirements and thinking-mode controls; those are provider-specific source checks, not adoption approvals.
+
+Files changed:
+
+- `src/data/delivery-system/modelOutputEvaluation.ts`
+- `tests/delivery-system/model-output-evaluation-policy.test.ts`
+- `mcp/server.ts`
+- `tests/delivery-system/product-design-os-mcp.test.ts`
+- `src/data/delivery-system/promptLibrary.ts`
+- `tests/delivery-system/prompt-library-policy.test.ts`
+- `src/data/delivery-system/modelSpend.ts`
+- `tests/delivery-system/context-economy-policy.test.ts`
+- `mesh/nodes/model_output_evaluation_policy.yaml`
+- `mesh/nodes/model_spend_policy.yaml`
+- `mesh/nodes/reasoning_strategy.yaml`
+- `mesh/nodes/prompt_library_policy.yaml`
+- `mesh/edges.yaml`
+- `mesh/rules.yaml`
+- `docs/projects/autopilot-control-plane/decision-mesh/nodes/model_output_evaluation_boundary.yaml`
+- `docs/projects/autopilot-control-plane/decision-mesh/nodes/model_reasoning_boundary.yaml`
+- `docs/projects/autopilot-control-plane/decision-mesh/nodes/prompt_library_boundary.yaml`
+- `docs/projects/autopilot-control-plane/decision-mesh/edges.yaml`
+- `docs/projects/autopilot-control-plane/decision-mesh/rules.yaml`
+- `docs/autopilot/model-output-evaluation-operating-model.md`
+- `docs/autopilot/delivery-system-model-policy.md`
+- `docs/autopilot/prompt-library-operating-model.md`
+- `docs/autopilot/protective-supervision-operating-model.md`
+- `docs/projects/autopilot-control-plane/architecture.md`
+- `prompt-library/source-catalog.md`
+- `prompt-library/source-catalog.json`
+- `tests/decision-mesh/query.test.ts`
+- `docs/projects/autopilot-control-plane/work-log.md`
+
+Architecture impact:
+
+- Model outputs that affect prompts, handoffs, routing, governance, architecture, security, or delivery decisions now require dimension scoring before acceptance.
+- During learning, poor outputs route to prompt/input delta plus rerun until acceptable or blocked.
+- Repeated similar failures route through token-efficiency and reasoning-model review before changing reasoning effort, model, or provider.
+- Weekly prompt/input tuning requires collected eval records and repeated failure patterns.
+- The MCP exposure is read-only and returns structured route guidance only; it does not store eval records, spawn workers, or mutate prompts.
+
+Verification:
+
+- `npm.cmd test -- delivery-system/model-output-evaluation-policy delivery-system/prompt-library-policy delivery-system/context-economy-policy delivery-system/product-design-os-mcp decision-mesh/query` passed: `5` files, `42` tests.
+- `npm.cmd run mesh:generate` regenerated `mesh/generated/decision-mesh.json` after adding the model-output evaluation node and edges.
+- `npm.cmd run mesh:check` passed.
+- `npm.cmd run prompt:validate` passed: `34` files, `0` errors.
+- `npm.cmd run typecheck` passed.
+- `git diff --check` passed.
+- `npm.cmd test` passed: `31` files, `164` tests.
+- `npm.cmd run audit:deps` passed: `0` vulnerabilities.
+- `npm.cmd run test:e2e` passed: `4` Chromium tests.
+- `npm.cmd run verify` passed:
+  - `mesh:check`
+  - `prompt:validate`
+  - `pdos:validate`
+  - `contracts:validate`
+  - `diff:check`
+  - `typecheck`
+  - `vitest run`
+  - `astro build`
+  - `playwright test`
