@@ -1901,3 +1901,60 @@ Verification:
 - `npm.cmd test -- prompt-library-policy prompt-pack-policy` passed: 2 files, 9 tests.
 - `npm.cmd run mesh:check` passed.
 - `git diff --check` passed.
+
+## 2026-06-11 Autopilot Foundation Hardening
+
+Date: 2026-06-11
+Request or trigger: handoff requested foundation hardening before any further Autopilot expansion, with no new product features or redesign.
+Mode: WRITE_ALLOWED for local governance code, deterministic validators, schemas, tests, CI metadata, Decision Mesh records, architecture registry, and work log. No connector mutation, runtime queue, deployment, or product feature work was added.
+Scope: fix capability routing no-match behavior, prevent random subgraph fallback, expose project mesh rules in packets, add YAML/TS capability drift checks, validate prompt-library frontmatter and sources, validate Product & Design OS schemas/provenance, harden MCP metadata, and expand CI checks.
+
+Files changed:
+
+- `src/data/delivery-system/capabilities.ts`
+- `src/lib/decision-mesh/query.ts`
+- `src/lib/decision-mesh/types.ts`
+- `src/lib/decision-mesh/index.ts`
+- `src/lib/delivery-system/validation.ts`
+- `scripts/generate-decision-mesh.ts`
+- `scripts/validate-prompt-library.ts`
+- `mcp/server.ts`
+- `prompt-library/`
+- `product-design-os/`
+- `.github/workflows/verify.yml`
+- `package.json`
+- `tests/`
+- `docs/projects/autopilot-control-plane/architecture.md`
+- `docs/autopilot/project-architecture-registry.md`
+
+Architecture impact:
+
+- Unknown capability tasks now return neutral routing with no SEO/optimization fallback and no false stop conditions.
+- `getRelevantSubgraph` now returns an empty subgraph on zero task match; agent role only boosts an existing signal match.
+- Exact node matches are selected before neighboring expansion so connected nodes cannot crowd out stronger task matches.
+- `build_project_mesh_packet` now returns applicable rules with `id`, `title`, `severity`, `instruction`, `applies_to`, plus `must_not_assume`.
+- `mesh:check` now fails on YAML/TypeScript capability drift across IDs, signals, required agents, and required checks.
+- Prompt Library now has deterministic YAML frontmatter validation against `prompt.schema.json`, source ID validation against `source-catalog.json`, eval existence checks, and self-eval rejection.
+- Product & Design OS validation now applies JSON Schema checks to assets, patterns, sources, references, and project index entries, with provenance/license/source-link checks.
+- MCP server version is sourced from `package.json`; server instructions, read-only annotations, output schemas, and structured content are present for tools.
+
+Decisions:
+
+- Keep TypeScript routing as an executable mirror for now, guarded by drift failure, rather than introducing generated routing in this slice.
+- Treat unknown-license or unknown-commercial-use PDOS sources as `inspiration_only` or `blocked`.
+- Normalize project library status to the Protective Supervision enum and keep free-form labels in `status_label`.
+- Keep prompt contracts as `candidate`; none were promoted to `approved` without real eval results.
+- Keep hooks report-first. This work does not claim refreshed-session `SessionStart` evidence; a Codex restart/reload is still required for current hook runtime evidence.
+
+Verification:
+
+- `npm.cmd run audit:deps` passed: 0 vulnerabilities.
+- `npm.cmd run verify` passed:
+  - `mesh:check`
+  - `prompt:validate` (`33` files, `0` errors)
+  - `pdos:validate` (`64` files, `0` errors, `0` warnings)
+  - `git diff --check`
+  - `typecheck`
+  - `vitest run` (`27` files, `123` tests)
+  - `astro build`
+  - `playwright test` (`4` Chromium tests, including basic accessibility labels)

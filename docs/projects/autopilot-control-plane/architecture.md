@@ -310,6 +310,9 @@ Documentation verification:
 ```powershell
 rg -n "Project Architecture" docs
 npm run mesh:check
+npm run prompt:validate
+npm run pdos:validate
+npm run audit:deps
 git diff --check
 ```
 
@@ -318,13 +321,13 @@ Application verification is delegated to the affected project architecture recor
 ## Known Gaps And Risks
 
 - `/autopilot` static read-only command center exists; it is not an execution console.
-- Decision Mesh and local MCP server exist as read-only context routing; they are not approval, execution, connector, or remote mutation surfaces.
+- Decision Mesh and local MCP server exist as read-only context routing; they are not approval, execution, connector, or remote mutation surfaces. MCP server version is sourced from `package.json`, server instructions describe the read-only boundary, and tool results include `outputSchema` plus `structuredContent`.
 - Delivery-system typed governance contracts exist; capability routing, context economy, model spend policy, and current project mesh seeds now exist.
-- Prompt Library phase-0 exists as local Git/Markdown contracts with source catalog, metadata schema, seed prompts for GPT/Gemini/Claude/Qwen, and a Decision Mesh boundary; deterministic prompt metadata validation and agent-packet prompt selection remain planned.
+- Prompt Library phase-0 exists as local Git/Markdown contracts with human and machine-readable source catalogs, metadata schema, seed prompts for GPT/Gemini/Claude/Qwen, deterministic frontmatter/source/eval validation, and a Decision Mesh boundary; agent-packet prompt selection remains planned.
 - Protective Supervision phase-0 exists as typed read-only routing policy, root/project Decision Mesh boundaries, handoff/progress templates, and local MCP exposure; it is not a runtime queue and does not mutate remotes.
 - Project-local Codex hooks now exist as a phase-1 report-first lifecycle layer. They have deterministic tests and redacted local state, but active Codex App runtime loading remains unverified until hook trust review and a refreshed session produce `SessionStart` evidence.
 - Project, skill, agent, provider, and verification registries remain planned unless covered by the existing delivery-system contracts.
-- Product & Design OS now has an initial deterministic foundation validator, intake/change-request router, console-only Markdown reports, read-only MCP exposure, recipe/pattern/asset scoring, first marketing/creative, ecommerce, dashboard/data-heavy, internal-ops, public-sector, and client-portal registry seeds, a local Playwright Design Reader that captures screenshots, extracts DOM/CSS evidence, and feeds the structured Visual QA analyzer, plus a local external-worker adapter for the separate `pdf-supervisor` document/PDF reader; screenshot OCR, reference comparison, AI-agent UI, document-system recipes, automation UI, and advanced automation scripts remain planned.
+- Product & Design OS now has deterministic foundation, schema, provenance, source-link, and project-index validation; intake/change-request router; console-only Markdown reports; read-only MCP exposure; recipe/pattern/asset scoring; first marketing/creative, ecommerce, dashboard/data-heavy, internal-ops, public-sector, and client-portal registry seeds; a local Playwright Design Reader that captures screenshots, extracts DOM/CSS evidence, and feeds the structured Visual QA analyzer; plus a local external-worker adapter for the separate `pdf-supervisor` document/PDF reader. Screenshot OCR, reference comparison, AI-agent UI, document-system recipes, automation UI, and advanced automation scripts remain planned.
 - Product & Design OS now has a local source/reference/project library and a project-index generator. It is not yet wired into a full automation loop; project records should run `npm run pdos:library:projects` after project onboarding or meaningful project-record changes.
 - Architecture records for external/private projects are not normalized yet.
 - Regular review cadence is documented. Weekly report-first sentinel automation is planned, but Codex app automation creation was blocked in this session because the automation handler was not registered.
