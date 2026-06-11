@@ -81,6 +81,8 @@ export const modelSpendPolicy = {
     "advisory_trust_hierarchy_applied",
     "claude_broad_read_scope_owner_scoped",
     "lower_trust_advisor_claims_verified_before_adoption",
+    "model_output_evaluation_before_model_change",
+    "repeated_failure_evidence_before_model_switch",
     "api_credit_or_self_hosting_cost_confirmed",
     "redacted_context_only",
     "context7_or_official_docs_verified",
@@ -105,6 +107,8 @@ export const modelSpendPolicy = {
     "authentication_missing",
     "technology_claim_without_context7_or_official_docs",
     "gemini_claim_adopted_without_verification",
-    "lower_trust_model_overrides_claude_without_verified_evidence"
+    "lower_trust_model_overrides_claude_without_verified_evidence",
+    "model_changed_without_eval_evidence",
+    "reasoning_effort_increased_without_failure_pattern"
   ]
 } as const satisfies ModelSpendPolicy;

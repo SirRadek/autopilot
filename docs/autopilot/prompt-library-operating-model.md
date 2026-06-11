@@ -18,6 +18,7 @@ Use the prompt library to:
 - separate GPT, Claude, Gemini, and Qwen guidance where behavior differs
 - record official sources and local validation evidence
 - require evals before prompt adoption
+- use scored model-output records before prompt/input tuning
 - support rollback through Git
 - save tokens by reusing compact prompt contracts
 
@@ -72,6 +73,27 @@ Qwen local:
 - Qwen output is a draft, not approval.
 - Qwen2.5-Coder 14B requires install, hardware, bounded scope, review, and
   tests before use.
+
+## Model Output Feedback Loop
+
+Prompt and input-packet tuning uses
+`docs/autopilot/model-output-evaluation-operating-model.md`.
+
+During the learning phase:
+
+- score the output before accepting it
+- record failure labels and source pointers
+- select Caveman or compact routing before adding context or model spend
+- check Context7 or official provider docs for provider-specific behavior
+- record the exact prompt/input delta
+- rerun until acceptable or blocked
+
+After repeated similar weak outputs, rerun token-efficiency and reasoning-model
+routing before changing reasoning effort, model, or provider.
+
+After enough eval records exist, routine prompt updates move to weekly batch
+tuning based on collected records and repeated failure patterns. Weekly prompt
+changes must not come from anecdotes or raw model preference.
 
 ## Prompt Metadata
 
@@ -167,6 +189,7 @@ Phase 2 - Deterministic validation:
   provider-specific prompts used across models without review.
 - Add prompt eval fixtures for normal, ambiguous, missing-source,
   conflicting-instruction, and high-risk requests.
+- Add model-output eval records for weak, retried, accepted, and blocked outputs.
 
 Phase 3 - Agent packet integration:
 

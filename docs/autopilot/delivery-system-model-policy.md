@@ -256,6 +256,45 @@ Technology and best-practice recommendations from any advisory model must pass t
 3. Treat unverified Gemini, subscription, or free-cloud brainstorm output as a hypothesis, not a plan or source of truth.
 4. Stop on `technology_claim_without_context7_or_official_docs` or `gemini_claim_adopted_without_verification`.
 
+## Model Output Evaluation
+
+Autopilot is currently in a learning phase for multi-model supervision. Model
+and local-worker outputs must be scored before acceptance when they affect
+prompts, handoffs, model routing, governance, architecture, security, or delivery
+decisions.
+
+Use `src/data/delivery-system/modelOutputEvaluation.ts` and
+`docs/autopilot/model-output-evaluation-operating-model.md` for the route and
+operating contract.
+
+Learning-loop rule:
+
+1. Score output by task fit, instruction following, source grounding, format
+   contract, verification readiness, privacy/safety, handoff clarity, token
+   efficiency, and workflow compatibility.
+2. If the score is weak, select Caveman or compact routing before adding more
+   context or model spend.
+3. Verify provider-specific prompt or reasoning claims through Context7 when
+   connected, otherwise official provider docs.
+4. Record the exact prompt or input-packet delta.
+5. Rerun until the output is acceptable or blocked.
+
+Repeated-failure rule:
+
+- after `3` similar weak outputs, rerun token-efficiency and reasoning-model
+  routing before changing reasoning effort, model, or provider
+- changing model/provider still requires entitlement, cost, redaction, and
+  source checks
+- the new output must be scored and verified again
+
+Weekly tuning rule:
+
+- once enough eval records exist, routine prompt/input updates move to weekly
+  batch review
+- weekly changes must be based on collected eval records and repeated failure
+  patterns, not anecdotes or raw model preference
+- prompt changes need versioning, evals, source authority, and rollback
+
 ## Prompt Library Policy
 
 Reusable prompts live in `prompt-library/` as local Git/Markdown contracts.

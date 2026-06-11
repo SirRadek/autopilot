@@ -39,6 +39,7 @@ In this project:
 - `docs/autopilot/design-intelligence-operating-model.md`
 - `docs/autopilot/local-worker-operating-model.md`
 - `docs/autopilot/token-efficiency-operating-model.md`
+- `docs/autopilot/model-output-evaluation-operating-model.md`
 - `docs/autopilot/protective-supervision-operating-model.md`
 - `docs/autopilot/agent-handoff-packet-template.md`
 - `docs/autopilot/project-progress-ledger-template.md`
@@ -52,6 +53,7 @@ In this project:
 - typed graphic-production policy under `src/data/delivery-system/graphicAgent.ts`
 - typed local-worker routing policy under `src/data/delivery-system/localWorkers.ts`
 - typed token-efficiency routing policy under `src/data/delivery-system/tokenEfficiency.ts`
+- typed model-output evaluation and learning-loop policy under `src/data/delivery-system/modelOutputEvaluation.ts`
 - typed protective-supervision routing policy under `src/data/delivery-system/protectiveSupervision.ts`
 - project-local report-first Codex lifecycle hooks under `.codex/`
 - typed capability routing, context economy, and model spend policy under `src/data/delivery-system/`
@@ -145,6 +147,7 @@ Current data is Markdown-first with a minimal typed governance mirror:
 - typed Graphic Production Agent policy under `src/data/delivery-system/graphicAgent.ts`
 - typed Local Worker policy under `src/data/delivery-system/localWorkers.ts`
 - typed Token Efficiency policy under `src/data/delivery-system/tokenEfficiency.ts`
+- typed Model Output Evaluation policy under `src/data/delivery-system/modelOutputEvaluation.ts`
 - typed Plugin/Skill Tool Inventory policy under `src/data/delivery-system/toolInventory.ts`
 - pure delivery-system validators under `src/lib/delivery-system/`
 - Decision Mesh YAML nodes, edges, rules, schemas, and generated JSON artifact under `mesh/`
@@ -198,6 +201,7 @@ Decision Mesh:
 - Reasoning agent routing is modeled explicitly as task lanes plus provider policies: deterministic tools, local Qwen, GPT/OpenAI, Claude Code subscription, Gemini CLI through Google AI subscription/license entitlement, and DeepSeek API/self-hosted each have separate checks, advisory weights, context scopes, and stop conditions.
 - Advisory weight is ordered by source authority and owner preference: local deterministic evidence and project records outrank all models; scoped Claude Code subscription critique has higher advisory weight and broader repo-read scope than Gemini; Gemini has higher advisory weight than Qwen or DeepSeek drafts.
 - External advisory reasoning models are allowed as redacted advisory support for brainstorming, critique, validation, and second opinions across agents. Routine worker loops remain local by default, paid credits are blocked, subscription and license tools require entitlement checks, API/self-hosted tools require cost or infrastructure checks, and model output is never source-of-truth evidence without local verification.
+- Model-output evaluation is modeled explicitly: outputs that affect prompts, handoffs, routing, governance, architecture, security, or delivery decisions must be scored by dimension before acceptance. During learning, poor outputs trigger prompt/input deltas and reruns until acceptable or blocked; repeated similar failures trigger token-efficiency and reasoning-model route review before changing reasoning or provider; later weekly tuning uses collected eval records and failure patterns.
 - Plugin and skill inventory is modeled explicitly. Current-session callable plugins and local skills can be routed through their exposed tools/workflows; cached plugin bundles are only availability leads until `tool_search` or active tools expose them.
 - Context7 is the preferred docs-verification lane for reasoning, Gemini brainstorming, design critique, architecture-library review, and technology/best-practice recommendations when it is connected. If Context7 is unavailable or does not cover the topic, the handoff must record the fallback and verify the claim through official documentation, local files, tests, or controlled browser evidence.
 - Context7 is configured as a global local Codex MCP server via `npx.cmd -y @upstash/context7-mcp`, but a running thread may need restart or reload before the `mcp__context7` tools appear in the available tool list.
@@ -222,6 +226,7 @@ MCP:
 - local stdio MCP server exposes `select_graphic_route` as a read-only Graphic Production Agent routing tool
 - local stdio MCP server exposes `select_design_review_route` and `search_architecture_library` as read-only design intelligence tools
 - local stdio MCP server exposes `select_reasoning_model_route`, `select_tool_inventory_route`, and `select_local_worker_route` as read-only model, plugin/skill, and worker routing tools
+- local stdio MCP server exposes `select_model_output_evaluation_route` as a read-only model-output scoring, retry, route-review, and weekly tuning recommendation
 - local stdio MCP server exposes `select_token_efficiency_route` as a read-only Caveman/compact routing tool
 - local stdio MCP server exposes `select_protective_supervision_route` as a read-only protective-supervision route for currentness checks, handoffs, progress, and blocker review
 - local stdio MCP server exposes `route_product_design_os` as a read-only Product & Design OS intake/change-request routing tool
@@ -234,6 +239,7 @@ Prompt Library:
 - local Git/Markdown prompt contracts live in `prompt-library/`
 - prompt source authority uses official provider docs first, then local policy/tests/evals, with DAIR.AI and GitHub catalogs as inspiration only
 - prompt work routes through `prompt_library_policy` and the Autopilot project `prompt_library_boundary`
+- prompt/input tuning routes through `model_output_evaluation_policy` and the Autopilot project `model_output_evaluation_boundary` before prompt defaults or model routing change
 - supervisor startup prompts use a layered stack: shared base prompt, project-specific prompt, then the owner's current task instruction. The base layer owns runtime bridge checks, mesh routing, source authority, handoff normalization, progress states, and QA gates.
 - no prompt-management SaaS, runtime selector, paid tool, leaked-prompt source, or duplicate prompt source of truth is approved
 
@@ -314,9 +320,11 @@ Claude Code:
 - Ambiguous diagnostic ownership is a stop condition. Project runtime issues must route into that project's architecture record and decision mesh before implementation planning.
 - Raw project logs, CI logs, deployment logs, and runtime traces must not be copied into Autopilot as source-of-truth evidence; use redacted summaries and source pointers.
 - Raw agent output must not be used directly as the next prompt; Protective Supervision must normalize it into facts, assumptions, decisions, risks, open questions, allowed surfaces, forbidden actions, required checks, and source pointers.
+- Raw model output must not be promoted into prompt authority. Prompt/input changes need a scored output record, source pointers, a delta, and rollback path.
 - Blocked or waiting progress states must name an owner, external dependency, source needed, or stop condition.
 - A failed running process must be stopped or drained before a repair is applied unless the owner explicitly approves a live-patch exception; after the fix, the session must be restarted/refreshed, continuity updated, and work resumed from the last verified state.
 - Lower-weight advisory models may not override scoped Claude Code critique without verified local evidence, tests, Context7, or official documentation.
+- Reasoning effort, model, or provider must not change after weak output without repeated failure evidence, provider/source checks, entitlement/cost/privacy checks, and a fresh score on the new output.
 - Non-local worker dependency is a stop condition unless the task is strategic reasoning or independent review.
 - MCP tools may not read product repositories or credentials.
 - Unapproved parallel systems or duplicate sources of truth are stop conditions.
@@ -355,7 +363,7 @@ Application verification is delegated to the affected project architecture recor
 - `/autopilot` static read-only command center exists; it is not an execution console.
 - Decision Mesh and local MCP server exist as read-only context routing; they are not approval, execution, connector, or remote mutation surfaces. MCP server version is sourced from `package.json`, server instructions describe the read-only boundary, and tool results include per-tool `outputSchema` plus `structuredContent`.
 - Delivery-system typed governance contracts exist; capability routing, context economy, model spend policy, evidence/completion JSON contracts, deterministic contract validation, and current project mesh seeds now exist.
-- Prompt Library phase-0 exists as local Git/Markdown contracts with human and machine-readable source catalogs, source-catalog schema validation, metadata schema, seed prompts for GPT/Gemini/Claude/Qwen, deterministic frontmatter/source/eval validation, and a Decision Mesh boundary; agent-packet prompt selection remains planned.
+- Prompt Library phase-0 exists as local Git/Markdown contracts with human and machine-readable source catalogs, source-catalog schema validation, metadata schema, seed prompts for GPT/Gemini/Claude/Qwen, deterministic frontmatter/source/eval validation, model-output eval feedback-loop governance, and a Decision Mesh boundary; agent-packet prompt selection remains planned.
 - Protective Supervision phase-0 exists as typed read-only routing policy, root/project Decision Mesh boundaries, handoff/progress templates, and local MCP exposure; it is not a runtime queue and does not mutate remotes.
 - Project-local Codex hooks now exist as a phase-1 report-first lifecycle layer. They have deterministic tests, redacted local state, and a failed-tool investigator handoff ledger, but active Codex App runtime loading remains unverified until hook trust review and a refreshed session produce `SessionStart` evidence.
 - Project, skill, agent, provider, and verification registries remain planned unless covered by the existing delivery-system contracts. Reasoning provider lanes and plugin/skill inventory are now covered by delivery-system contracts, but the broader `src/data/autopilot/*` registries remain planned.

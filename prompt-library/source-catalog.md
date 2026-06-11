@@ -1,7 +1,7 @@
 # Prompt Source Catalog
 
 Status: reviewed source index
-Last reviewed: 2026-06-03
+Last reviewed: 2026-06-11
 
 This catalog records acceptable reference sources for prompt-library work. It
 does not approve copying prompts verbatim.
@@ -10,6 +10,10 @@ does not approve copying prompts verbatim.
 
 OpenAI:
 
+- Evals:
+  https://developers.openai.com/api/docs/guides/evals
+- Model optimization:
+  https://developers.openai.com/api/docs/guides/model-optimization
 - Prompt engineering guide:
   https://platform.openai.com/docs/guides/prompt-engineering
 - Reasoning best practices:
@@ -17,8 +21,8 @@ OpenAI:
 - Structured Outputs:
   https://platform.openai.com/docs/guides/structured-outputs
 
-Use for GPT, Codex, structured outputs, tool workflows, and reasoning model
-prompt differences.
+Use for GPT, Codex, structured outputs, tool workflows, model-output evals,
+prompt iteration, and reasoning model prompt differences.
 
 Anthropic / Claude:
 
@@ -26,6 +30,8 @@ Anthropic / Claude:
   https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/overview
 - Prompting best practices:
   https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices
+- Define success criteria and build evaluations:
+  https://platform.claude.com/docs/en/test-and-evaluate/develop-tests
 - Guardrails / hallucination reduction:
   https://platform.claude.com/docs/en/build-with-claude/strengthen-guardrails/reduce-hallucinations
 - Claude Code setup:
@@ -39,10 +45,10 @@ Anthropic / Claude:
 - Tool use:
   https://docs.anthropic.com/en/docs/agents-and-tools/tool-use/implement-tool-use
 
-Use for Claude-specific structure, XML-style organization, examples, tool
-behavior, agentic work, quote-first document analysis, Claude Code install,
-authentication, project memory behavior, context-window constraints, and tool
-use boundaries.
+Use for Claude-specific structure, success criteria, eval rubrics, XML-style
+organization, examples, tool behavior, agentic work, quote-first document
+analysis, Claude Code install, authentication, project memory behavior,
+context-window constraints, and tool use boundaries.
 
 Google / Gemini:
 
@@ -60,9 +66,12 @@ Google / Gemini:
   https://ai.google.dev/gemini-api/docs/models
 - Gemini API long context:
   https://ai.google.dev/gemini-api/docs/long-context
+- Gemini API prompt design strategies:
+  https://ai.google.dev/gemini-api/docs/prompting-strategies
 
-Use for Gemini brainstorming, multimodal analysis, test-driven prompt iteration,
-prompt optimization concepts, and Gemini CLI/Code Assist quota boundaries.
+Use for Gemini brainstorming, multimodal analysis, clear/direct prompt design,
+test-driven prompt iteration, prompt optimization concepts, and Gemini CLI/Code
+Assist quota boundaries.
 Gemini CLI use in this Autopilot setup is treated as owner subscription or
 license entitlement, not Gemini API budget, unless an owner explicitly routes a
 task to an API path.
@@ -71,14 +80,16 @@ DeepSeek:
 
 - Reasoning model:
   https://api-docs.deepseek.com/guides/reasoning_model
+- Thinking mode:
+  https://api-docs.deepseek.com/guides/thinking_mode
 - JSON output:
   https://api-docs.deepseek.com/guides/json_mode
 - Function calling:
   https://api-docs.deepseek.com/guides/function_calling
 
-Use for DeepSeek-specific reasoning, JSON output, and function-calling
-constraints. Hosted API use requires cost/auth checks; self-hosted use requires
-infrastructure and model-availability checks.
+Use for DeepSeek-specific reasoning, thinking effort, JSON output, and
+function-calling constraints. Hosted API use requires cost/auth checks;
+self-hosted use requires infrastructure and model-availability checks.
 
 Qwen:
 

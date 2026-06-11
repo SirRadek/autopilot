@@ -17,6 +17,8 @@ Protective Supervision may:
   GitHub source pointers, local files, and tests
 - normalize agent outputs into next-agent handoff packets
 - update or propose project progress ledger entries
+- track model-output eval states, repeated failure patterns, and weekly prompt
+  tuning candidates
 - identify blockers, waiting states, owner decisions, and next actions
 - record source pointers and verification gaps
 
@@ -56,6 +58,8 @@ Progress Ledger:
   `cancelled`
 - records what is done, what is missing, what waits on what, and the next
   sequence
+- tracks accepted, retry, route-review, blocked, and weekly-tuning states for
+  model-output evaluation when those affect prompts or handoffs
 - points to the project work log, architecture record, project mesh, tests, and
   evidence instead of duplicating source artifacts
 
@@ -125,6 +129,10 @@ Default cadence: weekly.
 The weekly sentinel is report-first. It may recommend prompt-library, mesh,
 architecture, or source-catalog updates, but it must not make remote mutations
 or adopt new tools by itself.
+
+Weekly prompt/input tuning recommendations must cite collected model-output
+eval records, repeated failure patterns, and source-grounded provider guidance.
+Do not recommend prompt changes from anecdotes alone.
 
 ## Definition Of Done
 

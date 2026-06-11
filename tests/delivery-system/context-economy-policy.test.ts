@@ -58,6 +58,8 @@ describe("context economy and model spend policies", () => {
     expect(modelSpendPolicy.requiredChecks).toContain("api_credit_or_self_hosting_cost_confirmed");
     expect(modelSpendPolicy.requiredChecks).toContain("advisory_trust_hierarchy_applied");
     expect(modelSpendPolicy.requiredChecks).toContain("claude_broad_read_scope_owner_scoped");
+    expect(modelSpendPolicy.requiredChecks).toContain("model_output_evaluation_before_model_change");
+    expect(modelSpendPolicy.requiredChecks).toContain("repeated_failure_evidence_before_model_switch");
     expect(modelSpendPolicy.requiredChecks).toContain("owner_cost_decision_for_credentialed_provider");
     expect(modelSpendPolicy.requiredChecks).toContain("disclose_model_choice_when_risk_affects_delivery");
     expect(modelSpendPolicy.repoExecutorUse).toContain("repo_editing");
@@ -69,6 +71,8 @@ describe("context economy and model spend policies", () => {
     expect(modelSpendPolicy.stopConditions).toContain("google_ai_subscription_entitlement_unverified");
     expect(modelSpendPolicy.stopConditions).toContain("api_credit_path_requested_without_owner_decision");
     expect(modelSpendPolicy.stopConditions).toContain("lower_trust_model_overrides_claude_without_verified_evidence");
+    expect(modelSpendPolicy.stopConditions).toContain("model_changed_without_eval_evidence");
+    expect(modelSpendPolicy.stopConditions).toContain("reasoning_effort_increased_without_failure_pattern");
     expect(modelSpendPolicy.stopConditions).toContain(
       "gemini_api_key_or_paid_api_path_requested_without_owner_decision"
     );

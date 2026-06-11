@@ -25,6 +25,8 @@ describe("Product & Design OS MCP exposure", () => {
     expect(serverSource).toContain("scoreProductDesignOs(toPdosScoreInput(input), projectRoot)");
     expect(serverSource).toContain('"select_protective_supervision_route"');
     expect(serverSource).toContain("selectProtectiveSupervisionRoute(input)");
+    expect(serverSource).toContain('"select_model_output_evaluation_route"');
+    expect(serverSource).toContain("selectModelOutputEvaluationRoute(input)");
     expect(toolRegistrations.length).toBeGreaterThan(0);
     expect(readOnlyToolRegistrations).toHaveLength(toolRegistrations.length);
     expect(toolRegistrationBlocks.every((block) => block.includes("...readOnlyTool("))).toBe(true);

@@ -26,6 +26,7 @@ import {
 } from "../src/data/delivery-system/designIntelligence";
 import { selectGraphicRoute } from "../src/data/delivery-system/graphicAgent";
 import { selectLocalWorkerRoute } from "../src/data/delivery-system/localWorkers";
+import { selectModelOutputEvaluationRoute } from "../src/data/delivery-system/modelOutputEvaluation";
 import { selectReasoningModelRoute } from "../src/data/delivery-system/modelPolicy";
 import { selectProtectiveSupervisionRoute } from "../src/data/delivery-system/protectiveSupervision";
 import { selectTokenEfficiencyRoute } from "../src/data/delivery-system/tokenEfficiency";
@@ -154,6 +155,19 @@ const localWorkerRouteOutputSchema = z
     requiredChecks: stringArraySchema,
     stopConditions: stringArraySchema,
     handoff: stringArraySchema
+  })
+  .passthrough();
+const modelOutputEvaluationRouteOutputSchema = z
+  .object({
+    phase: z.string(),
+    qualityState: z.string(),
+    dimensions: stringArraySchema,
+    requiredChecks: stringArraySchema,
+    stopConditions: stringArraySchema,
+    nextActions: stringArraySchema,
+    promptTuningActions: stringArraySchema,
+    escalationActions: stringArraySchema,
+    sourceIds: stringArraySchema
   })
   .passthrough();
 const tokenEfficiencyRouteOutputSchema = z
@@ -446,6 +460,24 @@ server.registerTool(
     }
   },
   async (input) => toJsonText(selectLocalWorkerRoute(input))
+);
+
+server.registerTool(
+  "select_model_output_evaluation_route",
+  {
+    title: "Select Model Output Evaluation Route",
+    description:
+      "Return a read-only route for scoring model output, prompt/input tuning, repeated-failure model or reasoning review, and weekly eval-based tuning.",
+    ...readOnlyTool(modelOutputEvaluationRouteOutputSchema),
+    inputSchema: {
+      task: z.string().min(1),
+      score: z.number().min(0).max(100).optional(),
+      repeatedFailures: z.number().int().min(0).optional(),
+      provider: z.enum(["openai", "anthropic", "google", "qwen", "deepseek", "local", "unknown"]).optional(),
+      phase: z.enum(["learning_immediate_loop", "weekly_batch_tuning"]).optional()
+    }
+  },
+  async (input) => toJsonText(selectModelOutputEvaluationRoute(input))
 );
 
 server.registerTool(

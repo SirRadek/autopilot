@@ -129,6 +129,27 @@ describe("Decision Mesh queries", () => {
     );
   });
 
+  it("routes model-output evaluation and prompt tuning through eval policy", () => {
+    const result = getRelevantSubgraph(mesh, {
+      task: "Score a bad model output, tune the prompt input, rerun until acceptable, and change reasoning after repeated failures",
+      agent: "architect",
+      max_nodes: 6
+    });
+
+    expect(result.relevant_nodes.map((node) => node.id)).toContain("model_output_evaluation_policy");
+    const evalNode = result.relevant_nodes.find((node) => node.id === "model_output_evaluation_policy");
+    expect(evalNode?.required_checks).toEqual(
+      expect.arrayContaining([
+        "model_output_scored_before_acceptance",
+        "prompt_or_input_delta_recorded_before_rerun",
+        "repeated_failure_triggers_model_or_reasoning_review"
+      ])
+    );
+    expect(findRisks(mesh, { task: "Retry bad output without prompt input delta" }).stop_conditions).toEqual(
+      expect.arrayContaining(["bad_output_retried_without_prompt_or_input_delta"])
+    );
+  });
+
   it("routes protective supervision work through currentness, handoff, progress, and blocker guardrails", () => {
     const result = getRelevantSubgraph(mesh, {
       task: "Add a protective currentness sentinel that compiles agent output into next-agent handoff packets and tracks progress blockers",
@@ -329,6 +350,27 @@ describe("Decision Mesh queries", () => {
       expect.arrayContaining(["prompt_metadata_complete", "prompt_eval_defined", "official_provider_docs_verified"])
     );
     expect(packet.stop_conditions).toContain("paid_prompt_management_tool_required");
+  });
+
+  it("keeps Autopilot model-output tuning inside the control-plane project mesh", () => {
+    const projectMesh = loadProjectDecisionMeshFromRoot(process.cwd(), "autopilot-control-plane");
+    const packet = buildProjectMeshPacket(projectMesh, {
+      project_slug: "autopilot-control-plane",
+      task: "Evaluate bad Claude and Gemini model output, tune prompts, rerun, and after repeated failures change reasoning route",
+      agent: "architect",
+      max_nodes: 5
+    });
+
+    expect(packet.relevant_nodes).toContain("model_output_evaluation_boundary");
+    expect(packet.rules.map((rule) => rule.id)).toEqual(expect.arrayContaining(["ACP-MODEL-EVAL-001"]));
+    expect(packet.required_checks).toEqual(
+      expect.arrayContaining([
+        "model_output_scored_before_acceptance",
+        "caveman_or_token_efficiency_route_selected",
+        "provider_best_practice_sources_checked"
+      ])
+    );
+    expect(packet.stop_conditions).toContain("repeated_bad_output_without_model_or_reasoning_review");
   });
 
   it("keeps Autopilot protective supervision inside the control-plane project mesh", () => {

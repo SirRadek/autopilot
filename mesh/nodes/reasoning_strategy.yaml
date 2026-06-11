@@ -57,6 +57,8 @@ required_checks:
   - advisory_trust_hierarchy_applied
   - claude_broad_read_scope_owner_scoped
   - lower_trust_advisor_claims_verified_before_adoption
+  - model_output_evaluation_before_model_change
+  - repeated_failure_evidence_before_model_switch
   - redacted_context_only
   - context7_or_official_docs_verified
   - gemini_brainstorm_claims_labeled_and_verified
@@ -85,6 +87,8 @@ stop_conditions:
   - gemini_claim_adopted_without_verification
   - lower_trust_model_overrides_claude_without_verified_evidence
   - broad_private_context_sent_to_lower_trust_model
+  - model_changed_without_eval_evidence
+  - reasoning_effort_increased_without_failure_pattern
 must_not_assume:
   - Do not assume a cloud frontier model is available.
   - Do not assume a cloud model is free or safe to receive private context.

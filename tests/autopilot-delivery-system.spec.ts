@@ -12,7 +12,7 @@ test.describe("Autopilot command center", () => {
     await expect(page.getByTestId("workflow-map")).toContainText("business review");
     await expect(page.getByTestId("decision-mesh-coverage")).toContainText("capability routing");
     await expect(page.getByTestId("decision-mesh-coverage")).toContainText("project meshes");
-    await expect(page.getByTestId("decision-mesh-graph")).toContainText("28 nodes / 58 links");
+    await expect(page.getByTestId("decision-mesh-graph")).toContainText("29 nodes / 64 links");
     await expect(page.getByTestId("decision-mesh-graph")).toContainText("Observability Mesh");
     await expect(page.getByTestId("mesh-svg")).toBeVisible();
     await expect(page.getByTestId("project-delivery-workflow")).toContainText("8 ordered phases");

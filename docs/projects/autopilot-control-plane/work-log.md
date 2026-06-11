@@ -2269,3 +2269,85 @@ Verification:
 - `npm.cmd run typecheck` passed.
 - `git diff --check` passed.
 - `npm.cmd test` passed: `30` files, `157` tests.
+
+## 2026-06-11 Model Output Evaluation And Prompt Tuning Loop
+
+Date: 2026-06-11
+Request or trigger: owner asked to introduce model-output scoring, immediate learning-phase prompt/input tuning for poor outputs, weekly tuning once enough eval data exists, Caveman/Context7/provider-best-practice routing for all models, and repeated-failure model/reasoning review governed by mesh.
+Mode: WRITE_ALLOWED for local governance contracts, Decision Mesh nodes/rules, read-only MCP route, docs, source catalog, and deterministic tests. No remote mutation, connector mutation, prompt-management SaaS, background runtime queue, model gateway, or automatic cloud/API worker was added.
+Scope:
+
+- Add typed model-output evaluation route and policy.
+- Expose a read-only MCP tool for model-output evaluation routing.
+- Add root and project mesh boundaries for output scoring, prompt/input deltas, reruns, repeated-failure route review, and weekly eval-based tuning.
+- Extend prompt-library and model-spend policies so prompt/model changes require scored output evidence.
+- Add provider-best-practice source IDs for OpenAI evals/model optimization, Anthropic evals, Gemini API prompting, DeepSeek thinking mode, and existing Qwen/DeepSeek structured-output sources.
+
+Source checks:
+
+- Context7 resolved OpenAI API docs and returned OpenAI eval/model-optimization guidance for using evals to iterate prompts.
+- Anthropic official docs on 2026-06-11 state that LLM application success starts by defining success criteria and building evaluations, and recommend task-specific evals and clear rubrics.
+- Google Gemini API prompt strategy docs on 2026-06-11 state prompt engineering is iterative and should be refined from observed model responses, with clear/specific instructions.
+- Qwen official docs on 2026-06-11 identify prompt engineering/templates as key for function/tool use and recommend Hermes-style tool use for Qwen3.
+- DeepSeek official docs on 2026-06-11 describe JSON mode requirements and thinking-mode controls; those are provider-specific source checks, not adoption approvals.
+
+Files changed:
+
+- `src/data/delivery-system/modelOutputEvaluation.ts`
+- `tests/delivery-system/model-output-evaluation-policy.test.ts`
+- `mcp/server.ts`
+- `tests/delivery-system/product-design-os-mcp.test.ts`
+- `src/data/delivery-system/promptLibrary.ts`
+- `tests/delivery-system/prompt-library-policy.test.ts`
+- `src/data/delivery-system/modelSpend.ts`
+- `tests/delivery-system/context-economy-policy.test.ts`
+- `mesh/nodes/model_output_evaluation_policy.yaml`
+- `mesh/nodes/model_spend_policy.yaml`
+- `mesh/nodes/reasoning_strategy.yaml`
+- `mesh/nodes/prompt_library_policy.yaml`
+- `mesh/edges.yaml`
+- `mesh/rules.yaml`
+- `docs/projects/autopilot-control-plane/decision-mesh/nodes/model_output_evaluation_boundary.yaml`
+- `docs/projects/autopilot-control-plane/decision-mesh/nodes/model_reasoning_boundary.yaml`
+- `docs/projects/autopilot-control-plane/decision-mesh/nodes/prompt_library_boundary.yaml`
+- `docs/projects/autopilot-control-plane/decision-mesh/edges.yaml`
+- `docs/projects/autopilot-control-plane/decision-mesh/rules.yaml`
+- `docs/autopilot/model-output-evaluation-operating-model.md`
+- `docs/autopilot/delivery-system-model-policy.md`
+- `docs/autopilot/prompt-library-operating-model.md`
+- `docs/autopilot/protective-supervision-operating-model.md`
+- `docs/projects/autopilot-control-plane/architecture.md`
+- `prompt-library/source-catalog.md`
+- `prompt-library/source-catalog.json`
+- `tests/decision-mesh/query.test.ts`
+- `docs/projects/autopilot-control-plane/work-log.md`
+
+Architecture impact:
+
+- Model outputs that affect prompts, handoffs, routing, governance, architecture, security, or delivery decisions now require dimension scoring before acceptance.
+- During learning, poor outputs route to prompt/input delta plus rerun until acceptable or blocked.
+- Repeated similar failures route through token-efficiency and reasoning-model review before changing reasoning effort, model, or provider.
+- Weekly prompt/input tuning requires collected eval records and repeated failure patterns.
+- The MCP exposure is read-only and returns structured route guidance only; it does not store eval records, spawn workers, or mutate prompts.
+
+Verification:
+
+- `npm.cmd test -- delivery-system/model-output-evaluation-policy delivery-system/prompt-library-policy delivery-system/context-economy-policy delivery-system/product-design-os-mcp decision-mesh/query` passed: `5` files, `42` tests.
+- `npm.cmd run mesh:generate` regenerated `mesh/generated/decision-mesh.json` after adding the model-output evaluation node and edges.
+- `npm.cmd run mesh:check` passed.
+- `npm.cmd run prompt:validate` passed: `34` files, `0` errors.
+- `npm.cmd run typecheck` passed.
+- `git diff --check` passed.
+- `npm.cmd test` passed: `31` files, `164` tests.
+- `npm.cmd run audit:deps` passed: `0` vulnerabilities.
+- `npm.cmd run test:e2e` passed: `4` Chromium tests.
+- `npm.cmd run verify` passed:
+  - `mesh:check`
+  - `prompt:validate`
+  - `pdos:validate`
+  - `contracts:validate`
+  - `diff:check`
+  - `typecheck`
+  - `vitest run`
+  - `astro build`
+  - `playwright test`

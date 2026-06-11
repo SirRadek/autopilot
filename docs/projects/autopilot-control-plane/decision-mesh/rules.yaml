@@ -94,6 +94,23 @@ rules:
       - model_reasoning_boundary
     instruction: "Use official OpenAI, Anthropic, Google, or Qwen documentation for provider-specific prompting behavior; use DAIR.AI and GitHub catalogs only as inspiration until verified."
     severity: major
+  - id: ACP-MODEL-EVAL-001
+    title: Score model output before accepting or tuning it
+    applies_to:
+      - model_output_evaluation_boundary
+      - prompt_library_boundary
+      - model_reasoning_boundary
+      - token_efficiency_boundary
+    instruction: "Before accepting a model output or changing a prompt/input packet, record a score by dimension, source pointers, verification evidence, and the exact delta. During learning, rerun immediately after a meaningful prompt/input change; after repeated similar failures, review reasoning/model routing through verified provider guidance."
+    severity: major
+  - id: ACP-MODEL-EVAL-002
+    title: Weekly tuning needs eval records
+    applies_to:
+      - model_output_evaluation_boundary
+      - prompt_library_boundary
+      - protective_supervision_boundary
+    instruction: "After the learning baseline, weekly prompt/input updates must be based on collected eval records and repeated failure patterns, not anecdotes or raw model preference."
+    severity: major
   - id: ACP-PROTECT-001
     title: Protective supervision is report-first
     applies_to:
