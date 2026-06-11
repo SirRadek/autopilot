@@ -1,5 +1,73 @@
 # Autopilot Control Plane Work Log
 
+## 2026-06-11 Claude Code Provider Registration
+
+Date: 2026-06-11
+Request or trigger: owner asked to connect Claude into the Autopilot workflow
+for later use, without assigning it to a specific task yet.
+Mode: WRITE_ALLOWED for local Claude Code installation, provider-policy
+registration, repository memory instructions, architecture, source catalog, and
+work-log records. No Claude model call, remote mutation, deployment, connector
+client, provider gateway, product runtime code, or stored secret was added.
+Scope: install and verify Claude Code locally, start interactive login for the
+owner, and register Claude as an optional credentialed advisory provider with
+auth, cost, privacy, and verification gates.
+Files changed:
+
+- `CLAUDE.md`
+- `src/data/delivery-system/modelPolicy.ts`
+- `tests/delivery-system/model-policy.test.ts`
+- `docs/autopilot/delivery-system-model-policy.md`
+- `docs/projects/autopilot-control-plane/architecture.md`
+- `docs/projects/autopilot-control-plane/work-log.md`
+- `prompt-library/source-catalog.md`
+- `prompt-library/source-catalog.json`
+
+Architecture impact: Claude Code is now a documented optional credentialed
+advisory provider for architecture/security/planning critique, agent
+validation, edge-case review, and bounded repo sessions after owner scope. It is
+not a default worker, final approver, governance authority, provider gateway,
+runtime queue, connector client, or source of truth. Routine worker loops remain
+local by default.
+Decisions:
+
+- Install the official Windows `Anthropic.ClaudeCode` WinGet package instead of
+  adding an npm project dependency.
+- Keep Claude Code credential state outside the repository and never print or
+  persist token values.
+- Require owner cost decision before credentialed Claude use; registration does
+  not approve paid credits or subscription usage for future tasks.
+- Add root `CLAUDE.md` so Claude Code receives local Autopilot boundaries,
+  `AGENTS.md`/Decision Mesh routing, and Windows `npm.cmd` check guidance.
+- Record official Anthropic Claude Code setup, authentication, and memory docs
+  in the prompt source catalog for future provider-specific changes.
+
+Verification:
+
+- Decision Mesh routed the task through `automation_mesh` and Autopilot
+  control-plane project mesh with provider availability, cost, privacy, and
+  source-of-truth stop conditions.
+- `winget install --id Anthropic.ClaudeCode --exact` downloaded
+  `claude.exe` from `downloads.claude.ai`, verified the installer hash, and
+  added the `claude` command alias.
+- `claude --version` reported `2.1.172 (Claude Code)`.
+- `Get-AuthenticodeSignature` reported a valid signature from `Anthropic, PBC`.
+- Existing shell did not yet see the new PATH entry, but the user PATH contains
+  `Microsoft\WinGet\Links`; a new PowerShell should find `claude`.
+- `claude doctor` in the non-interactive Codex shell timed out on interactive
+  auth, so the leftover `claude` process was stopped.
+- A visible PowerShell login window was started for the owner.
+- After the interactive login completed, the local Claude credentials file was
+  present. Token contents were not read, printed, or stored in the repository.
+- No Claude model call was made during registration.
+
+Risks:
+
+- Claude Code requires a credentialed account path; future model use remains
+  blocked on explicit owner cost/subscription approval and redacted context.
+- Claude output must be verified locally and cannot approve delivery or replace
+  architecture, mesh, tests, or owner decisions.
+
 ## 2026-06-07 Autopilot v0.2.0 Release
 
 Date: 2026-06-07
@@ -1906,22 +1974,22 @@ Verification:
 
 Date: 2026-06-11
 Request or trigger: handoff requested foundation hardening before any further Autopilot expansion, with no new product features or redesign.
-Mode: WRITE_ALLOWED for local governance code, deterministic validators, schemas, tests, CI metadata, Decision Mesh records, architecture registry, and work log. No connector mutation, runtime queue, deployment, or product feature work was added.
-Scope: fix capability routing no-match behavior, prevent random subgraph fallback, expose project mesh rules in packets, add YAML/TS capability drift checks, validate prompt-library frontmatter and sources, validate Product & Design OS schemas/provenance, harden MCP metadata, and expand CI checks.
+Mode: WRITE_ALLOWED for local governance code, deterministic validators, schemas, tests, local documentation, Decision Mesh records, architecture registry, and work log. No connector mutation, runtime queue, deployment, remote service change, or product feature work was added.
+Scope: verify and harden capability routing no-match behavior, lock project mesh packet rules in tests, add YAML/TS capability drift tests, validate prompt-library frontmatter and source catalogs, validate Product & Design OS schema/provenance relationships, add evidence/completion contracts, harden MCP output metadata, and keep local/CI verification gates deterministic.
 
-Files changed:
+Primary files changed and created:
 
-- `src/data/delivery-system/capabilities.ts`
-- `src/lib/decision-mesh/query.ts`
-- `src/lib/decision-mesh/types.ts`
 - `src/lib/decision-mesh/index.ts`
-- `src/lib/delivery-system/validation.ts`
+- `src/lib/decision-mesh/capabilityMirror.ts`
 - `scripts/generate-decision-mesh.ts`
 - `scripts/validate-prompt-library.ts`
+- `scripts/validate-contracts.ts`
 - `mcp/server.ts`
+- `docs/contracts/`
+- `docs/QUICKSTART.md`
+- `README.md`
 - `prompt-library/`
 - `product-design-os/`
-- `.github/workflows/verify.yml`
 - `package.json`
 - `tests/`
 - `docs/projects/autopilot-control-plane/architecture.md`
@@ -1929,14 +1997,14 @@ Files changed:
 
 Architecture impact:
 
-- Unknown capability tasks now return neutral routing with no SEO/optimization fallback and no false stop conditions.
-- `getRelevantSubgraph` now returns an empty subgraph on zero task match; agent role only boosts an existing signal match.
-- Exact node matches are selected before neighboring expansion so connected nodes cannot crowd out stronger task matches.
-- `build_project_mesh_packet` now returns applicable rules with `id`, `title`, `severity`, `instruction`, `applies_to`, plus `must_not_assume`.
-- `mesh:check` now fails on YAML/TypeScript capability drift across IDs, signals, required agents, and required checks.
-- Prompt Library now has deterministic YAML frontmatter validation against `prompt.schema.json`, source ID validation against `source-catalog.json`, eval existence checks, and self-eval rejection.
-- Product & Design OS validation now applies JSON Schema checks to assets, patterns, sources, references, and project index entries, with provenance/license/source-link checks.
-- MCP server version is sourced from `package.json`; server instructions, read-only annotations, output schemas, and structured content are present for tools.
+- Current routing/query behavior is now regression-tested so unknown capability tasks return neutral results with no SEO/optimization fallback and no false stop conditions.
+- `getRelevantSubgraph`, `findRisks`, `buildAgentPacket`, and `buildProjectMeshPacket` no-match behavior is covered by negative tests; exact node matches are asserted ahead of neighboring expansion at low `max_nodes`.
+- `build_project_mesh_packet` returns applicable rules with `id`, `title`, `severity`, `instruction`, `applies_to`, plus `must_not_assume`, and the project packet path remains read-only.
+- YAML/TypeScript capability drift validation is now a reusable pure module and fails on capability IDs, signals, required agents, required checks, and the `baseline_metric` regression case.
+- Prompt Library now validates YAML frontmatter against `prompt.schema.json`, source IDs against `source-catalog.json`, `source-catalog.json` against `source-catalog.schema.json`, eval existence, self-reference by path or prompt ID, and candidate-only status until real eval evidence exists.
+- Product & Design OS validation applies schema checks plus relationship checks for duplicate IDs, unknown source/reference/asset/pattern links, source-recorded provenance, inspiration-only references, non-adoptable sources, and project status enum usage.
+- Phase-0 evidence/completion contracts now live under `docs/contracts/`, are validated by `scripts/validate-contracts.ts`, and are wired into `npm run verify`.
+- MCP server version is sourced from `package.json`; server instructions, read-only annotations, per-tool output schemas, and structured content are present for tools.
 
 Decisions:
 
@@ -1944,6 +2012,7 @@ Decisions:
 - Treat unknown-license or unknown-commercial-use PDOS sources as `inspiration_only` or `blocked`.
 - Normalize project library status to the Protective Supervision enum and keep free-form labels in `status_label`.
 - Keep prompt contracts as `candidate`; none were promoted to `approved` without real eval results.
+- Keep the current basic Playwright accessibility smoke test as the CI a11y gate for this slice; do not add an axe/pa11y dependency without a separate owner decision.
 - Keep hooks report-first. This work does not claim refreshed-session `SessionStart` evidence; a Codex restart/reload is still required for current hook runtime evidence.
 
 Verification:
@@ -1951,10 +2020,11 @@ Verification:
 - `npm.cmd run audit:deps` passed: 0 vulnerabilities.
 - `npm.cmd run verify` passed:
   - `mesh:check`
-  - `prompt:validate` (`33` files, `0` errors)
+  - `prompt:validate` (`34` files, `0` errors)
   - `pdos:validate` (`64` files, `0` errors, `0` warnings)
+  - `contracts:validate` (`5` files, `0` errors)
   - `git diff --check`
   - `typecheck`
-  - `vitest run` (`27` files, `123` tests)
+  - `vitest run` (`29` files, `146` tests)
   - `astro build`
   - `playwright test` (`4` Chromium tests, including basic accessibility labels)

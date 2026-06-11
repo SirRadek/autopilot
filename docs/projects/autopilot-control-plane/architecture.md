@@ -75,6 +75,7 @@ External to this project:
 - Vercel projects, deployments, and workflow APIs
 - Cloudflare account resources
 - Gemini CLI advisory critique
+- Claude Code optional credentialed advisory sessions
 - Context7 or official documentation sources
 - remote MCP transports or connector-hosted MCP servers
 - product runtime source code such as Radeq pages, functions, migrations, and assets
@@ -139,6 +140,7 @@ Current data is Markdown-first with a minimal typed governance mirror:
 - project work logs
 - plans and specs under `docs/superpowers/`
 - typed delivery-system contracts under `src/data/delivery-system/`
+- phase-0 evidence and completion JSON contract schemas under `docs/contracts/`
 - typed Design Intelligence policy and LLM/ML architecture library candidates under `src/data/delivery-system/designIntelligence.ts`
 - typed Graphic Production Agent policy under `src/data/delivery-system/graphicAgent.ts`
 - typed Local Worker policy under `src/data/delivery-system/localWorkers.ts`
@@ -148,6 +150,7 @@ Current data is Markdown-first with a minimal typed governance mirror:
 - pure Decision Mesh query helpers under `src/lib/decision-mesh/`
 - local stdio MCP tool server under `mcp/server.ts`
 - capability routing, context economy, and model spend policy data under `src/data/delivery-system/`
+- deterministic contract validation under `scripts/validate-contracts.ts`
 - seeded project-specific Decision Mesh records under `docs/projects/<project-slug>/decision-mesh/`
 - Vitest contract tests under `tests/delivery-system/`
 - Vitest Decision Mesh tests under `tests/decision-mesh/`
@@ -217,6 +220,7 @@ MCP:
 - local stdio MCP server exposes `select_protective_supervision_route` as a read-only protective-supervision route for currentness checks, handoffs, progress, and blocker review
 - local stdio MCP server exposes `route_product_design_os` as a read-only Product & Design OS intake/change-request routing tool
 - local stdio MCP server exposes `score_product_design_os` as a read-only Product & Design OS recipe/pattern/asset scoring tool
+- MCP tool responses include structured content and per-tool output schemas; the schemas are tool contracts only and do not add execution authority
 - no remote MCP transport, connector-backed MCP server, or mutating MCP tool is approved
 
 Prompt Library:
@@ -272,6 +276,15 @@ Gemini:
 - can support brainstorming, critique, validation, and second opinions when claims are checked locally or against primary sources
 - must label brainstorm ideas separately from verified facts; framework, library, SDK, API, browser, cloud, SEO, accessibility, and best-practice claims require Context7 or official-docs verification before adoption
 
+Claude Code:
+
+- optional credentialed advisory provider only; not a default worker, gateway, approval authority, or source of truth
+- local setup evidence on 2026-06-11: installed through WinGet package `Anthropic.ClaudeCode`, `claude --version` reported `2.1.172`, and Windows Authenticode signature verified as `Anthropic, PBC`
+- authentication completed through an interactive Claude Code login window; do not print, store, or summarize token values
+- allowed uses are architecture/security/planning critique, agent validation, edge-case review, and bounded repo sessions after owner scope
+- forbidden uses are routine local-worker loops, final approval, governance approval, unredacted context, unbounded autonomous execution, and remote mutation without explicit approval
+- project `CLAUDE.md` defines the local memory contract and points Claude back to `AGENTS.md`, Decision Mesh routing, local checks, and Autopilot boundaries
+
 ## Security And Privacy Controls
 
 - Private repository names, private issue bodies, customer data, secrets, account identifiers, and local credential state must not be sent to external models.
@@ -312,6 +325,7 @@ rg -n "Project Architecture" docs
 npm run mesh:check
 npm run prompt:validate
 npm run pdos:validate
+npm run contracts:validate
 npm run audit:deps
 git diff --check
 ```
@@ -321,13 +335,13 @@ Application verification is delegated to the affected project architecture recor
 ## Known Gaps And Risks
 
 - `/autopilot` static read-only command center exists; it is not an execution console.
-- Decision Mesh and local MCP server exist as read-only context routing; they are not approval, execution, connector, or remote mutation surfaces. MCP server version is sourced from `package.json`, server instructions describe the read-only boundary, and tool results include `outputSchema` plus `structuredContent`.
-- Delivery-system typed governance contracts exist; capability routing, context economy, model spend policy, and current project mesh seeds now exist.
-- Prompt Library phase-0 exists as local Git/Markdown contracts with human and machine-readable source catalogs, metadata schema, seed prompts for GPT/Gemini/Claude/Qwen, deterministic frontmatter/source/eval validation, and a Decision Mesh boundary; agent-packet prompt selection remains planned.
+- Decision Mesh and local MCP server exist as read-only context routing; they are not approval, execution, connector, or remote mutation surfaces. MCP server version is sourced from `package.json`, server instructions describe the read-only boundary, and tool results include per-tool `outputSchema` plus `structuredContent`.
+- Delivery-system typed governance contracts exist; capability routing, context economy, model spend policy, evidence/completion JSON contracts, deterministic contract validation, and current project mesh seeds now exist.
+- Prompt Library phase-0 exists as local Git/Markdown contracts with human and machine-readable source catalogs, source-catalog schema validation, metadata schema, seed prompts for GPT/Gemini/Claude/Qwen, deterministic frontmatter/source/eval validation, and a Decision Mesh boundary; agent-packet prompt selection remains planned.
 - Protective Supervision phase-0 exists as typed read-only routing policy, root/project Decision Mesh boundaries, handoff/progress templates, and local MCP exposure; it is not a runtime queue and does not mutate remotes.
 - Project-local Codex hooks now exist as a phase-1 report-first lifecycle layer. They have deterministic tests and redacted local state, but active Codex App runtime loading remains unverified until hook trust review and a refreshed session produce `SessionStart` evidence.
 - Project, skill, agent, provider, and verification registries remain planned unless covered by the existing delivery-system contracts.
-- Product & Design OS now has deterministic foundation, schema, provenance, source-link, and project-index validation; intake/change-request router; console-only Markdown reports; read-only MCP exposure; recipe/pattern/asset scoring; first marketing/creative, ecommerce, dashboard/data-heavy, internal-ops, public-sector, and client-portal registry seeds; a local Playwright Design Reader that captures screenshots, extracts DOM/CSS evidence, and feeds the structured Visual QA analyzer; plus a local external-worker adapter for the separate `pdf-supervisor` document/PDF reader. Screenshot OCR, reference comparison, AI-agent UI, document-system recipes, automation UI, and advanced automation scripts remain planned.
+- Product & Design OS now has deterministic foundation, schema, provenance, source-link, relationship, unique-ID, status-enum, and project-index validation; intake/change-request router; console-only Markdown reports; read-only MCP exposure; recipe/pattern/asset scoring; first marketing/creative, ecommerce, dashboard/data-heavy, internal-ops, public-sector, and client-portal registry seeds; a local Playwright Design Reader that captures screenshots, extracts DOM/CSS evidence, and feeds the structured Visual QA analyzer; plus a local external-worker adapter for the separate `pdf-supervisor` document/PDF reader. Screenshot OCR, reference comparison, AI-agent UI, document-system recipes, automation UI, and advanced automation scripts remain planned.
 - Product & Design OS now has a local source/reference/project library and a project-index generator. It is not yet wired into a full automation loop; project records should run `npm run pdos:library:projects` after project onboarding or meaningful project-record changes.
 - Architecture records for external/private projects are not normalized yet.
 - Regular review cadence is documented. Weekly report-first sentinel automation is planned, but Codex app automation creation was blocked in this session because the automation handler was not registered.
