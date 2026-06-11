@@ -31,6 +31,7 @@ export type ReasoningAccessMode =
   | "deterministic"
   | "local"
   | "session_cli"
+  | "subscription_cli"
   | "subscription_interactive"
   | "api_or_self_hosted";
 
@@ -91,7 +92,7 @@ export interface ReasoningModelRouteInput {
 }
 
 export interface ReasoningModelRouteResult {
-  readonly route: "local_worker_default" | "free_cloud_advisory_review";
+  readonly route: "local_worker_default" | "free_cloud_advisory_review" | "external_advisory_review";
   readonly taskLanes: readonly ReasoningTaskLaneId[];
   readonly providerPolicies: readonly ReasoningProviderId[];
   readonly advisoryProviders: readonly string[];
@@ -207,6 +208,7 @@ export const reasoningEscalationPolicy = {
     "provider_availability_verified",
     "free_tier_or_no_cost_confirmed",
     "subscription_entitlement_confirmed_for_subscription_tools",
+    "google_ai_subscription_entitlement_confirmed_for_gemini_cli",
     "redacted_context_only",
     "context7_or_official_docs_verified",
     "gemini_brainstorm_claims_labeled_and_verified",
@@ -221,7 +223,9 @@ export const reasoningEscalationPolicy = {
     "provider_availability_unverified",
     "paid_model_or_credit_required",
     "subscription_entitlement_unverified",
+    "google_ai_subscription_entitlement_unverified",
     "api_credit_path_requested_without_owner_decision",
+    "gemini_api_key_or_paid_api_path_requested_without_owner_decision",
     "private_data_not_redacted",
     "model_output_used_as_source_of_truth",
     "technology_claim_without_context7_or_official_docs",
@@ -305,12 +309,18 @@ export const reasoningProviderPolicies = [
   {
     id: "gemini_cli",
     provider: "google",
-    accessMode: "session_cli",
+    accessMode: "subscription_cli",
     bestFor: ["long-context brainstorming", "multimodal critique", "architecture alternatives", "edge-case ideation"],
-    avoidFor: ["source-of-truth claims", "unredacted private context", "paid credit use without owner decision"],
+    avoidFor: [
+      "source-of-truth claims",
+      "unredacted private context",
+      "Gemini API key or paid API path without owner decision",
+      "free-tier assumption for owner subscription usage"
+    ],
     requiredChecks: [
       "provider_availability_verified",
-      "free_tier_or_no_cost_confirmed",
+      "google_ai_subscription_entitlement_confirmed_for_gemini_cli",
+      "authentication_state_verified_without_token_disclosure",
       "redacted_context_only",
       "gemini_brainstorm_claims_labeled_and_verified",
       "context7_or_official_docs_verified",
@@ -318,11 +328,14 @@ export const reasoningProviderPolicies = [
     ],
     stopConditions: [
       "provider_availability_unverified",
-      "paid_model_or_credit_required",
+      "google_ai_subscription_entitlement_unverified",
+      "gemini_api_key_or_paid_api_path_requested_without_owner_decision",
       "private_data_not_redacted",
       "gemini_claim_adopted_without_verification"
     ],
     sourceIds: [
+      "gemini-code-assist-quotas",
+      "gemini-subscriptions",
       "gemini-models",
       "gemini-long-context",
       "gemini-multimodal-prompt-design",
@@ -503,7 +516,7 @@ export function selectReasoningModelRoute(input: ReasoningModelRouteInput): Reas
     const taskLanes = selectTaskLanes(normalizedTask);
     const providerPolicies = selectProviderPolicies(taskLanes);
     return {
-      route: "free_cloud_advisory_review",
+      route: "external_advisory_review",
       taskLanes,
       providerPolicies,
       advisoryProviders: selectAdvisoryProviders(normalizedTask, providerPolicies),
@@ -594,7 +607,11 @@ function selectAdvisoryProviders(
   );
 
   if (advisoryProviders.includes("gemini_cli")) {
-    return unique([...advisoryProviders, "provider_neutral_free_cloud_model", "local_llm_when_available"]);
+    return unique([
+      ...advisoryProviders,
+      "provider_neutral_subscription_or_free_advisory_model",
+      "local_llm_when_available"
+    ]);
   }
 
   return unique([...advisoryProviders, "local_llm_when_available"]);

@@ -93,6 +93,12 @@
       "authority": "local-contract"
     },
     {
+      "id": "gemini-code-assist-quotas",
+      "kind": "official_docs",
+      "location": "https://developers.google.com/gemini-code-assist/resources/quotas",
+      "authority": "provider-specific"
+    },
+    {
       "id": "gemini-long-context",
       "kind": "official_docs",
       "location": "https://ai.google.dev/gemini-api/docs/long-context",
@@ -114,6 +120,12 @@
       "id": "gemini-prompt-design-strategies",
       "kind": "official_docs",
       "location": "https://docs.cloud.google.com/vertex-ai/generative-ai/docs/learn/prompts/prompt-design-strategies",
+      "authority": "provider-specific"
+    },
+    {
+      "id": "gemini-subscriptions",
+      "kind": "official_docs",
+      "location": "https://gemini.google/subscriptions/",
       "authority": "provider-specific"
     },
     {

@@ -41,6 +41,7 @@ export const modelSpendPolicy = {
     "research_synthesis"
   ],
   subscriptionInteractiveUse: [
+    "gemini_cli_google_ai_subscription_advisory",
     "claude_code_architecture_second_opinion",
     "claude_code_security_critique",
     "claude_code_planning_critique",
@@ -67,6 +68,7 @@ export const modelSpendPolicy = {
     "provider_availability_verified",
     "free_tier_or_no_cost_confirmed",
     "subscription_entitlement_confirmed_for_subscription_tools",
+    "google_ai_subscription_entitlement_confirmed_for_gemini_cli",
     "api_credit_or_self_hosting_cost_confirmed",
     "redacted_context_only",
     "context7_or_official_docs_verified",
@@ -85,7 +87,9 @@ export const modelSpendPolicy = {
     "paid_model_or_credit_required",
     "paid_model_or_credit_required_without_owner_decision",
     "subscription_entitlement_unverified",
+    "google_ai_subscription_entitlement_unverified",
     "api_credit_path_requested_without_owner_decision",
+    "gemini_api_key_or_paid_api_path_requested_without_owner_decision",
     "authentication_missing",
     "technology_claim_without_context7_or_official_docs",
     "gemini_claim_adopted_without_verification"

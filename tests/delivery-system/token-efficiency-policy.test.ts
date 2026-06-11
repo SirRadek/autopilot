@@ -44,6 +44,17 @@ describe("token efficiency routing policy", () => {
 
     expect(route.profile).toBe("review_compact");
     expect(route.firstMoves).toContain("select_reasoning_model_route");
+    expect(route.preferredWorkerOrder).toContain("external_advisory_review");
     expect(route.stopConditions).toContain("model_output_used_as_source_of_truth");
+  });
+
+  it("keeps research escalation on the external advisory route", () => {
+    const route = selectTokenEfficiencyRoute({
+      task: "Research latest provider quota docs and library options"
+    });
+
+    expect(route.profile).toBe("research_compact");
+    expect(route.preferredWorkerOrder).toContain("external_advisory_review");
+    expect(route.outputRules).toContain("separate_recommendation_from_adoption");
   });
 });

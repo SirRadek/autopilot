@@ -23,6 +23,7 @@ describe("delivery system model policy", () => {
     expect(reasoningEscalationPolicy.freeCloudAdvisoryUse).toContain("brainstorming");
     expect(reasoningEscalationPolicy.requiredChecks).toContain("free_tier_or_no_cost_confirmed");
     expect(reasoningEscalationPolicy.requiredChecks).toContain("subscription_entitlement_confirmed_for_subscription_tools");
+    expect(reasoningEscalationPolicy.requiredChecks).toContain("google_ai_subscription_entitlement_confirmed_for_gemini_cli");
     expect(reasoningEscalationPolicy.requiredChecks).toContain("redacted_context_only");
     expect(reasoningEscalationPolicy.requiredChecks).toContain("context7_or_official_docs_verified");
     expect(reasoningEscalationPolicy.requiredChecks).toContain("gemini_brainstorm_claims_labeled_and_verified");
@@ -36,19 +37,23 @@ describe("delivery system model policy", () => {
     expect(reasoningEscalationPolicy.stopConditions).toContain("frontier_used_for_simple_worker_task");
     expect(reasoningEscalationPolicy.stopConditions).toContain("paid_model_or_credit_required");
     expect(reasoningEscalationPolicy.stopConditions).toContain("subscription_entitlement_unverified");
+    expect(reasoningEscalationPolicy.stopConditions).toContain("google_ai_subscription_entitlement_unverified");
     expect(reasoningEscalationPolicy.stopConditions).toContain("api_credit_path_requested_without_owner_decision");
+    expect(reasoningEscalationPolicy.stopConditions).toContain(
+      "gemini_api_key_or_paid_api_path_requested_without_owner_decision"
+    );
     expect(reasoningEscalationPolicy.stopConditions).toContain("technology_claim_without_context7_or_official_docs");
     expect(reasoningEscalationPolicy.stopConditions).toContain("gemini_claim_adopted_without_verification");
   });
 
-  it("routes strategic brainstorming through free cloud advisory models when useful", () => {
+  it("routes strategic brainstorming through external advisory models when useful", () => {
     const route = selectReasoningModelRoute({
       task: "Use Gemini for architecture brainstorming, critique, and edge case reasoning"
     });
 
-    expect(route.route).toBe("free_cloud_advisory_review");
+    expect(route.route).toBe("external_advisory_review");
     expect(route.advisoryProviders).toEqual(
-      expect.arrayContaining(["gemini_cli", "provider_neutral_free_cloud_model"])
+      expect.arrayContaining(["gemini_cli", "provider_neutral_subscription_or_free_advisory_model"])
     );
     expect(route.taskLanes).toContain("architecture_security_review");
     expect(route.providerPolicies).toEqual(
@@ -56,7 +61,7 @@ describe("delivery system model policy", () => {
     );
     expect(route.requiredChecks).toEqual(
       expect.arrayContaining([
-        "free_tier_or_no_cost_confirmed",
+        "google_ai_subscription_entitlement_confirmed_for_gemini_cli",
         "redacted_context_only",
         "context7_or_official_docs_verified",
         "factual_claims_verified"
@@ -67,6 +72,7 @@ describe("delivery system model policy", () => {
     );
     expect(route.stopConditions).toContain("model_output_used_as_source_of_truth");
     expect(route.stopConditions).toContain("gemini_claim_adopted_without_verification");
+    expect(route.stopConditions).toContain("gemini_api_key_or_paid_api_path_requested_without_owner_decision");
   });
 
   it("surfaces structured-output providers with official-docs gates", () => {
@@ -74,7 +80,7 @@ describe("delivery system model policy", () => {
       task: "Review OpenAI structured output and DeepSeek JSON function calling strategy"
     });
 
-    expect(route.route).toBe("free_cloud_advisory_review");
+    expect(route.route).toBe("external_advisory_review");
     expect(route.taskLanes).toContain("structured_tool_reasoning");
     expect(route.providerPolicies).toEqual(expect.arrayContaining(["openai_gpt", "deepseek_api_or_self_hosted"]));
     expect(route.advisoryProviders).toEqual(expect.arrayContaining(["openai_gpt", "deepseek_api_or_self_hosted"]));
@@ -140,6 +146,17 @@ describe("delivery system model policy", () => {
     expect(claude?.requiredChecks).toContain("subscription_entitlement_confirmed");
     expect(claude?.requiredChecks).not.toContain("owner_cost_decision_for_credentialed_provider");
     expect(claude?.stopConditions).toContain("api_credit_path_requested_without_owner_decision");
+
+    const gemini = reasoningProviderPolicies.find((provider) => provider.id === "gemini_cli");
+    expect(gemini).toMatchObject({
+      provider: "google",
+      accessMode: "subscription_cli"
+    });
+    expect(gemini?.requiredChecks).toContain("google_ai_subscription_entitlement_confirmed_for_gemini_cli");
+    expect(gemini?.requiredChecks).toContain("authentication_state_verified_without_token_disclosure");
+    expect(gemini?.requiredChecks).not.toContain("free_tier_or_no_cost_confirmed");
+    expect(gemini?.stopConditions).toContain("gemini_api_key_or_paid_api_path_requested_without_owner_decision");
+    expect(gemini?.sourceIds).toEqual(expect.arrayContaining(["gemini-code-assist-quotas", "gemini-subscriptions"]));
   });
 
   it("registers Claude Code as an optional subscription advisory provider", () => {

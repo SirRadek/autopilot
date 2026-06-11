@@ -2,7 +2,7 @@ id: model_spend_policy
 type: routing_policy
 name: Model spend policy
 question: "Which model class is economically and technically appropriate for this task?"
-why: "Most routine work should use local or low-cost workers, while free/no-cost cloud advisory models and frontier models are reserved for strategic reasoning, review, audit, planning, and hard edge cases."
+why: "Most routine work should use local or low-cost workers, while subscription, free/no-cost, API, or self-hosted advisory models are reserved for strategic reasoning, review, audit, planning, and hard edge cases."
 signals:
   - model spend
   - provider
@@ -23,6 +23,9 @@ signals:
   - credentialed provider
   - frontier
   - gemini
+  - google ai subscription
+  - gemini code assist
+  - subscription cli
   - reasoning
   - context7
   - best practices
@@ -43,6 +46,7 @@ required_checks:
   - provider_availability_verified
   - free_tier_or_no_cost_confirmed
   - subscription_entitlement_confirmed_for_subscription_tools
+  - google_ai_subscription_entitlement_confirmed_for_gemini_cli
   - api_credit_or_self_hosting_cost_confirmed
   - redacted_context_only
   - context7_or_official_docs_verified
@@ -50,6 +54,7 @@ required_checks:
   - owner_cost_decision_for_credentialed_provider
   - authentication_state_verified_without_token_disclosure
   - no_api_budget_or_credit_claim_for_subscription_tools
+  - no_gemini_api_budget_or_key_claim_for_subscription_cli
   - factual_claims_verified
   - choose_smallest_safe_model_class
   - disclose_model_choice_when_risk_affects_delivery
@@ -62,7 +67,9 @@ stop_conditions:
   - paid_model_or_credit_required
   - paid_model_or_credit_required_without_owner_decision
   - subscription_entitlement_unverified
+  - google_ai_subscription_entitlement_unverified
   - api_credit_path_requested_without_owner_decision
+  - gemini_api_key_or_paid_api_path_requested_without_owner_decision
   - authentication_missing
   - private_data_not_redacted
   - model_output_used_as_source_of_truth
@@ -72,12 +79,13 @@ stop_conditions:
 must_not_assume:
   - Do not make DeepSeek, Qwen, Gemini, OpenAI, Claude, or any single provider mandatory.
   - Do not collapse Claude subscription access into API-credit spend policy.
+  - Do not collapse Gemini CLI / Google AI subscription access into Gemini API-credit spend policy.
   - Do not use API/self-hosted providers without explicit cost or infrastructure checks.
   - Do not route routine worker loops to a cloud model by default.
   - Do not adopt advisory technology claims without Context7 or official-docs verification.
 objective:
   - Keep model selection provider-neutral and cost-aware.
-  - Separate deterministic/local, free-cloud advisory, subscription-interactive, API-credit, and self-hosted lanes.
-  - Allow free/no-cost cloud advisory reasoning when it is redacted, useful, and verified.
+  - Separate deterministic/local, free-cloud advisory, subscription CLI, subscription-interactive, API-credit, and self-hosted lanes.
+  - Allow external advisory reasoning when entitlement, redaction, usefulness, and verification checks pass.
   - Pair Gemini brainstorming with Context7 or official-docs verification for current technical claims.
   - Escalate only when risk, ambiguity, or review value justifies it.

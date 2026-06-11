@@ -1,5 +1,59 @@
 # Autopilot Control Plane Work Log
 
+## 2026-06-11 Google AI Subscription Boundary
+
+Date: 2026-06-11
+Request or trigger: owner clarified that Google AI/Gemini access is also
+subscription-based, not API-budget based, with provider limits depending on the
+subscription/license path.
+Mode: WRITE_ALLOWED for local model-routing policy, mesh records, source
+catalog, documentation, tests, and work log only. No API key, connector
+mutation, remote service mutation, deployment, or paid provider configuration
+was added.
+Scope: correct Gemini CLI routing from free/API assumptions to Google AI
+subscription or Code Assist license entitlement, while preserving advisory-only,
+redacted-context, official-doc verification, and local verification boundaries.
+Files changed:
+
+- `src/data/delivery-system/modelPolicy.ts`
+- `src/data/delivery-system/modelSpend.ts`
+- `src/data/delivery-system/tokenEfficiency.ts`
+- `tests/delivery-system/model-policy.test.ts`
+- `tests/delivery-system/context-economy-policy.test.ts`
+- `tests/delivery-system/token-efficiency-policy.test.ts`
+- `mesh/`
+- `docs/projects/autopilot-control-plane/decision-mesh/`
+- `prompt-library/source-catalog.json`
+- `prompt-library/source-catalog.md`
+- `docs/autopilot/delivery-system-model-policy.md`
+- `docs/projects/autopilot-control-plane/architecture.md`
+- `docs/projects/autopilot-control-plane/work-log.md`
+
+Architecture impact:
+
+- Gemini CLI is now modeled as `subscription_cli`.
+- Required checks include
+  `google_ai_subscription_entitlement_confirmed_for_gemini_cli` and
+  authentication-state verification without token disclosure.
+- Stop conditions include
+  `google_ai_subscription_entitlement_unverified` and
+  `gemini_api_key_or_paid_api_path_requested_without_owner_decision`.
+- Official Google Gemini Code Assist quota and Gemini subscription sources were
+  added to the prompt source catalog.
+
+Verification:
+
+- Official Google sources checked on 2026-06-11: Gemini Code Assist quotas show
+  quota differences by license type, including individual/free and Google AI
+  Pro/Ultra paths; Gemini API model docs remain separate API documentation.
+- `npm.cmd run mesh:generate` regenerated `mesh/generated/decision-mesh.json`.
+- `npm.cmd test -- tests/delivery-system/model-policy.test.ts tests/delivery-system/context-economy-policy.test.ts tests/delivery-system/token-efficiency-policy.test.ts` passed: 3 files, 17 tests.
+- `npm.cmd run prompt:validate` passed: 34 files, 0 errors.
+- `npm.cmd run mesh:check` passed.
+- `npm.cmd run typecheck` passed.
+- `npm.cmd run diff:check` passed.
+- `npm.cmd run verify` passed: mesh check, prompt validation, PDOS validation, contract validation, diff check, typecheck, 30 Vitest files with 153 tests, Astro build, and 4 Playwright Chromium tests.
+
 ## 2026-06-11 Reasoning Agent Mesh And Tool Inventory
 
 Date: 2026-06-11

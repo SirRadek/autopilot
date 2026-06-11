@@ -46,6 +46,10 @@ use boundaries.
 
 Google / Gemini:
 
+- Gemini Code Assist quotas:
+  https://developers.google.com/gemini-code-assist/resources/quotas
+- Google Gemini subscriptions:
+  https://gemini.google/subscriptions/
 - Vertex AI prompt design strategies:
   https://docs.cloud.google.com/vertex-ai/generative-ai/docs/learn/prompts/prompt-design-strategies
 - Multimodal prompt design:
@@ -58,8 +62,10 @@ Google / Gemini:
   https://ai.google.dev/gemini-api/docs/long-context
 
 Use for Gemini brainstorming, multimodal analysis, test-driven prompt iteration,
-and prompt optimization concepts. Cloud use still requires free/no-cost and
-redaction checks.
+prompt optimization concepts, and Gemini CLI/Code Assist quota boundaries.
+Gemini CLI use in this Autopilot setup is treated as owner subscription or
+license entitlement, not Gemini API budget, unless an owner explicitly routes a
+task to an API path.
 
 DeepSeek:
 

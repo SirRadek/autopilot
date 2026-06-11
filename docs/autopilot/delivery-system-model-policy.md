@@ -146,7 +146,7 @@ Provider policies:
 | `qwen_local` | local LLM | small code drafts, test drafts, summaries | bounded scope, review, tests |
 | `openai_gpt` | API or platform session | structured outputs, tool orchestration, deep reasoning review | cost/entitlement, official docs, redaction |
 | `anthropic_claude_subscription` | subscription interactive | architecture/security/planning critique and agent validation | subscription entitlement, no API-credit claim, redaction |
-| `gemini_cli` | session CLI/free-cloud advisory | long-context brainstorming, multimodal critique, edge cases | free/no-cost check, ideas labeled until verified |
+| `gemini_cli` | Google AI subscription CLI | long-context brainstorming, multimodal critique, edge cases | subscription/license entitlement, no API-key claim, ideas labeled until verified |
 | `deepseek_api_or_self_hosted` | API or self-hosted | JSON/reasoning comparison and cost-aware critique | hosted cost or self-hosting checks, official docs |
 
 Gemini and Claude brainstorming output remains advisory. It can propose options,
@@ -187,6 +187,7 @@ Use free/no-cost cloud advisory models for:
 
 Use subscription-interactive providers for:
 
+- Gemini CLI advisory through Google AI subscription or license entitlement
 - Claude Code architecture second opinion
 - Claude Code security critique
 - Claude Code planning critique
@@ -218,18 +219,24 @@ Use frontier reasoning only when:
 - previous attempts failed repeatedly
 - final independent review is needed
 
-Stop if provider availability is unverified, if free/no-cost use is unconfirmed, if a routine local-worker task depends on a non-local model, if paid credits are required, or if model choice affects risk without disclosure.
+Stop if provider availability is unverified, if free/no-cost use is unconfirmed for a free route, if a routine local-worker task depends on a non-local model, if paid credits are required, or if model choice affects risk without disclosure.
 
 For subscription tools, stop if subscription entitlement is unverified or if the
 task silently switches into an API-credit path. For API/self-hosted providers,
 stop unless API cost, account boundary, or self-hosted infrastructure has been
 explicitly checked.
 
+For Gemini CLI in this project, the default entitlement path is Google AI
+subscription or Code Assist license, not Gemini API budget. Stop on
+`gemini_api_key_or_paid_api_path_requested_without_owner_decision` if a task
+tries to switch Gemini work to an API key, Vertex/AI Studio paid route, or API
+rate-limit assumption without owner approval.
+
 Technology and best-practice recommendations from any advisory model must pass the docs-verification lane before adoption:
 
 1. Query Context7 when it is connected and covers the library, framework, SDK, browser API, cloud API, SEO rule, or accessibility topic.
 2. If Context7 is unavailable or does not cover the topic, record the fallback and use official documentation, release notes, local code, tests, or controlled browser evidence.
-3. Treat unverified Gemini or free-cloud brainstorm output as a hypothesis, not a plan or source of truth.
+3. Treat unverified Gemini, subscription, or free-cloud brainstorm output as a hypothesis, not a plan or source of truth.
 4. Stop on `technology_claim_without_context7_or_official_docs` or `gemini_claim_adopted_without_verification`.
 
 ## Prompt Library Policy
@@ -317,7 +324,9 @@ Use of Qwen2.5-Coder 14B additionally requires:
 
 ## Gemini Policy
 
-Gemini CLI or Gemini models may be used as advisory critique and brainstorming only.
+Gemini CLI may be used as advisory critique and brainstorming only through the
+owner's Google AI subscription or Code Assist license entitlement unless an
+owner explicitly routes work to a Gemini API path.
 
 Allowed:
 
@@ -336,7 +345,17 @@ Forbidden:
 - delivery approval
 - receiving unredacted private data
 - overriding local repository facts
-- consuming paid credits or requiring an account upgrade
+- consuming Gemini API credits, API keys, Vertex/AI Studio paid paths, or
+  requiring an account upgrade without owner decision
+
+Required checks:
+
+- provider availability verified
+- Google AI subscription or Code Assist license entitlement confirmed
+- authentication state verified without printing or storing tokens
+- redacted context only
+- official Google docs verified for Gemini-specific behavior and quota limits
+- local verification required after any output
 
 Gemini output must be treated as external advice and checked against local files, official docs, or connector snapshots.
 
