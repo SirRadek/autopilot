@@ -1,5 +1,53 @@
 # Autopilot Control Plane Work Log
 
+## 2026-06-11 Dependency Refresh
+
+Date: 2026-06-11
+Request or trigger: owner asked to complete all recommended next-order work
+after the full audit, including the optional dependency refresh.
+Mode: WRITE_ALLOWED for `package.json`, `package-lock.json`, local
+verification, branch publication, and draft PR only. No product runtime code,
+connector mutation, deployment, model gateway, prompt-management SaaS, or
+execution queue was added.
+Scope:
+
+- Refresh the small outdated development dependencies reported by
+  `npm.cmd outdated`.
+- Preserve the existing dependency style: exact pins for `@types/node`,
+  `astro`, and `vitest`, and caret range for `tsx`.
+- Re-run local verification before publication.
+
+Files changed:
+
+- `package.json`
+- `package-lock.json`
+
+Architecture impact:
+
+- No architecture, project mesh, MCP, hook, prompt-library, model-output eval,
+  Product & Design OS, or source-of-truth boundary changed.
+- The dependency refresh is a maintenance slice only; the Autopilot control
+  plane remains a local governance, validation, read-only MCP, and static
+  command-center project.
+
+Verification:
+
+- `npm.cmd install --save-dev @types/node@25.9.3 astro@6.4.6 tsx@^4.22.4 vitest@4.1.8` completed and reported `0` vulnerabilities.
+- `npm.cmd outdated --json` returned `{}`.
+- `npm.cmd run audit:deps` passed: `0` vulnerabilities.
+- `git diff --check` passed.
+- `npm.cmd run verify` passed:
+  - `mesh:check`
+  - `prompt:validate` (`34` files, `0` errors)
+  - `model-output:validate` (`3` files, `1` record, `0` errors)
+  - `pdos:validate` (`64` files, `0` errors, `0` warnings)
+  - `contracts:validate` (`5` files, `0` errors)
+  - `diff:check`
+  - `typecheck`
+  - `vitest run` (`32` files, `171` tests)
+  - `astro build`
+  - `playwright test` (`4` Chromium tests)
+
 ## 2026-06-11 Model Output Eval Record Validation
 
 Date: 2026-06-11
