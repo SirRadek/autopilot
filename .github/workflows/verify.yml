@@ -29,5 +29,11 @@ jobs:
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
 
+      - name: Dependency audit
+        run: npm run audit:deps
+
+      - name: Whitespace diff check
+        run: npm run diff:check
+
       - name: Verify
         run: npm run verify

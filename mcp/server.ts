@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
@@ -40,18 +42,35 @@ import {
 } from "../src/lib/decision-mesh";
 
 const projectRoot = fileURLToPath(new URL("..", import.meta.url));
+const packageVersion = readPackageVersion(projectRoot);
 const mesh = loadDecisionMeshFromRoot(projectRoot);
+const readOnlyToolMetadata = {
+  outputSchema: z.object({}).catchall(z.unknown()),
+  annotations: {
+    readOnlyHint: true,
+    destructiveHint: false,
+    idempotentHint: true,
+    openWorldHint: false
+  }
+} as const;
 
-const server = new McpServer({
-  name: "autopilot-decision-mesh",
-  version: "0.1.0"
-});
+const server = new McpServer(
+  {
+    name: "autopilot-decision-mesh",
+    version: packageVersion
+  },
+  {
+    instructions:
+      "Read-only Autopilot Decision Mesh context router. Use it to classify tasks, retrieve compact mesh packets, and inspect governance guidance. It must not mutate repositories, connectors, deployments, project runtimes, or external services."
+  }
+);
 
 server.registerTool(
   "select_capabilities",
   {
     title: "Select Autopilot Capabilities",
     description: "Route a task to Autopilot capability modules before building a compact agent packet.",
+    ...readOnlyToolMetadata,
     inputSchema: {
       task: z.string().min(1),
       max_nodes: z.number().int().min(1).max(24).optional()
@@ -66,6 +85,7 @@ server.registerTool(
     title: "Select Graphic Production Route",
     description:
       "Return a read-only Graphic Production Agent route for static graphics, motion, physics, models, or storyboards.",
+    ...readOnlyToolMetadata,
     inputSchema: {
       task: z.string().min(1)
     }
@@ -79,6 +99,7 @@ server.registerTool(
     title: "Select Design Review Route",
     description:
       "Return a read-only Visual Analyst and Design Critic route for visual analysis, critique, research, and handoff.",
+    ...readOnlyToolMetadata,
     inputSchema: {
       task: z.string().min(1)
     }
@@ -92,6 +113,7 @@ server.registerTool(
     title: "Search Autopilot Architecture Library",
     description:
       "Return read-only candidate technologies from Autopilot's LLM/ML architecture library without approving adoption.",
+    ...readOnlyToolMetadata,
     inputSchema: {
       task: z.string().min(1)
     }
@@ -105,6 +127,7 @@ server.registerTool(
     title: "Select Reasoning Model Route",
     description:
       "Return a read-only model-routing recommendation for local workers, Gemini, or other free/no-cost advisory reasoning models.",
+    ...readOnlyToolMetadata,
     inputSchema: {
       task: z.string().min(1)
     }
@@ -118,6 +141,7 @@ server.registerTool(
     title: "Select Local Worker Route",
     description:
       "Return a read-only local worker routing recommendation for Qwen2.5-Coder, deterministic tooling, tests, search, and summarization.",
+    ...readOnlyToolMetadata,
     inputSchema: {
       task: z.string().min(1)
     }
@@ -131,6 +155,7 @@ server.registerTool(
     title: "Select Token Efficiency Route",
     description:
       "Return a read-only Caveman/compact routing profile for minimal context, deterministic-first work, and paid-token avoidance.",
+    ...readOnlyToolMetadata,
     inputSchema: {
       task: z.string().min(1)
     }
@@ -144,6 +169,7 @@ server.registerTool(
     title: "Select Protective Supervision Route",
     description:
       "Return a read-only protective supervision route for currentness checks, agent handoff compilation, progress tracking, and blocker review.",
+    ...readOnlyToolMetadata,
     inputSchema: {
       task: z.string().min(1)
     }
@@ -157,6 +183,7 @@ server.registerTool(
     title: "Route Product & Design OS Intake",
     description:
       "Return a read-only Product & Design OS route for project intake or change-request triage, with optional Markdown report output.",
+    ...readOnlyToolMetadata,
     inputSchema: {
       text: z.string().min(1).optional(),
       project_type: z.string().min(1).optional(),
@@ -198,6 +225,7 @@ server.registerTool(
     title: "Score Product & Design OS Candidates",
     description:
       "Return a read-only deterministic Product & Design OS score report for recipes, patterns, and assets using local registries.",
+    ...readOnlyToolMetadata,
     inputSchema: {
       text: z.string().min(1).optional(),
       project_type: z.string().min(1).optional(),
@@ -226,6 +254,7 @@ server.registerTool(
   {
     title: "Get Relevant Decision Mesh Subgraph",
     description: "Return a compact read-only Decision Mesh subgraph for a task and optional agent role.",
+    ...readOnlyToolMetadata,
     inputSchema: {
       task: z.string().min(1),
       agent: z.string().min(1).optional(),
@@ -240,6 +269,7 @@ server.registerTool(
   {
     title: "Build Decision Mesh Agent Packet",
     description: "Return compact task guidance for one agent role without loading the full mesh.",
+    ...readOnlyToolMetadata,
     inputSchema: {
       task: z.string().min(1),
       agent: z.string().min(1),
@@ -254,6 +284,7 @@ server.registerTool(
   {
     title: "Build Project Decision Mesh Packet",
     description: "Return compact task guidance from a supervised project's own Decision Mesh.",
+    ...readOnlyToolMetadata,
     inputSchema: {
       project_slug: z.string().regex(/^[a-z0-9][a-z0-9-]*$/),
       task: z.string().min(1),
@@ -272,6 +303,7 @@ server.registerTool(
   {
     title: "Explain Decision Mesh Node",
     description: "Explain why a node exists and which risks, checks, agents, and edges connect to it.",
+    ...readOnlyToolMetadata,
     inputSchema: {
       node_id: z.string().min(1)
     }
@@ -284,6 +316,7 @@ server.registerTool(
   {
     title: "Find Required Agents",
     description: "Return likely required agents and reasons for a task.",
+    ...readOnlyToolMetadata,
     inputSchema: {
       task: z.string().min(1)
     }
@@ -296,6 +329,7 @@ server.registerTool(
   {
     title: "Find Decision Mesh Risks",
     description: "Return relevant risk nodes and stop conditions for a task.",
+    ...readOnlyToolMetadata,
     inputSchema: {
       task: z.string().min(1)
     }
@@ -308,8 +342,9 @@ async function main(): Promise<void> {
   await server.connect(transport);
 }
 
-function toJsonText(value: unknown): { content: { type: "text"; text: string }[] } {
+function toJsonText(value: unknown): { content: { type: "text"; text: string }[]; structuredContent: Record<string, unknown> } {
   return {
+    structuredContent: toStructuredContent(value),
     content: [
       {
         type: "text",
@@ -319,8 +354,9 @@ function toJsonText(value: unknown): { content: { type: "text"; text: string }[]
   };
 }
 
-function toText(value: string): { content: { type: "text"; text: string }[] } {
+function toText(value: string): { content: { type: "text"; text: string }[]; structuredContent: Record<string, unknown> } {
   return {
+    structuredContent: { text: value },
     content: [
       {
         type: "text",
@@ -328,6 +364,24 @@ function toText(value: string): { content: { type: "text"; text: string }[] } {
       }
     ]
   };
+}
+
+function toStructuredContent(value: unknown): Record<string, unknown> {
+  if (value && typeof value === "object" && !Array.isArray(value)) {
+    return value as Record<string, unknown>;
+  }
+
+  return { value };
+}
+
+function readPackageVersion(root: string): string {
+  const manifest = JSON.parse(readFileSync(join(root, "package.json"), "utf8")) as unknown;
+
+  if (!manifest || typeof manifest !== "object" || !("version" in manifest) || typeof manifest.version !== "string") {
+    throw new Error("package.json must contain a string version for the MCP server.");
+  }
+
+  return manifest.version;
 }
 
 function toPdosRouteRequest(input: {

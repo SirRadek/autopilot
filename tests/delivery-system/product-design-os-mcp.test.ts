@@ -8,6 +8,11 @@ describe("Product & Design OS MCP exposure", () => {
     const serverSource = readFileSync(join(process.cwd(), "mcp/server.ts"), "utf8");
 
     expect(serverSource).toContain('"route_product_design_os"');
+    expect(serverSource).toContain("version: packageVersion");
+    expect(serverSource).toContain("instructions:");
+    expect(serverSource).toContain("outputSchema");
+    expect(serverSource).toContain("structuredContent");
+    expect(serverSource).toContain("readOnlyHint: true");
     expect(serverSource).toContain("routeProductDesignOs(toPdosRouteRequest(input))");
     expect(serverSource).toContain("input.format === \"markdown\"");
     expect(serverSource).toContain('"score_product_design_os"');
