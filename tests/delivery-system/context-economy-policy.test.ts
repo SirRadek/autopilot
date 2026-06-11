@@ -40,9 +40,13 @@ describe("context economy and model spend policies", () => {
     expect(modelSpendPolicy.lowCostWorkerUse).toContain("bulk_summarization");
     expect(modelSpendPolicy.freeCloudAdvisoryUse).toContain("brainstorming");
     expect(modelSpendPolicy.requiredChecks).toContain("free_tier_or_no_cost_confirmed");
+    expect(modelSpendPolicy.requiredChecks).toContain("owner_cost_decision_for_credentialed_provider");
+    expect(modelSpendPolicy.requiredChecks).toContain("disclose_model_choice_when_risk_affects_delivery");
     expect(modelSpendPolicy.repoExecutorUse).toContain("repo_editing");
     expect(modelSpendPolicy.frontierOnlyWhen).toContain("architecture_level");
     expect(modelSpendPolicy.stopConditions).toContain("provider_availability_unverified");
     expect(modelSpendPolicy.stopConditions).toContain("paid_model_or_credit_required");
+    expect(modelSpendPolicy.stopConditions).toContain("paid_model_or_credit_required_without_owner_decision");
+    expect(modelSpendPolicy.stopConditions).toContain("authentication_missing");
   });
 });

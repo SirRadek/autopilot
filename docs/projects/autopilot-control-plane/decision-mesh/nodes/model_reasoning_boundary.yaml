@@ -1,11 +1,14 @@
 id: model_reasoning_boundary
 type: routing_policy
-name: Free cloud reasoning boundary
-question: "Does model routing use free/no-cost cloud reasoning only as verified advisory support?"
-why: "Gemini and other free/no-cost cloud models can improve brainstorming, critique, validation, and second opinions, but Autopilot must keep routine worker loops local and block paid credits, unredacted private context, and model output as source of truth."
+name: External reasoning boundary
+question: "Does model routing use free/no-cost or credentialed cloud reasoning only as verified advisory support?"
+why: "Gemini, Claude, and other external reasoning models can improve brainstorming, critique, validation, and second opinions, but Autopilot must keep routine worker loops local and block paid credits, unredacted private context, and model output as source of truth."
 signals:
   - gemini
+  - claude
+  - anthropic
   - free model
+  - credentialed advisory
   - cloud reasoning
   - brainstorming
   - critique
@@ -30,6 +33,8 @@ related_files:
 required_checks:
   - provider_availability_verified
   - free_tier_or_no_cost_confirmed
+  - owner_cost_decision_for_credentialed_provider
+  - authentication_state_verified_without_token_disclosure
   - redacted_context_only
   - context7_or_official_docs_verified
   - gemini_brainstorm_claims_labeled_and_verified
@@ -39,6 +44,8 @@ required_checks:
 stop_conditions:
   - provider_availability_unverified
   - paid_model_or_credit_required
+  - paid_model_or_credit_required_without_owner_decision
+  - authentication_missing
   - cloud_model_for_routine_worker_loop
   - private_data_not_redacted
   - model_output_used_as_source_of_truth
@@ -46,7 +53,7 @@ stop_conditions:
   - gemini_claim_adopted_without_verification
   - model_choice_affects_risk_without_disclosure
 objective:
-  - Use Gemini and other free/no-cost cloud models as advisory reasoning when they add measurable review value.
-  - Verify Gemini technology and best-practice brainstorm claims through Context7 when connected, or official documentation as fallback.
+  - Use Gemini, Claude, and other external models as advisory reasoning when they add measurable review value and pass cost/auth/privacy checks.
+  - Verify external technology and best-practice brainstorm claims through Context7 when connected, or official documentation as fallback.
   - Preserve local workers as the default execution path.
   - Keep local tests, architecture records, and owner decisions as the source of truth.

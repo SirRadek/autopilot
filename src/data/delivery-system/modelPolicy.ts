@@ -27,6 +27,18 @@ export interface ReasoningEscalationPolicy {
   stopConditions: readonly string[];
 }
 
+export interface CredentialedAdvisoryProviderPolicy {
+  readonly id: string;
+  readonly provider: string;
+  readonly tool: string;
+  readonly registration: "optional";
+  readonly allowedUse: readonly string[];
+  readonly forbiddenUse: readonly string[];
+  readonly requiredChecks: readonly string[];
+  readonly stopConditions: readonly string[];
+  readonly sourceDocs: readonly string[];
+}
+
 export interface ReasoningModelRouteInput {
   readonly task: string;
 }
@@ -164,6 +176,56 @@ export const reasoningEscalationPolicy = {
     "gemini_claim_adopted_without_verification"
   ]
 } as const satisfies ReasoningEscalationPolicy;
+
+export const credentialedAdvisoryProviderPolicies = [
+  {
+    id: "claude_code",
+    provider: "anthropic",
+    tool: "claude",
+    registration: "optional",
+    allowedUse: [
+      "architecture second opinion",
+      "security critique",
+      "planning critique",
+      "agent validation",
+      "edge-case review",
+      "bounded repo session after owner scope"
+    ],
+    forbiddenUse: [
+      "default routine worker",
+      "local automation loops",
+      "final approval",
+      "governance approval",
+      "unredacted private context",
+      "unbounded autonomous execution",
+      "remote mutation without explicit approval"
+    ],
+    requiredChecks: [
+      "provider_availability_verified",
+      "authentication_state_verified_without_token_disclosure",
+      "owner_cost_decision_for_credentialed_provider",
+      "redacted_context_only",
+      "official_provider_docs_verified",
+      "bounded_scope_declared",
+      "local_verification_required",
+      "disclose_model_choice_when_risk_affects_delivery"
+    ],
+    stopConditions: [
+      "provider_availability_unverified",
+      "authentication_missing",
+      "paid_model_or_credit_required_without_owner_decision",
+      "private_data_not_redacted",
+      "model_output_used_as_source_of_truth",
+      "cloud_model_for_routine_worker_loop",
+      "remote_mutation_without_approval"
+    ],
+    sourceDocs: [
+      "https://code.claude.com/docs/en/setup",
+      "https://code.claude.com/docs/en/iam",
+      "https://code.claude.com/docs/en/memory"
+    ]
+  }
+] as const satisfies readonly CredentialedAdvisoryProviderPolicy[];
 
 export function selectReasoningModelRoute(input: ReasoningModelRouteInput): ReasoningModelRouteResult {
   const normalizedTask = normalize(input.task);

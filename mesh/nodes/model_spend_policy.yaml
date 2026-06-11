@@ -8,8 +8,11 @@ signals:
   - provider
   - deepseek
   - qwen
+  - claude
+  - anthropic
   - low cost
   - free cloud
+  - credentialed provider
   - frontier
   - gemini
   - reasoning
@@ -32,6 +35,8 @@ required_checks:
   - redacted_context_only
   - context7_or_official_docs_verified
   - gemini_brainstorm_claims_labeled_and_verified
+  - owner_cost_decision_for_credentialed_provider
+  - authentication_state_verified_without_token_disclosure
   - factual_claims_verified
   - choose_smallest_safe_model_class
   - disclose_model_choice_when_risk_affects_delivery
@@ -42,6 +47,8 @@ stop_conditions:
   - cloud_model_for_routine_worker_loop
   - frontier_used_for_simple_worker_task
   - paid_model_or_credit_required
+  - paid_model_or_credit_required_without_owner_decision
+  - authentication_missing
   - private_data_not_redacted
   - model_output_used_as_source_of_truth
   - technology_claim_without_context7_or_official_docs

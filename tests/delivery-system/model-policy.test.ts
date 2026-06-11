@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { reasoningEscalationPolicy, selectReasoningModelRoute } from "../../src/data/delivery-system/modelPolicy";
+import {
+  credentialedAdvisoryProviderPolicies,
+  reasoningEscalationPolicy,
+  selectReasoningModelRoute
+} from "../../src/data/delivery-system/modelPolicy";
 
 describe("delivery system model policy", () => {
   it("keeps routine worker workloads local by default", () => {
@@ -68,5 +72,29 @@ describe("delivery system model policy", () => {
     expect(route.forbiddenUse).toContain("architecture decisions");
     expect(route.forbiddenUse).not.toContain("boilerplate coding");
     expect(route.stopConditions).toContain("cloud_model_for_routine_worker_loop");
+  });
+
+  it("registers Claude Code as an optional credentialed advisory provider", () => {
+    const claude = credentialedAdvisoryProviderPolicies.find((provider) => provider.id === "claude_code");
+
+    expect(claude).toMatchObject({
+      provider: "anthropic",
+      tool: "claude",
+      registration: "optional"
+    });
+    expect(claude?.allowedUse).toContain("architecture second opinion");
+    expect(claude?.forbiddenUse).toContain("default routine worker");
+    expect(claude?.forbiddenUse).toContain("local automation loops");
+    expect(claude?.requiredChecks).toEqual(
+      expect.arrayContaining([
+        "provider_availability_verified",
+        "authentication_state_verified_without_token_disclosure",
+        "owner_cost_decision_for_credentialed_provider",
+        "redacted_context_only",
+        "official_provider_docs_verified"
+      ])
+    );
+    expect(claude?.stopConditions).toContain("paid_model_or_credit_required_without_owner_decision");
+    expect(claude?.stopConditions).toContain("model_output_used_as_source_of_truth");
   });
 });

@@ -53,8 +53,10 @@ export const modelSpendPolicy = {
     "redacted_context_only",
     "context7_or_official_docs_verified",
     "gemini_brainstorm_claims_labeled_and_verified",
+    "owner_cost_decision_for_credentialed_provider",
     "factual_claims_verified",
-    "smallest_safe_model_class"
+    "smallest_safe_model_class",
+    "disclose_model_choice_when_risk_affects_delivery"
   ],
   stopConditions: [
     "provider_availability_unverified",
@@ -63,6 +65,8 @@ export const modelSpendPolicy = {
     "frontier_used_for_simple_worker_task",
     "model_choice_affects_risk_without_disclosure",
     "paid_model_or_credit_required",
+    "paid_model_or_credit_required_without_owner_decision",
+    "authentication_missing",
     "technology_claim_without_context7_or_official_docs",
     "gemini_claim_adopted_without_verification"
   ]

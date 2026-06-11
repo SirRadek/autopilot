@@ -287,6 +287,60 @@ Gemini output must be treated as external advice and checked against local files
 
 For technology or best-practice brainstorming, Gemini must be paired with the docs-verification lane. Context7 is preferred when connected; official documentation is the fallback. Gemini may suggest options, tradeoffs, and critique, but those claims cannot enter an implementation plan until verified.
 
+## Claude Code Policy
+
+Claude Code is registered as an optional credentialed advisory provider, not a
+default worker, gateway, approval authority, or source of truth.
+
+Allowed after the required checks pass:
+
+- architecture second opinion
+- security critique
+- planning critique
+- agent validation
+- edge-case review
+- bounded repository session after the owner declares scope
+
+Forbidden:
+
+- default routine worker use
+- local automation loops
+- final approval or governance approval
+- unredacted private context
+- unbounded autonomous execution
+- remote mutation without explicit approval
+
+Required checks:
+
+- provider availability verified
+- authentication state verified without printing or storing tokens
+- owner cost decision for credentialed provider use
+- redacted context only
+- official Anthropic docs verified for Claude-specific behavior
+- bounded scope declared
+- local verification required after any output
+- model choice disclosed when it affects risk, cost, or delivery
+
+Stop conditions:
+
+- `provider_availability_unverified`
+- `authentication_missing`
+- `paid_model_or_credit_required_without_owner_decision`
+- `private_data_not_redacted`
+- `model_output_used_as_source_of_truth`
+- `cloud_model_for_routine_worker_loop`
+- `remote_mutation_without_approval`
+
+Local setup evidence on 2026-06-11: Claude Code was installed through the
+official WinGet package `Anthropic.ClaudeCode`, `claude --version` reported
+`2.1.172`, and the Windows Authenticode signature verified as `Anthropic, PBC`.
+The first non-interactive `claude doctor` attempt timed out on interactive auth.
+After a visible PowerShell login window completed, the local Claude credentials
+file was present; token contents were not read, printed, or stored in the
+repository. No Claude model call was made during registration. The project
+`CLAUDE.md` file is the local memory contract Claude Code should load for this
+repository.
+
 ## Connector And Tool Facts
 
 Model output about current SDKs, cloud APIs, provider pricing, model availability, GitHub state, Linear state, Vercel state, Cloudflare state, or Docket content is unstable.

@@ -28,9 +28,16 @@ Anthropic / Claude:
   https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices
 - Guardrails / hallucination reduction:
   https://platform.claude.com/docs/en/build-with-claude/strengthen-guardrails/reduce-hallucinations
+- Claude Code setup:
+  https://code.claude.com/docs/en/setup
+- Claude Code authentication:
+  https://code.claude.com/docs/en/iam
+- Claude Code memory:
+  https://code.claude.com/docs/en/memory
 
 Use for Claude-specific structure, XML-style organization, examples, tool
-behavior, agentic work, and quote-first document analysis.
+behavior, agentic work, quote-first document analysis, Claude Code install,
+authentication, and project memory behavior.
 
 Google / Gemini:
 
