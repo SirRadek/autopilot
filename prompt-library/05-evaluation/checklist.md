@@ -20,7 +20,7 @@ forbidden:
   - prompt_without_owner_review
 expected_output: Pass/fail checklist for prompt adoption.
 evals:
-  - 05-evaluation/checklist.md
+  - 05-evaluation/test-inputs.md
 ---
 
 # Prompt Evaluation Checklist

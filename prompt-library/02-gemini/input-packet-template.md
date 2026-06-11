@@ -2,7 +2,7 @@
 id: gemini-input-packet-template
 title: Gemini Input Packet Template
 model_family: gemini
-task_type: advisory-packet
+task_type: agentic-task
 version: v0.1.0
 status: candidate
 last_reviewed: 2026-06-05

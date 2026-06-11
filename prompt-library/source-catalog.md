@@ -130,7 +130,6 @@ fallbacks, and private-reference boundaries.
 
 DAIR.AI Prompt Engineering Guide:
 
-- https://dair.ai/projects/prompt-engineering/
 - https://www.promptingguide.ai/
 
 Use as a general learning reference and inspiration source for techniques,

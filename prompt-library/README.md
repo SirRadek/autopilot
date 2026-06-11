@@ -33,6 +33,7 @@ prompt-library/
   06-supervisor/
   prompt.schema.json
   source-catalog.md
+  source-catalog.json
 ```
 
 ## Required Metadata
@@ -51,6 +52,8 @@ Every prompt file must state:
 - `evals`
 
 Use `prompt.schema.json` as the contract for future automation.
+Use `source-catalog.json` as the machine-readable catalog of allowed source
+IDs; `source-catalog.md` remains the human-readable source policy.
 
 ## Operating Rules
 

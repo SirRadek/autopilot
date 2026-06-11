@@ -24,7 +24,7 @@ forbidden:
   - missing_progress_state
 expected_output: Pass/fail checklist for supervisor prompt readiness.
 evals:
-  - 05-evaluation/supervisor-startup-checklist.md
+  - 05-evaluation/checklist.md
 ---
 
 # Supervisor Startup Prompt Checklist
