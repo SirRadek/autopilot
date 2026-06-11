@@ -34,10 +34,15 @@ Anthropic / Claude:
   https://code.claude.com/docs/en/iam
 - Claude Code memory:
   https://code.claude.com/docs/en/memory
+- Context windows:
+  https://docs.anthropic.com/en/docs/build-with-claude/context-windows
+- Tool use:
+  https://docs.anthropic.com/en/docs/agents-and-tools/tool-use/implement-tool-use
 
 Use for Claude-specific structure, XML-style organization, examples, tool
 behavior, agentic work, quote-first document analysis, Claude Code install,
-authentication, and project memory behavior.
+authentication, project memory behavior, context-window constraints, and tool
+use boundaries.
 
 Google / Gemini:
 
@@ -47,10 +52,27 @@ Google / Gemini:
   https://docs.cloud.google.com/vertex-ai/generative-ai/docs/multimodal/design-multimodal-prompts
 - Prompt optimizer:
   https://docs.cloud.google.com/vertex-ai/generative-ai/docs/learn/prompts/prompt-optimizer
+- Gemini API models:
+  https://ai.google.dev/gemini-api/docs/models
+- Gemini API long context:
+  https://ai.google.dev/gemini-api/docs/long-context
 
 Use for Gemini brainstorming, multimodal analysis, test-driven prompt iteration,
 and prompt optimization concepts. Cloud use still requires free/no-cost and
 redaction checks.
+
+DeepSeek:
+
+- Reasoning model:
+  https://api-docs.deepseek.com/guides/reasoning_model
+- JSON output:
+  https://api-docs.deepseek.com/guides/json_mode
+- Function calling:
+  https://api-docs.deepseek.com/guides/function_calling
+
+Use for DeepSeek-specific reasoning, JSON output, and function-calling
+constraints. Hosted API use requires cost/auth checks; self-hosted use requires
+infrastructure and model-availability checks.
 
 Qwen:
 
@@ -58,6 +80,8 @@ Qwen:
   https://qwen.readthedocs.io/en/v2.0/inference/chat.html
 - Qwen function calling:
   https://qwen.readthedocs.io/en/stable/framework/function_call.html
+- Qwen2.5-7B-Instruct model card:
+  https://huggingface.co/Qwen/Qwen2.5-7B-Instruct
 - Qwen2.5-Coder-14B-Instruct model card:
   https://huggingface.co/Qwen/Qwen2.5-Coder-14B-Instruct
 

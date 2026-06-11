@@ -41,6 +41,18 @@ describe("local worker routing policy", () => {
     expect(route.handoff).toContain("deterministic_tests_run_before_acceptance");
   });
 
+  it("routes verification-only tasks to deterministic tools first", () => {
+    const route = selectLocalWorkerRoute({
+      task: "Run verify, typecheck, build, and git diff check"
+    });
+
+    expect(route.route).toBe("deterministic_first");
+    expect(route.selectedWorkers).toEqual(expect.arrayContaining(["local_static_analysis", "local_test_runner"]));
+    expect(route.selectedWorkers).not.toContain("qwen2_5_coder_7b_fast");
+    expect(route.taskKinds).toContain("deterministic_verification");
+    expect(route.requiredChecks).toContain("record_command_evidence");
+  });
+
   it("routes bounded refactors to the Qwen 14B max worker with install gates", () => {
     const route = selectLocalWorkerRoute({
       task: "Use Qwen 14B maximum for a bounded multi file refactor and test generation"
