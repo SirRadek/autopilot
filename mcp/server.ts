@@ -29,6 +29,7 @@ import { selectLocalWorkerRoute } from "../src/data/delivery-system/localWorkers
 import { selectReasoningModelRoute } from "../src/data/delivery-system/modelPolicy";
 import { selectProtectiveSupervisionRoute } from "../src/data/delivery-system/protectiveSupervision";
 import { selectTokenEfficiencyRoute } from "../src/data/delivery-system/tokenEfficiency";
+import { selectToolInventoryForTask } from "../src/data/delivery-system/toolInventory";
 import {
   buildAgentPacket,
   buildProjectMeshPacket,
@@ -127,12 +128,22 @@ const architectureLibrarySearchOutputSchema = z
 const reasoningModelRouteOutputSchema = z
   .object({
     route: z.string(),
+    taskLanes: stringArraySchema,
+    providerPolicies: stringArraySchema,
     advisoryProviders: stringArraySchema,
     docsVerificationProviders: stringArraySchema,
     allowedUse: stringArraySchema,
     forbiddenUse: stringArraySchema,
     requiredChecks: stringArraySchema,
     stopConditions: stringArraySchema
+  })
+  .passthrough();
+const toolInventoryRouteOutputSchema = z
+  .object({
+    matchingItems: stringArraySchema,
+    requiredChecks: stringArraySchema,
+    stopConditions: stringArraySchema,
+    notes: stringArraySchema
   })
   .passthrough();
 const localWorkerRouteOutputSchema = z
@@ -400,13 +411,27 @@ server.registerTool(
   {
     title: "Select Reasoning Model Route",
     description:
-      "Return a read-only model-routing recommendation for local workers, Gemini, or other free/no-cost advisory reasoning models.",
+      "Return a read-only model-routing recommendation for deterministic tools, local Qwen workers, GPT/OpenAI, Claude Code subscription, Gemini CLI, or DeepSeek advisory lanes.",
     ...readOnlyTool(reasoningModelRouteOutputSchema),
     inputSchema: {
       task: z.string().min(1)
     }
   },
   async (input) => toJsonText(selectReasoningModelRoute(input))
+);
+
+server.registerTool(
+  "select_tool_inventory_route",
+  {
+    title: "Select Tool Inventory Route",
+    description:
+      "Return read-only plugin and skill availability guidance, distinguishing current session callable tools from cached-only bundles.",
+    ...readOnlyTool(toolInventoryRouteOutputSchema),
+    inputSchema: {
+      task: z.string().min(1)
+    }
+  },
+  async (input) => toJsonText(selectToolInventoryForTask(input))
 );
 
 server.registerTool(

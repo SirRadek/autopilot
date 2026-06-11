@@ -7,6 +7,14 @@ signals:
   - gemini
   - claude
   - anthropic
+  - subscription interactive
+  - openai
+  - gpt
+  - deepseek
+  - qwen
+  - structured output
+  - function calling
+  - task lane
   - free model
   - credentialed advisory
   - cloud reasoning
@@ -17,6 +25,7 @@ signals:
   - second opinion
   - agent validation
   - model routing
+  - tool inventory
 related_agents:
   - architect
   - security
@@ -26,6 +35,7 @@ related_agents:
 related_files:
   - src/data/delivery-system/modelPolicy.ts
   - src/data/delivery-system/modelSpend.ts
+  - src/data/delivery-system/toolInventory.ts
   - docs/autopilot/delivery-system-model-policy.md
   - AGENTS.md
   - GEMINI.md
@@ -33,8 +43,11 @@ related_files:
 required_checks:
   - provider_availability_verified
   - free_tier_or_no_cost_confirmed
+  - subscription_entitlement_confirmed_for_subscription_tools
+  - api_credit_or_self_hosting_cost_confirmed
   - owner_cost_decision_for_credentialed_provider
   - authentication_state_verified_without_token_disclosure
+  - no_api_budget_or_credit_claim_for_subscription_tools
   - redacted_context_only
   - context7_or_official_docs_verified
   - gemini_brainstorm_claims_labeled_and_verified
@@ -45,6 +58,8 @@ stop_conditions:
   - provider_availability_unverified
   - paid_model_or_credit_required
   - paid_model_or_credit_required_without_owner_decision
+  - subscription_entitlement_unverified
+  - api_credit_path_requested_without_owner_decision
   - authentication_missing
   - cloud_model_for_routine_worker_loop
   - private_data_not_redacted
@@ -52,8 +67,15 @@ stop_conditions:
   - technology_claim_without_context7_or_official_docs
   - gemini_claim_adopted_without_verification
   - model_choice_affects_risk_without_disclosure
+must_not_assume:
+  - Do not assume Claude Code subscription access is an API-credit budget.
+  - Do not assume any external model is available, free, or safe for private context.
+  - Do not assume a cached plugin bundle is callable in the current session.
+  - Do not route routine worker loops to GPT, Claude, Gemini, DeepSeek, or another cloud model by default.
 objective:
   - Use Gemini, Claude, and other external models as advisory reasoning when they add measurable review value and pass cost/auth/privacy checks.
+  - Treat Claude Code as a subscription-interactive advisory provider unless an owner explicitly routes work to API credits.
+  - Route GPT/OpenAI, Claude, Gemini, DeepSeek, Qwen, and deterministic tools by task lane and provider policy.
   - Verify external technology and best-practice brainstorm claims through Context7 when connected, or official documentation as fallback.
   - Preserve local workers as the default execution path.
   - Keep local tests, architecture records, and owner decisions as the source of truth.

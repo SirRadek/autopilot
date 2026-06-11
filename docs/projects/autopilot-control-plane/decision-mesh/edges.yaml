@@ -59,6 +59,21 @@ edges:
     relation: exposed_through
     weight: 0.76
     why: "Model routing can be exposed as a read-only MCP recommendation without creating execution authority."
+  - from: tool_inventory_boundary
+    to: read_only_mcp_boundary
+    relation: exposed_through
+    weight: 0.8
+    why: "Plugin and skill inventory is exposed as read-only routing guidance, not a connector execution authority."
+  - from: tool_inventory_boundary
+    to: capability_routing_layer
+    relation: refines
+    weight: 0.8
+    why: "Capability routing must know whether a plugin or skill is session-callable before depending on it."
+  - from: tool_inventory_boundary
+    to: model_reasoning_boundary
+    relation: constrains
+    weight: 0.76
+    why: "Model and provider routing must distinguish available tools, subscription-interactive tools, API/self-hosted providers, and cached-only bundles."
   - from: model_reasoning_boundary
     to: design_intelligence_boundary
     relation: supports

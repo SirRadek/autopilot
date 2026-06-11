@@ -151,6 +151,12 @@
       "label": "3D Experience Add-on"
     },
     {
+      "id": "tool_inventory_policy",
+      "group": "routing_policy",
+      "risk": 0.7,
+      "label": "Tool inventory policy"
+    },
+    {
       "id": "user_profile",
       "group": "domain_surface",
       "risk": 0.7,
@@ -415,6 +421,24 @@
       "target": "reasoning_strategy",
       "relation": "refines",
       "weight": 0.82
+    },
+    {
+      "source": "tool_inventory_policy",
+      "target": "capability_routing",
+      "relation": "refines",
+      "weight": 0.82
+    },
+    {
+      "source": "tool_inventory_policy",
+      "target": "reasoning_strategy",
+      "relation": "constrains",
+      "weight": 0.78
+    },
+    {
+      "source": "model_spend_policy",
+      "target": "tool_inventory_policy",
+      "relation": "coordinates_with",
+      "weight": 0.74
     },
     {
       "source": "prompt_library_policy",

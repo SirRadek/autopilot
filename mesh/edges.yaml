@@ -209,6 +209,21 @@ edges:
     relation: refines
     weight: 0.82
     why: "Model spend rules refine when frontier reasoning is justified and when work should stay local."
+  - from: tool_inventory_policy
+    to: capability_routing
+    relation: refines
+    weight: 0.82
+    why: "Tool inventory rules distinguish active session plugins and skills from cached-only bundles before capability routing relies on them."
+  - from: tool_inventory_policy
+    to: reasoning_strategy
+    relation: constrains
+    weight: 0.78
+    why: "Reasoning model and plugin claims must use only verified callable tools or clearly marked cached/installation candidates."
+  - from: model_spend_policy
+    to: tool_inventory_policy
+    relation: coordinates_with
+    weight: 0.74
+    why: "Provider selection must account for whether a tool is local, session-callable, subscription-interactive, API-backed, or unavailable."
   - from: prompt_library_policy
     to: reasoning_strategy
     relation: constrains

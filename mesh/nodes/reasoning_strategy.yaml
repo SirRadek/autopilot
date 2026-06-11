@@ -10,6 +10,15 @@ signals:
   - gemini
   - claude
   - anthropic
+  - subscription interactive
+  - openai
+  - gpt
+  - deepseek
+  - qwen
+  - structured output
+  - function calling
+  - task lane
+  - provider policy
   - credentialed advisory
   - strategic
   - deep research
@@ -25,6 +34,7 @@ signals:
   - local
   - non local
   - swarm
+  - tool inventory
 related_agents:
   - architect
   - security
@@ -32,16 +42,20 @@ related_agents:
   - qa
 related_files:
   - src/data/delivery-system/modelPolicy.ts
+  - src/data/delivery-system/toolInventory.ts
   - docs/autopilot/delivery-system-model-policy.md
   - AGENTS.md
 required_checks:
   - local_worker_default
   - free_tier_or_no_cost_confirmed
+  - subscription_entitlement_confirmed_for_subscription_tools
+  - api_credit_or_self_hosting_cost_confirmed
   - redacted_context_only
   - context7_or_official_docs_verified
   - gemini_brainstorm_claims_labeled_and_verified
   - owner_cost_decision_for_credentialed_provider
   - authentication_state_verified_without_token_disclosure
+  - no_api_budget_or_credit_claim_for_subscription_tools
   - frontier_reasoning_only_for_strategy_review_audit
   - no_frontier_for_boilerplate
   - verify_external_claims
@@ -52,6 +66,8 @@ stop_conditions:
   - provider_availability_unverified
   - paid_model_or_credit_required
   - paid_model_or_credit_required_without_owner_decision
+  - subscription_entitlement_unverified
+  - api_credit_path_requested_without_owner_decision
   - authentication_missing
   - private_data_not_redacted
   - model_output_used_as_source_of_truth
@@ -60,10 +76,13 @@ stop_conditions:
 must_not_assume:
   - Do not assume a cloud frontier model is available.
   - Do not assume a cloud model is free or safe to receive private context.
+  - Do not treat Claude Code subscription access as metered API-credit access.
+  - Do not treat a cached plugin bundle as callable model/tool availability.
   - Do not route routine worker tasks to non-local models by default.
   - Do not treat Gemini brainstorm output as verified technology guidance until Context7 or official docs verify it.
 objective:
   - Keep routine coding, embeddings, RAG, indexing, automation, and summarization local by default.
   - Use free/no-cost cloud reasoning only as redacted advisory critique, brainstorming, validation, or second opinion.
+  - Route reasoning by task lane and provider policy before choosing GPT, Claude, Gemini, DeepSeek, Qwen, or deterministic tools.
   - Verify technology and best-practice claims through Context7 when connected, or official documentation as fallback.
   - Escalate to frontier reasoning only for deep research, architecture, review, audit, orchestration, and hard edge-case analysis.
