@@ -29,11 +29,16 @@ interface SourceCatalogEntry {
 export function validatePromptLibrary(repoRoot = process.cwd()): PromptLibraryValidationReport {
   const promptRoot = join(repoRoot, "prompt-library");
   const schemaPath = join(promptRoot, "prompt.schema.json");
+  const sourceCatalogSchemaPath = join(promptRoot, "source-catalog.schema.json");
   const sourceCatalogPath = join(promptRoot, "source-catalog.json");
   const checkedFiles: string[] = [];
   const errors: PromptLibraryValidationIssue[] = [];
 
-  checkedFiles.push(toRepoPath(repoRoot, schemaPath), toRepoPath(repoRoot, sourceCatalogPath));
+  checkedFiles.push(
+    toRepoPath(repoRoot, schemaPath),
+    toRepoPath(repoRoot, sourceCatalogSchemaPath),
+    toRepoPath(repoRoot, sourceCatalogPath)
+  );
 
   if (!existsSync(promptRoot)) {
     return {
@@ -44,8 +49,19 @@ export function validatePromptLibrary(repoRoot = process.cwd()): PromptLibraryVa
   }
 
   const schema = readJson(schemaPath, repoRoot, errors);
-  const sourceCatalog = readSourceCatalog(sourceCatalogPath, repoRoot, errors);
+  const sourceCatalogSchema = readJson(sourceCatalogSchemaPath, repoRoot, errors);
+  const sourceCatalogJson = readJson(sourceCatalogPath, repoRoot, errors);
+  const sourceCatalog = coerceSourceCatalog(sourceCatalogJson);
   const sourceIds = new Set(sourceCatalog?.sources.map((source) => source.id) ?? []);
+
+  if (sourceCatalogJson && sourceCatalogSchema) {
+    for (const issue of validateJsonSchema(sourceCatalogJson, sourceCatalogSchema)) {
+      errors.push({
+        file: toRepoPath(repoRoot, sourceCatalogPath),
+        message: `${issue.path}: ${issue.message}`
+      });
+    }
+  }
 
   if (sourceCatalog) {
     validateSourceCatalog(sourceCatalog, sourceCatalogPath, repoRoot, errors);
@@ -215,12 +231,7 @@ function readPromptFrontmatter(
   return parsed;
 }
 
-function readSourceCatalog(
-  file: string,
-  repoRoot: string,
-  errors: PromptLibraryValidationIssue[]
-): SourceCatalog | undefined {
-  const value = readJson(file, repoRoot, errors);
+function coerceSourceCatalog(value: unknown): SourceCatalog | undefined {
   if (!isRecord(value)) {
     return undefined;
   }
