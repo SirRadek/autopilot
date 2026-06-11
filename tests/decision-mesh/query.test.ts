@@ -13,6 +13,7 @@ import {
 } from "../../src/lib/decision-mesh";
 
 const mesh = loadDecisionMeshFromRoot(process.cwd());
+const NO_MATCH_TASK = "Polish the archival naming convention";
 
 describe("Decision Mesh queries", () => {
   it("loads the seed mesh with required reasoning fields", () => {
@@ -148,7 +149,7 @@ describe("Decision Mesh queries", () => {
 
   it("returns an empty subgraph when no task signal matches", () => {
     const result = getRelevantSubgraph(mesh, {
-      task: "Polish the archival naming convention",
+      task: NO_MATCH_TASK,
       agent: "architect",
       max_nodes: 4
     });
@@ -159,16 +160,62 @@ describe("Decision Mesh queries", () => {
     expect(result.excluded.length).toBe(mesh.nodes.length);
   });
 
-  it("keeps exact node matches ahead of neighboring expansion", () => {
+  it("returns no risks or stop conditions when no task signal matches", () => {
+    const result = findRisks(mesh, {
+      task: NO_MATCH_TASK
+    });
+
+    expect(result.risks).toEqual([]);
+    expect(result.stop_conditions).toEqual([]);
+    expect(result.stop_conditions).not.toEqual(
+      expect.arrayContaining([
+        "core_web_vitals_regression",
+        "unapproved_indexing_change",
+        "seo_content_hidden_in_canvas"
+      ])
+    );
+  });
+
+  it("builds an empty agent packet when no task signal matches", () => {
+    const packet = buildAgentPacket(mesh, {
+      task: NO_MATCH_TASK,
+      agent: "architect",
+      token_budget: 4000
+    });
+
+    expect(packet.relevant_nodes).toEqual([]);
+    expect(packet.rules).toEqual([]);
+    expect(packet.must_read).toEqual([]);
+    expect(packet.stop_conditions).toEqual([]);
+  });
+
+  it("builds an empty control-plane project packet when no task signal matches", () => {
+    const projectMesh = loadProjectDecisionMeshFromRoot(process.cwd(), "autopilot-control-plane");
+    const packet = buildProjectMeshPacket(projectMesh, {
+      project_slug: "autopilot-control-plane",
+      task: NO_MATCH_TASK,
+      agent: "architect",
+      max_nodes: 4
+    });
+
+    expect(packet.relevant_nodes).toEqual([]);
+    expect(packet.rules).toEqual([]);
+    expect(packet.must_read).toEqual([]);
+    expect(packet.stop_conditions).toEqual([]);
+  });
+
+  it("keeps scored exact node matches ahead of neighboring expansion at low max_nodes", () => {
     const result = getRelevantSubgraph(mesh, {
       task: "Update prompt library, compact context, token policy, and model spend",
       agent: "architect",
       max_nodes: 3
     });
 
-    expect(result.relevant_nodes.map((node) => node.id)).toEqual(
-      expect.arrayContaining(["prompt_library_policy", "context_economy_policy", "model_spend_policy"])
-    );
+    expect(result.relevant_nodes.map((node) => node.id)).toEqual([
+      "prompt_library_policy",
+      "context_economy_policy",
+      "model_spend_policy"
+    ]);
   });
 
   it("routes per-project mesh lifecycle work to the project mesh node", () => {
