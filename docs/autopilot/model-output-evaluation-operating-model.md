@@ -115,9 +115,25 @@ DeepSeek:
 
 ## Eval Record Shape
 
+The deterministic contract lives in:
+
+- `model-output-evals/model-output-eval-record.schema.json`
+- `scripts/validate-model-output-evals.ts`
+- `model-output-evals/records/`
+
+`npm run model-output:validate` validates the schema, examples, source-catalog
+links, semantic guardrails, and every JSON record under `records/`. The command
+is part of `npm run verify`.
+
 Record only bounded, redacted metadata:
 
+- record version
+- eval ID
+- date created
+- project
 - task type
+- phase
+- state
 - model or worker
 - reasoning profile
 - token-efficiency profile
@@ -131,9 +147,13 @@ Record only bounded, redacted metadata:
 - accepted state
 - verification evidence
 - source pointers
+- privacy review
+- route review when repeated failures require model/reasoning review
+- weekly aggregate pointer when part of batch tuning
 
 Never store secrets, credentials, raw private context, raw project logs,
-customer data, full transcripts, or unredacted remote records in eval records.
+customer data, raw prompts, raw output, full transcripts, or unredacted remote
+records in eval records.
 
 ## Definition Of Done
 
@@ -145,3 +165,5 @@ A model-output evaluation pass is done when it records:
 - prompt or input delta when rerun
 - route-review reason when changing reasoning/model
 - weekly aggregate pointer when part of batch tuning
+- a passing `npm run model-output:validate` result before the record can inform
+  prompt/input tuning

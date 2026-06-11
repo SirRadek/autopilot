@@ -54,6 +54,7 @@ In this project:
 - typed local-worker routing policy under `src/data/delivery-system/localWorkers.ts`
 - typed token-efficiency routing policy under `src/data/delivery-system/tokenEfficiency.ts`
 - typed model-output evaluation and learning-loop policy under `src/data/delivery-system/modelOutputEvaluation.ts`
+- deterministic model-output eval record schema, examples, redacted record area, and validator under `model-output-evals/` and `scripts/validate-model-output-evals.ts`
 - typed protective-supervision routing policy under `src/data/delivery-system/protectiveSupervision.ts`
 - project-local report-first Codex lifecycle hooks under `.codex/`
 - typed capability routing, context economy, and model spend policy under `src/data/delivery-system/`
@@ -148,6 +149,7 @@ Current data is Markdown-first with a minimal typed governance mirror:
 - typed Local Worker policy under `src/data/delivery-system/localWorkers.ts`
 - typed Token Efficiency policy under `src/data/delivery-system/tokenEfficiency.ts`
 - typed Model Output Evaluation policy under `src/data/delivery-system/modelOutputEvaluation.ts`
+- model-output eval record contract and validator under `model-output-evals/` and `scripts/validate-model-output-evals.ts`
 - typed Plugin/Skill Tool Inventory policy under `src/data/delivery-system/toolInventory.ts`
 - pure delivery-system validators under `src/lib/delivery-system/`
 - Decision Mesh YAML nodes, edges, rules, schemas, and generated JSON artifact under `mesh/`
@@ -202,6 +204,7 @@ Decision Mesh:
 - Advisory weight is ordered by source authority and owner preference: local deterministic evidence and project records outrank all models; scoped Claude Code subscription critique has higher advisory weight and broader repo-read scope than Gemini; Gemini has higher advisory weight than Qwen or DeepSeek drafts.
 - External advisory reasoning models are allowed as redacted advisory support for brainstorming, critique, validation, and second opinions across agents. Routine worker loops remain local by default, paid credits are blocked, subscription and license tools require entitlement checks, API/self-hosted tools require cost or infrastructure checks, and model output is never source-of-truth evidence without local verification.
 - Model-output evaluation is modeled explicitly: outputs that affect prompts, handoffs, routing, governance, architecture, security, or delivery decisions must be scored by dimension before acceptance. During learning, poor outputs trigger prompt/input deltas and reruns until acceptable or blocked; repeated similar failures trigger token-efficiency and reasoning-model route review before changing reasoning or provider; later weekly tuning uses collected eval records and failure patterns.
+- Model-output eval records are deterministic local JSON contracts. `npm run model-output:validate` checks the schema, examples, provider source IDs, score dimensions, privacy review, retry deltas, repeated-failure route review, and weekly aggregates; it is included in `npm run verify`.
 - Plugin and skill inventory is modeled explicitly. Current-session callable plugins and local skills can be routed through their exposed tools/workflows; cached plugin bundles are only availability leads until `tool_search` or active tools expose them.
 - Context7 is the preferred docs-verification lane for reasoning, Gemini brainstorming, design critique, architecture-library review, and technology/best-practice recommendations when it is connected. If Context7 is unavailable or does not cover the topic, the handoff must record the fallback and verify the claim through official documentation, local files, tests, or controlled browser evidence.
 - Context7 is configured as a global local Codex MCP server via `npx.cmd -y @upstash/context7-mcp`, but a running thread may need restart or reload before the `mcp__context7` tools appear in the available tool list.
@@ -227,6 +230,7 @@ MCP:
 - local stdio MCP server exposes `select_design_review_route` and `search_architecture_library` as read-only design intelligence tools
 - local stdio MCP server exposes `select_reasoning_model_route`, `select_tool_inventory_route`, and `select_local_worker_route` as read-only model, plugin/skill, and worker routing tools
 - local stdio MCP server exposes `select_model_output_evaluation_route` as a read-only model-output scoring, retry, route-review, and weekly tuning recommendation
+- model-output eval records are stored locally under `model-output-evals/records/` only as bounded metadata and source pointers; MCP does not write records or mutate prompts
 - local stdio MCP server exposes `select_token_efficiency_route` as a read-only Caveman/compact routing tool
 - local stdio MCP server exposes `select_protective_supervision_route` as a read-only protective-supervision route for currentness checks, handoffs, progress, and blocker review
 - local stdio MCP server exposes `route_product_design_os` as a read-only Product & Design OS intake/change-request routing tool
@@ -350,6 +354,7 @@ Documentation verification:
 rg -n "Project Architecture" docs
 npm run mesh:check
 npm run prompt:validate
+npm run model-output:validate
 npm run pdos:validate
 npm run contracts:validate
 npm run audit:deps

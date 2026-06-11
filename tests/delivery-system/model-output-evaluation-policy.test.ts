@@ -21,6 +21,9 @@ describe("model output evaluation policy", () => {
       ])
     );
     expect(modelOutputEvaluationPolicy.stopConditions).toContain("bad_output_retried_without_prompt_or_input_delta");
+    expect(modelOutputEvaluationPolicy.evaluationRecordFields).toEqual(
+      expect.arrayContaining(["record_version", "privacy_review", "route_review", "weekly_aggregate"])
+    );
   });
 
   it("routes low-scored outputs into immediate prompt or input tuning", () => {

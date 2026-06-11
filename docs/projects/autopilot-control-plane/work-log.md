@@ -1,5 +1,78 @@
 # Autopilot Control Plane Work Log
 
+## 2026-06-11 Model Output Eval Record Validation
+
+Date: 2026-06-11
+Request or trigger: owner asked to keep supervising model outputs during the
+learning phase, score poor outputs, tune prompts/input packets from evidence,
+retry until acceptable, and make the behavior automatic through mesh rather than
+ad hoc memory.
+Mode: WRITE_ALLOWED for local governance contracts, deterministic validator,
+Decision Mesh metadata, docs, tests, and work log only. No remote mutation,
+runtime queue, model gateway, connector mutation, prompt-management SaaS, or
+cloud/API worker was added.
+Scope:
+
+- Add a local JSON Schema contract for bounded model-output eval records.
+- Add a deterministic validator for records, examples, source-catalog IDs,
+  score dimensions, privacy review, retry deltas, repeated-failure route review,
+  and weekly tuning aggregates.
+- Wire the validator into `npm run verify`.
+- Add negative tests so invalid eval records fail locally and in CI.
+
+Files changed:
+
+- `model-output-evals/model-output-eval-record.schema.json`
+- `model-output-evals/README.md`
+- `model-output-evals/examples/learning-loop.accepted.example.json`
+- `model-output-evals/records/README.md`
+- `scripts/validate-model-output-evals.ts`
+- `tests/delivery-system/model-output-eval-validation.test.ts`
+- `src/data/delivery-system/modelOutputEvaluation.ts`
+- `tests/delivery-system/model-output-evaluation-policy.test.ts`
+- `package.json`
+- `mesh/nodes/model_output_evaluation_policy.yaml`
+- `docs/projects/autopilot-control-plane/decision-mesh/nodes/model_output_evaluation_boundary.yaml`
+- `docs/autopilot/model-output-evaluation-operating-model.md`
+- `docs/projects/autopilot-control-plane/architecture.md`
+- `docs/autopilot/project-architecture-registry.md`
+- `docs/projects/autopilot-control-plane/work-log.md`
+
+Architecture impact:
+
+- Model-output eval records now have a deterministic local source-of-truth
+  shape under `model-output-evals/`.
+- Eval records may store only redacted summaries, source pointers, score data,
+  deltas, and verification evidence.
+- `npm run verify` now fails on invalid model-output eval records before prompt
+  tuning or model/reasoning route changes can rely on them.
+- Weekly tuning remains blocked unless collected eval records and aggregate
+  failure patterns exist.
+
+Verification:
+
+- `npm.cmd run model-output:validate` passed: `3` checked files, `1`
+  checked record, `0` errors.
+- `npm.cmd test -- tests/delivery-system/model-output-eval-validation.test.ts tests/delivery-system/model-output-evaluation-policy.test.ts` passed:
+  `2` files, `12` tests.
+- `npm.cmd run mesh:generate` completed without YAML/TS drift errors; topology
+  was unchanged.
+- `npm.cmd run mesh:check` passed.
+- `npm.cmd run typecheck` passed.
+- `npm.cmd run diff:check` passed.
+- `npm.cmd run verify` passed:
+  - `mesh:check`
+  - `prompt:validate` (`34` files, `0` errors)
+  - `model-output:validate` (`3` files, `1` record, `0` errors)
+  - `pdos:validate` (`64` files, `0` errors, `0` warnings)
+  - `contracts:validate` (`5` files, `0` errors)
+  - `diff:check`
+  - `typecheck`
+  - `vitest run` (`32` files, `171` tests)
+  - `astro build`
+  - `playwright test` (`4` Chromium tests)
+- `npm.cmd run audit:deps` passed: `0` vulnerabilities.
+
 ## 2026-06-11 Google AI Subscription Boundary
 
 Date: 2026-06-11

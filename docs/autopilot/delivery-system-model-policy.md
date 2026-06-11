@@ -265,7 +265,9 @@ decisions.
 
 Use `src/data/delivery-system/modelOutputEvaluation.ts` and
 `docs/autopilot/model-output-evaluation-operating-model.md` for the route and
-operating contract.
+operating contract. Real eval records use
+`model-output-evals/model-output-eval-record.schema.json` and must pass
+`npm run model-output:validate`, which is part of `npm run verify`.
 
 Learning-loop rule:
 
@@ -293,6 +295,8 @@ Weekly tuning rule:
   batch review
 - weekly changes must be based on collected eval records and repeated failure
   patterns, not anecdotes or raw model preference
+- eval records must pass deterministic schema, source-catalog, privacy, delta,
+  route-review, and aggregate validation
 - prompt changes need versioning, evals, source authority, and rollback
 
 ## Prompt Library Policy

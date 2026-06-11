@@ -32,6 +32,9 @@ related_agents:
   - protective-supervisor
 related_files:
   - src/data/delivery-system/modelOutputEvaluation.ts
+  - scripts/validate-model-output-evals.ts
+  - model-output-evals/model-output-eval-record.schema.json
+  - model-output-evals/records/
   - src/data/delivery-system/modelPolicy.ts
   - src/data/delivery-system/modelSpend.ts
   - src/data/delivery-system/promptLibrary.ts
@@ -54,6 +57,8 @@ required_checks:
   - workflow_handoff_clarity_checked
   - plugin_or_skill_compatibility_checked
   - privacy_redaction_checked
+  - model_output_eval_schema_validated
+  - model_output_eval_records_validated
   - source_pointers_recorded
 stop_conditions:
   - output_accepted_without_score
@@ -65,6 +70,8 @@ stop_conditions:
   - weekly_tuning_without_eval_records
   - raw_model_output_promoted_to_prompt_authority
   - private_context_in_eval_record
+  - invalid_model_output_eval_record
+  - raw_content_in_model_output_eval_record
   - workflow_handoff_unclear_after_retry
   - automation_runtime_added_without_architecture_decision
 must_not_assume:

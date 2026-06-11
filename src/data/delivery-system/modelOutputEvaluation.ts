@@ -75,7 +75,13 @@ export const modelOutputEvaluationPolicy = {
     "workflow_compatibility"
   ],
   evaluationRecordFields: [
+    "record_version",
+    "eval_id",
+    "created",
+    "project",
     "task_type",
+    "phase",
+    "state",
     "model_or_worker",
     "reasoning_profile",
     "token_efficiency_profile",
@@ -88,7 +94,10 @@ export const modelOutputEvaluationPolicy = {
     "rerun_count",
     "accepted_state",
     "verification_evidence",
-    "source_pointers"
+    "source_pointers",
+    "privacy_review",
+    "route_review",
+    "weekly_aggregate"
   ],
   requiredChecks: [
     "model_output_scored_before_acceptance",
