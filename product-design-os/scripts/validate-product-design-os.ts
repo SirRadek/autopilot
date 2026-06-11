@@ -95,6 +95,18 @@ const REQUIRED_STRICT_PROCESS_TERMS = [
   "QA Lock"
 ] as const;
 
+const PROJECT_STATUSES = [
+  "not_started",
+  "ready",
+  "in_progress",
+  "needs_review",
+  "blocked",
+  "waiting_owner",
+  "waiting_external",
+  "done",
+  "cancelled"
+] as const;
+
 export function validateProductDesignOs(repoRoot = process.cwd()): PdosValidationReport {
   const pdosRoot = join(repoRoot, "product-design-os");
   const errors: PdosValidationIssue[] = [];
@@ -312,14 +324,52 @@ function validateLibraryRelationships(pdosRoot: string, repoRoot: string, errors
   const patterns = getRecordArray(patternManifest, "patterns");
   const projects = getRecordArray(projectIndex, "projects");
   const sourceById = new Map(sources.map((source) => [String(source.id), source]));
+  const referenceBySourceUrl = new Map(
+    references
+      .filter((reference) => typeof reference.source_url === "string")
+      .map((reference) => [String(reference.source_url), reference])
+  );
   const sourceIds = new Set(sourceById.keys());
   const referenceIds = new Set(references.map((reference) => String(reference.id)));
   const assetIds = new Set(assets.map((asset) => String(asset.id)));
   const patternIds = new Set(patterns.map((pattern) => String(pattern.id)));
 
+  validateUniqueCatalogKeys(sourceCatalogFile, repoRoot, "sources", "id", sources, errors);
+  validateUniqueCatalogKeys(referenceCatalogFile, repoRoot, "references", "id", references, errors);
+  validateUniqueCatalogKeys(assetManifestFile, repoRoot, "assets", "id", assets, errors);
+  validateUniqueCatalogKeys(patternManifestFile, repoRoot, "patterns", "id", patterns, errors);
+  validateUniqueCatalogKeys(projectIndexFile, repoRoot, "projects", "slug", projects, errors);
   validateSourceProvenance(sourceCatalogFile, repoRoot, sources, errors);
-  validateAssetProvenance(assetManifestFile, repoRoot, assets, sourceById, sourceIds, errors);
+  validateAssetProvenance(assetManifestFile, repoRoot, assets, sourceById, sourceIds, referenceBySourceUrl, referenceIds, errors);
   validateProjectLibraryLinks(projectIndexFile, repoRoot, projects, sourceIds, referenceIds, assetIds, patternIds, errors);
+}
+
+function validateUniqueCatalogKeys(
+  file: string,
+  repoRoot: string,
+  catalogName: string,
+  key: string,
+  entries: readonly Record<string, unknown>[],
+  errors: PdosValidationIssue[]
+): void {
+  const seen = new Set<string>();
+
+  entries.forEach((entry, index) => {
+    const value = entry[key];
+    if (typeof value !== "string") {
+      return;
+    }
+
+    if (seen.has(value)) {
+      errors.push({
+        file: toRepoPath(repoRoot, file),
+        message: `${catalogName}[${index}] duplicates ${key} ${value}.`
+      });
+      return;
+    }
+
+    seen.add(value);
+  });
 }
 
 function validateSourceProvenance(
@@ -350,6 +400,8 @@ function validateAssetProvenance(
   assets: readonly Record<string, unknown>[],
   sourceById: ReadonlyMap<string, Record<string, unknown>>,
   sourceIds: ReadonlySet<string>,
+  referenceBySourceUrl: ReadonlyMap<string, Record<string, unknown>>,
+  referenceIds: ReadonlySet<string>,
   errors: PdosValidationIssue[]
 ): void {
   for (const asset of assets) {
@@ -357,6 +409,7 @@ function validateAssetProvenance(
     const source = typeof asset.source === "string" ? asset.source : "";
     const librarySourceId = typeof asset.library_source_id === "string" ? asset.library_source_id : "";
     const provenanceStatus = typeof asset.provenance_status === "string" ? asset.provenance_status : "";
+    const assetReferenceIds = getStringArray(asset.reference_ids);
 
     if (source.startsWith("http") && !librarySourceId) {
       errors.push({
@@ -371,6 +424,8 @@ function validateAssetProvenance(
         message: `Asset ${id} references missing library_source_id ${librarySourceId}.`
       });
     }
+
+    validateKnownIds(file, repoRoot, `Asset ${id}`, "reference_ids", assetReferenceIds, referenceIds, errors);
 
     if (provenanceStatus === "source-recorded" && !librarySourceId) {
       errors.push({
@@ -393,7 +448,32 @@ function validateAssetProvenance(
         message: `Asset ${id} uses inspiration-only source ${librarySourceId} and must stay inspiration-only.`
       });
     }
+
+    if (provenanceStatus === "source-recorded" && linkedSource !== undefined && !isAdoptableSource(linkedSource)) {
+      errors.push({
+        file: toRepoPath(repoRoot, file),
+        message: `Asset ${id} cannot use non-adoptable source ${librarySourceId} for source-recorded provenance.`
+      });
+    }
+
+    const linkedReference = referenceBySourceUrl.get(source);
+    if (provenanceStatus === "source-recorded" && linkedReference?.status === "inspiration_only") {
+      errors.push({
+        file: toRepoPath(repoRoot, file),
+        message: `Asset ${id} cannot use inspiration-only reference ${String(linkedReference.id)} as source-recorded provenance.`
+      });
+    }
   }
+}
+
+function isAdoptableSource(source: Record<string, unknown>): boolean {
+  const license = isRecord(source.license) ? source.license : {};
+
+  return (
+    source.status !== "inspiration_only" &&
+    license.type !== "unknown" &&
+    !["inspiration_only", "unknown", "blocked"].includes(String(source.commercial_use))
+  );
 }
 
 function validateProjectLibraryLinks(
@@ -406,20 +486,29 @@ function validateProjectLibraryLinks(
   patternIds: ReadonlySet<string>,
   errors: PdosValidationIssue[]
 ): void {
+  const allowedStatuses = new Set<string>(PROJECT_STATUSES);
+
   for (const project of projects) {
     const slug = String(project.slug);
+    if (typeof project.status === "string" && !allowedStatuses.has(project.status)) {
+      errors.push({
+        file: toRepoPath(repoRoot, file),
+        message: `Project ${slug} has invalid status ${project.status}; use status_label for free-form labels.`
+      });
+    }
+
     const links = isRecord(project.library_links) ? project.library_links : {};
-    validateKnownIds(file, repoRoot, slug, "source_ids", getStringArray(links.source_ids), sourceIds, errors);
-    validateKnownIds(file, repoRoot, slug, "reference_ids", getStringArray(links.reference_ids), referenceIds, errors);
-    validateKnownIds(file, repoRoot, slug, "asset_ids", getStringArray(links.asset_ids), assetIds, errors);
-    validateKnownIds(file, repoRoot, slug, "pattern_ids", getStringArray(links.pattern_ids), patternIds, errors);
+    validateKnownIds(file, repoRoot, `Project ${slug}`, "source_ids", getStringArray(links.source_ids), sourceIds, errors);
+    validateKnownIds(file, repoRoot, `Project ${slug}`, "reference_ids", getStringArray(links.reference_ids), referenceIds, errors);
+    validateKnownIds(file, repoRoot, `Project ${slug}`, "asset_ids", getStringArray(links.asset_ids), assetIds, errors);
+    validateKnownIds(file, repoRoot, `Project ${slug}`, "pattern_ids", getStringArray(links.pattern_ids), patternIds, errors);
   }
 }
 
 function validateKnownIds(
   file: string,
   repoRoot: string,
-  slug: string,
+  owner: string,
   field: string,
   values: readonly string[],
   knownIds: ReadonlySet<string>,
@@ -429,7 +518,7 @@ function validateKnownIds(
     if (!knownIds.has(value)) {
       errors.push({
         file: toRepoPath(repoRoot, file),
-        message: `Project ${slug} references unknown ${field} value ${value}.`
+        message: `${owner} references unknown ${field} value ${value}.`
       });
     }
   }
