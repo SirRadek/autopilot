@@ -15,7 +15,10 @@
     "motion_level",
     "performance_cost",
     "mobile_safe",
-    "template_risk"
+    "template_risk",
+    "license",
+    "source",
+    "provenance_status"
   ],
   "properties": {
     "id": {

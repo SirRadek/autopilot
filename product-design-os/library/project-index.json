@@ -6,7 +6,8 @@
     {
       "slug": "autopilot-control-plane",
       "name": "Autopilot Control Plane Architecture",
-      "status": "active process layer",
+      "status": "in_progress",
+      "status_label": "active process layer",
       "architecture_path": "docs/projects/autopilot-control-plane/architecture.md",
       "work_log_path": "docs/projects/autopilot-control-plane/work-log.md",
       "project_mesh_path": "docs/projects/autopilot-control-plane/decision-mesh",
@@ -22,7 +23,8 @@
     {
       "slug": "multi-agent-autonomous-delivery-system",
       "name": "Multi-Agent Autonomous Delivery System Architecture",
-      "status": "phase-3 read-only Decision Mesh context router",
+      "status": "in_progress",
+      "status_label": "phase-3 read-only Decision Mesh context router",
       "architecture_path": "docs/projects/multi-agent-autonomous-delivery-system/architecture.md",
       "work_log_path": "docs/projects/multi-agent-autonomous-delivery-system/work-log.md",
       "project_mesh_path": "docs/projects/multi-agent-autonomous-delivery-system/decision-mesh",
@@ -38,7 +40,8 @@
     {
       "slug": "radeq",
       "name": "Radeq.cz Website Architecture",
-      "status": "active",
+      "status": "in_progress",
+      "status_label": "active",
       "architecture_path": "docs/projects/radeq/architecture.md",
       "work_log_path": "docs/projects/radeq/work-log.md",
       "project_mesh_path": "docs/projects/radeq/decision-mesh",

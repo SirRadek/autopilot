@@ -19,6 +19,7 @@
       "template_risk": 2,
       "license": "internal-metadata",
       "source": "product-design-os",
+      "provenance_status": "internal",
       "notes": "Hero direction for a memorable first viewport while keeping the offer and CTA as real DOM text."
     },
     {
@@ -38,6 +39,7 @@
       "template_risk": 2,
       "license": "internal-metadata",
       "source": "product-design-os",
+      "provenance_status": "internal",
       "notes": "Use for outcomes, case evidence, and concrete before-after proof instead of generic trust blocks."
     },
     {
@@ -57,6 +59,7 @@
       "template_risk": 2,
       "license": "internal-cc0-style-seed",
       "source": "product-design-os/assets/backgrounds/theme-calm-prism-grid.svg",
+      "provenance_status": "internal",
       "notes": "Static SVG seed for calm/prism/focused directions. Keep offer and CTA as DOM text."
     },
     {
@@ -76,6 +79,7 @@
       "template_risk": 2,
       "license": "internal-cc0-style-seed",
       "source": "product-design-os/assets/backgrounds/theme-dopamine-pixel-field.svg",
+      "provenance_status": "internal",
       "notes": "Static SVG seed for pixel/dopamine demo directions. Use text links for all demos."
     },
     {
@@ -95,6 +99,7 @@
       "template_risk": 2,
       "license": "internal-cc0-style-seed",
       "source": "product-design-os/assets/backgrounds/theme-written-retro-proof.svg",
+      "provenance_status": "internal",
       "notes": "Static SVG seed for written/editorial proof directions. Use as background only; proof remains readable text."
     },
     {
@@ -114,6 +119,8 @@
       "template_risk": 4,
       "license": "CC0 per source page",
       "source": "https://www.opendoodles.com/about",
+      "library_source_id": "open-doodles",
+      "provenance_status": "source-recorded",
       "notes": "Use only after recording exact downloaded asset path/URL. Good for hand-drawn accents and lightweight GIF/SVG fallback."
     },
     {
@@ -133,6 +140,8 @@
       "template_risk": 3,
       "license": "CC0 per source page",
       "source": "https://quaternius.com/packs/ultimateanimatedanimals.html",
+      "library_source_id": "quaternius-animated-animals",
+      "provenance_status": "source-recorded",
       "notes": "Use only after exact model source, byte budget, reduced-motion fallback, and canvas nonblank evidence are recorded."
     },
     {
@@ -152,6 +161,8 @@
       "template_risk": 4,
       "license": "CC0 per source/support pages",
       "source": "https://kenney.nl/assets",
+      "library_source_id": "kenney-assets",
+      "provenance_status": "source-recorded",
       "notes": "Use for pixel/demo-world prototypes after per-pack license capture and compression."
     },
     {
@@ -171,6 +182,7 @@
       "template_risk": 4,
       "license": "internal-metadata",
       "source": "product-design-os",
+      "provenance_status": "internal",
       "notes": "Cards are allowed only when each card links to a concrete service demo or proof, not as repeated filler."
     },
     {
@@ -190,6 +202,7 @@
       "template_risk": 3,
       "license": "internal-metadata",
       "source": "product-design-os",
+      "provenance_status": "internal",
       "notes": "Decorative enhancement only; content must remain understandable without pointer movement."
     },
     {
@@ -209,6 +222,7 @@
       "template_risk": 3,
       "license": "internal-metadata",
       "source": "product-design-os",
+      "provenance_status": "internal",
       "notes": "Use to reveal process/proof in order; requires reduced-motion and static fallback."
     },
     {
@@ -228,6 +242,7 @@
       "template_risk": 2,
       "license": "internal-metadata",
       "source": "product-design-os",
+      "provenance_status": "internal",
       "notes": "Structure for distinct marketing pages that need clarity without repeated card grids."
     },
     {
@@ -247,6 +262,7 @@
       "template_risk": 3,
       "license": "internal-metadata",
       "source": "product-design-os",
+      "provenance_status": "internal",
       "notes": "Category/search surface for clear price and product scanning; avoid burying SEO product content in client-only media."
     },
     {
@@ -266,6 +282,7 @@
       "template_risk": 2,
       "license": "internal-metadata",
       "source": "product-design-os",
+      "provenance_status": "internal",
       "notes": "Purchase panel for price, variant, availability, shipping cue, and CTA; must not cover content or hide errors on mobile."
     },
     {
@@ -285,6 +302,7 @@
       "template_risk": 3,
       "license": "internal-metadata",
       "source": "product-design-os",
+      "provenance_status": "internal",
       "notes": "Low-motion cart review that keeps browsing context while preserving keyboard focus and deterministic totals."
     },
     {
@@ -304,6 +322,7 @@
       "template_risk": 2,
       "license": "internal-metadata",
       "source": "product-design-os",
+      "provenance_status": "internal",
       "notes": "Checkout state indicator for address, shipping, payment, and review steps; keep labels explicit and errors persistent."
     },
     {
@@ -323,6 +342,7 @@
       "template_risk": 4,
       "license": "internal-metadata",
       "source": "product-design-os",
+      "provenance_status": "internal",
       "notes": "Use for sourced review summaries and verified review highlights; include empty/moderation states."
     },
     {
@@ -342,6 +362,7 @@
       "template_risk": 3,
       "license": "internal-metadata",
       "source": "product-design-os",
+      "provenance_status": "internal",
       "notes": "Compact policy/support reassurance for product and checkout surfaces; claims must map to real shipping, returns, and support rules."
     },
     {
@@ -361,6 +382,7 @@
       "template_risk": 2,
       "license": "internal-metadata",
       "source": "product-design-os",
+      "provenance_status": "internal",
       "notes": "Top-level metric strip for decision support; each number needs definition, source, freshness, and an actionable drilldown path."
     },
     {
@@ -380,6 +402,7 @@
       "template_risk": 3,
       "license": "internal-metadata",
       "source": "product-design-os",
+      "provenance_status": "internal",
       "notes": "Compact filter surface with active-state summary, reset, date range, and saved views."
     },
     {
@@ -399,6 +422,7 @@
       "template_risk": 2,
       "license": "internal-metadata",
       "source": "product-design-os",
+      "provenance_status": "internal",
       "notes": "Evidence table for explaining metrics; export and pagination must reflect the active query and visible filters."
     },
     {
@@ -418,6 +442,7 @@
       "template_risk": 2,
       "license": "internal-metadata",
       "source": "product-design-os",
+      "provenance_status": "internal",
       "notes": "Chart container with metric definition, source, freshness, text summary, and table fallback."
     },
     {
@@ -437,6 +462,7 @@
       "template_risk": 3,
       "license": "internal-metadata",
       "source": "product-design-os",
+      "provenance_status": "internal",
       "notes": "Operational alert list with severity, timestamp, owner, status, and bounded feed length."
     },
     {
@@ -456,6 +482,7 @@
       "template_risk": 2,
       "license": "internal-metadata",
       "source": "product-design-os",
+      "provenance_status": "internal",
       "notes": "Primary internal-system layout for queue work, filters, record list, and fast detail review."
     },
     {
@@ -475,6 +502,7 @@
       "template_risk": 2,
       "license": "internal-metadata",
       "source": "product-design-os",
+      "provenance_status": "internal",
       "notes": "Record review/edit drawer with focus management, save/cancel states, freshness, and audit context."
     },
     {
@@ -494,6 +522,7 @@
       "template_risk": 3,
       "license": "internal-metadata",
       "source": "product-design-os",
+      "provenance_status": "internal",
       "notes": "Compact workflow state indicators that require text labels, known transitions, and permission-aware action mapping."
     },
     {
@@ -513,6 +542,7 @@
       "template_risk": 2,
       "license": "internal-metadata",
       "source": "product-design-os",
+      "provenance_status": "internal",
       "notes": "Selection-aware command bar with preview count, permission checks, confirmation, partial-failure handling, and audit trail."
     },
     {
@@ -532,6 +562,7 @@
       "template_risk": 3,
       "license": "internal-metadata",
       "source": "product-design-os",
+      "provenance_status": "internal",
       "notes": "Named operational views that expose active filter state, result count, reset, ownership, and sharing scope."
     },
     {
@@ -551,6 +582,7 @@
       "template_risk": 2,
       "license": "internal-metadata",
       "source": "product-design-os",
+      "provenance_status": "internal",
       "notes": "Findability-first section for public services; labels, owner, and next action must be visible as text."
     },
     {
@@ -570,6 +602,7 @@
       "template_risk": 2,
       "license": "internal-metadata",
       "source": "product-design-os",
+      "provenance_status": "internal",
       "notes": "Readable information layout with clear headings, definitions, last-updated metadata, and contact fallback."
     },
     {
@@ -589,6 +622,7 @@
       "template_risk": 2,
       "license": "internal-metadata",
       "source": "product-design-os",
+      "provenance_status": "internal",
       "notes": "Form surface with labels, error summary, recovery/confirmation states, and no decorative step motion."
     },
     {
@@ -608,6 +642,7 @@
       "template_risk": 3,
       "license": "internal-metadata",
       "source": "product-design-os",
+      "provenance_status": "internal",
       "notes": "Text-first notice with severity, owner, date, action, expiry or dismiss rule."
     },
     {
@@ -627,6 +662,7 @@
       "template_risk": 3,
       "license": "internal-metadata",
       "source": "product-design-os",
+      "provenance_status": "internal",
       "notes": "Office/support contact block with service owner, hours, contact channel, and accessible offline fallback."
     },
     {
@@ -646,6 +682,7 @@
       "template_risk": 2,
       "license": "internal-metadata",
       "source": "product-design-os",
+      "provenance_status": "internal",
       "notes": "Portal home section for account state, next tasks, recent activity, documents, and support entry."
     },
     {
@@ -665,6 +702,7 @@
       "template_risk": 2,
       "license": "internal-metadata",
       "source": "product-design-os",
+      "provenance_status": "internal",
       "notes": "Secure document list with titles, types, dates, access scope, explicit open/download actions, and empty states."
     },
     {
@@ -684,6 +722,7 @@
       "template_risk": 3,
       "license": "internal-metadata",
       "source": "product-design-os",
+      "provenance_status": "internal",
       "notes": "Client support thread with timestamps, owner, status, reply state, attachment rule, and human fallback."
     },
     {
@@ -703,6 +742,7 @@
       "template_risk": 3,
       "license": "internal-metadata",
       "source": "product-design-os",
+      "provenance_status": "internal",
       "notes": "Simple mobile-safe task timeline with owner, status, due date, client action, and history."
     },
     {
@@ -722,6 +762,7 @@
       "template_risk": 2,
       "license": "internal-metadata",
       "source": "product-design-os",
+      "provenance_status": "internal",
       "notes": "Role-aware action row with disabled reasons, audit needs, and explicit server-side enforcement requirement."
     }
   ]

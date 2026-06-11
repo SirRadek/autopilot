@@ -1,5 +1,9 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+
 import { describe, expect, it } from "vitest";
 
+import { validateJsonSchema } from "../../src/lib/delivery-system/validation";
 import {
   formatPdosValidationReport,
   validateProductDesignOs
@@ -23,5 +27,34 @@ describe("Product & Design OS validation", () => {
 
     expect(formatted).toContain("PDOS validation passed.");
     expect(formatted).toContain("Errors: 0");
+  });
+
+  it("rejects project index entries with free-form status values", () => {
+    const schema = JSON.parse(
+      readFileSync(join(process.cwd(), "product-design-os", "library", "project-entry.schema.json"), "utf8")
+    ) as unknown;
+    const errors = validateJsonSchema(
+      {
+        slug: "demo",
+        name: "Demo",
+        status: "active",
+        status_label: "active",
+        architecture_path: "docs/projects/demo/architecture.md",
+        work_log_path: "docs/projects/demo/work-log.md",
+        project_mesh_path: "docs/projects/demo/decision-mesh",
+        mesh_status: "present",
+        library_links: {
+          source_ids: [],
+          reference_ids: [],
+          asset_ids: [],
+          pattern_ids: []
+        }
+      },
+      schema
+    );
+
+    expect(errors.map((error) => error.message).join("\n")).toContain(
+      "must be one of: not_started, ready, in_progress"
+    );
   });
 });

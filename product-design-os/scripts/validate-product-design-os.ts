@@ -2,6 +2,8 @@ import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { basename, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { validateJsonSchema } from "../../src/lib/delivery-system/validation";
+
 export interface PdosValidationIssue {
   readonly file: string;
   readonly message: string;
@@ -125,6 +127,8 @@ export function validateProductDesignOs(repoRoot = process.cwd()): PdosValidatio
 
   validateBriefSchema(join(pdosRoot, "briefs/project-brief.schema.json"), repoRoot, errors);
   validateManifests(pdosRoot, repoRoot, errors);
+  validateSchemaCatalogs(pdosRoot, repoRoot, errors);
+  validateLibraryRelationships(pdosRoot, repoRoot, errors);
   validateTasteMemory(pdosRoot, repoRoot, errors);
   validateRecipes(join(pdosRoot, "recipes"), repoRoot, errors);
   validateMarkdown(pdosRoot, repoRoot, errors, warnings);
@@ -209,6 +213,223 @@ function validateManifests(pdosRoot: string, repoRoot: string, errors: PdosValid
       errors.push({
         file: toRepoPath(repoRoot, manifest.file),
         message: `Manifest must contain an array field named ${manifest.key}.`
+      });
+    }
+  }
+}
+
+function validateSchemaCatalogs(pdosRoot: string, repoRoot: string, errors: PdosValidationIssue[]): void {
+  validateCatalogEntries({
+    pdosRoot,
+    repoRoot,
+    errors,
+    schemaPath: "assets/asset.schema.json",
+    catalogPath: "assets/asset-manifest.json",
+    key: "assets"
+  });
+  validateCatalogEntries({
+    pdosRoot,
+    repoRoot,
+    errors,
+    schemaPath: "patterns/pattern.schema.json",
+    catalogPath: "patterns/pattern-manifest.json",
+    key: "patterns"
+  });
+  validateCatalogEntries({
+    pdosRoot,
+    repoRoot,
+    errors,
+    schemaPath: "library/source.schema.json",
+    catalogPath: "library/source-catalog.json",
+    key: "sources"
+  });
+  validateCatalogEntries({
+    pdosRoot,
+    repoRoot,
+    errors,
+    schemaPath: "library/reference.schema.json",
+    catalogPath: "library/reference-catalog.json",
+    key: "references"
+  });
+  validateCatalogEntries({
+    pdosRoot,
+    repoRoot,
+    errors,
+    schemaPath: "library/project-entry.schema.json",
+    catalogPath: "library/project-index.json",
+    key: "projects"
+  });
+}
+
+function validateCatalogEntries(input: {
+  readonly pdosRoot: string;
+  readonly repoRoot: string;
+  readonly errors: PdosValidationIssue[];
+  readonly schemaPath: string;
+  readonly catalogPath: string;
+  readonly key: string;
+}): void {
+  const schemaFile = join(input.pdosRoot, input.schemaPath);
+  const catalogFile = join(input.pdosRoot, input.catalogPath);
+  const schema = readJsonFile(schemaFile, input.repoRoot, input.errors);
+  const catalog = readJsonFile(catalogFile, input.repoRoot, input.errors);
+
+  if (!isRecord(schema) || !isRecord(catalog)) {
+    return;
+  }
+
+  const entries = catalog[input.key];
+  if (!Array.isArray(entries)) {
+    return;
+  }
+
+  entries.forEach((entry, index) => {
+    for (const issue of validateJsonSchema(entry, schema)) {
+      input.errors.push({
+        file: toRepoPath(input.repoRoot, catalogFile),
+        message: `${input.key}[${index}] ${issue.path}: ${issue.message}`
+      });
+    }
+  });
+}
+
+function validateLibraryRelationships(pdosRoot: string, repoRoot: string, errors: PdosValidationIssue[]): void {
+  const sourceCatalogFile = join(pdosRoot, "library/source-catalog.json");
+  const referenceCatalogFile = join(pdosRoot, "library/reference-catalog.json");
+  const assetManifestFile = join(pdosRoot, "assets/asset-manifest.json");
+  const patternManifestFile = join(pdosRoot, "patterns/pattern-manifest.json");
+  const projectIndexFile = join(pdosRoot, "library/project-index.json");
+
+  const sourceCatalog = readJsonFile(sourceCatalogFile, repoRoot, errors);
+  const referenceCatalog = readJsonFile(referenceCatalogFile, repoRoot, errors);
+  const assetManifest = readJsonFile(assetManifestFile, repoRoot, errors);
+  const patternManifest = readJsonFile(patternManifestFile, repoRoot, errors);
+  const projectIndex = readJsonFile(projectIndexFile, repoRoot, errors);
+
+  const sources = getRecordArray(sourceCatalog, "sources");
+  const references = getRecordArray(referenceCatalog, "references");
+  const assets = getRecordArray(assetManifest, "assets");
+  const patterns = getRecordArray(patternManifest, "patterns");
+  const projects = getRecordArray(projectIndex, "projects");
+  const sourceById = new Map(sources.map((source) => [String(source.id), source]));
+  const sourceIds = new Set(sourceById.keys());
+  const referenceIds = new Set(references.map((reference) => String(reference.id)));
+  const assetIds = new Set(assets.map((asset) => String(asset.id)));
+  const patternIds = new Set(patterns.map((pattern) => String(pattern.id)));
+
+  validateSourceProvenance(sourceCatalogFile, repoRoot, sources, errors);
+  validateAssetProvenance(assetManifestFile, repoRoot, assets, sourceById, sourceIds, errors);
+  validateProjectLibraryLinks(projectIndexFile, repoRoot, projects, sourceIds, referenceIds, assetIds, patternIds, errors);
+}
+
+function validateSourceProvenance(
+  file: string,
+  repoRoot: string,
+  sources: readonly Record<string, unknown>[],
+  errors: PdosValidationIssue[]
+): void {
+  for (const source of sources) {
+    const id = String(source.id);
+    const license = isRecord(source.license) ? source.license : {};
+    const licenseType = license.type;
+    const commercialUse = source.commercial_use;
+    const status = source.status;
+
+    if ((licenseType === "unknown" || commercialUse === "unknown") && !["inspiration_only", "blocked"].includes(String(status))) {
+      errors.push({
+        file: toRepoPath(repoRoot, file),
+        message: `Source ${id} has unknown license/commercial use and must remain inspiration_only or blocked.`
+      });
+    }
+  }
+}
+
+function validateAssetProvenance(
+  file: string,
+  repoRoot: string,
+  assets: readonly Record<string, unknown>[],
+  sourceById: ReadonlyMap<string, Record<string, unknown>>,
+  sourceIds: ReadonlySet<string>,
+  errors: PdosValidationIssue[]
+): void {
+  for (const asset of assets) {
+    const id = String(asset.id);
+    const source = typeof asset.source === "string" ? asset.source : "";
+    const librarySourceId = typeof asset.library_source_id === "string" ? asset.library_source_id : "";
+    const provenanceStatus = typeof asset.provenance_status === "string" ? asset.provenance_status : "";
+
+    if (source.startsWith("http") && !librarySourceId) {
+      errors.push({
+        file: toRepoPath(repoRoot, file),
+        message: `Asset ${id} uses an external source and must declare library_source_id.`
+      });
+    }
+
+    if (librarySourceId && !sourceIds.has(librarySourceId)) {
+      errors.push({
+        file: toRepoPath(repoRoot, file),
+        message: `Asset ${id} references missing library_source_id ${librarySourceId}.`
+      });
+    }
+
+    if (provenanceStatus === "source-recorded" && !librarySourceId) {
+      errors.push({
+        file: toRepoPath(repoRoot, file),
+        message: `Asset ${id} has source-recorded provenance without library_source_id.`
+      });
+    }
+
+    if (provenanceStatus === "internal" && source.startsWith("http")) {
+      errors.push({
+        file: toRepoPath(repoRoot, file),
+        message: `Asset ${id} cannot use internal provenance for an external URL.`
+      });
+    }
+
+    const linkedSource = librarySourceId ? sourceById.get(librarySourceId) : undefined;
+    if (linkedSource?.status === "inspiration_only" && provenanceStatus !== "inspiration-only") {
+      errors.push({
+        file: toRepoPath(repoRoot, file),
+        message: `Asset ${id} uses inspiration-only source ${librarySourceId} and must stay inspiration-only.`
+      });
+    }
+  }
+}
+
+function validateProjectLibraryLinks(
+  file: string,
+  repoRoot: string,
+  projects: readonly Record<string, unknown>[],
+  sourceIds: ReadonlySet<string>,
+  referenceIds: ReadonlySet<string>,
+  assetIds: ReadonlySet<string>,
+  patternIds: ReadonlySet<string>,
+  errors: PdosValidationIssue[]
+): void {
+  for (const project of projects) {
+    const slug = String(project.slug);
+    const links = isRecord(project.library_links) ? project.library_links : {};
+    validateKnownIds(file, repoRoot, slug, "source_ids", getStringArray(links.source_ids), sourceIds, errors);
+    validateKnownIds(file, repoRoot, slug, "reference_ids", getStringArray(links.reference_ids), referenceIds, errors);
+    validateKnownIds(file, repoRoot, slug, "asset_ids", getStringArray(links.asset_ids), assetIds, errors);
+    validateKnownIds(file, repoRoot, slug, "pattern_ids", getStringArray(links.pattern_ids), patternIds, errors);
+  }
+}
+
+function validateKnownIds(
+  file: string,
+  repoRoot: string,
+  slug: string,
+  field: string,
+  values: readonly string[],
+  knownIds: ReadonlySet<string>,
+  errors: PdosValidationIssue[]
+): void {
+  for (const value of values) {
+    if (!knownIds.has(value)) {
+      errors.push({
+        file: toRepoPath(repoRoot, file),
+        message: `Project ${slug} references unknown ${field} value ${value}.`
       });
     }
   }
@@ -386,6 +607,22 @@ function getNestedArray(value: Record<string, unknown>, path: readonly string[])
   }
 
   return Array.isArray(current) ? current : [];
+}
+
+function getRecordArray(value: unknown, key: string): readonly Record<string, unknown>[] {
+  if (!isRecord(value) || !Array.isArray(value[key])) {
+    return [];
+  }
+
+  return value[key].filter(isRecord);
+}
+
+function getStringArray(value: unknown): readonly string[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.filter((item) => typeof item === "string");
 }
 
 const currentFile = fileURLToPath(import.meta.url);
