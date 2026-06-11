@@ -54,12 +54,26 @@ describe("capability routing policy", () => {
         "problem_scope_classified",
         "autopilot_vs_project_boundary",
         "redacted_log_summary",
+        "baseline_metric",
         "suspect_layer_identified"
       ])
     );
     expect(selection.reason).toContain(
       "Classify Autopilot-vs-project ownership first, then inspect redacted evidence for the narrowest failing layer."
     );
+  });
+
+  it("returns neutral routing when no capability signals match", () => {
+    const selection = selectCapabilityModules({
+      task: "Polish archival naming"
+    });
+
+    expect(selection.activate).toEqual([]);
+    expect(selection.optional).toEqual([]);
+    expect(selection.avoid).toEqual([]);
+    expect(selection.requiredAgents).toEqual([]);
+    expect(selection.requiredChecks).toEqual([]);
+    expect(selection.reason[0]).toContain("No capability signals matched");
   });
 
   it("routes data cleanup and migration work to data capability first", () => {
@@ -82,6 +96,6 @@ describe("capability routing policy", () => {
   it("declares mesh YAML as canonical capability content", () => {
     expect(capabilitySourceOfTruth.canonical).toBe("mesh_yaml");
     expect(capabilitySourceOfTruth.executableMirror).toBe("typescript_routing_index");
-    expect(capabilitySourceOfTruth.driftCheck).toBe("capability_ids_match_mesh_nodes");
+    expect(capabilitySourceOfTruth.driftCheck).toBe("capability_ids_signals_agents_checks_match_mesh_yaml");
   });
 });

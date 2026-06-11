@@ -24,6 +24,7 @@ export type {
   NodeExplanation,
   ProjectMeshPacket,
   ProjectMeshPacketInput,
+  ProjectMeshPacketRule,
   RelevantSubgraph,
   RelevantSubgraphInput,
   RequiredAgentsResult,

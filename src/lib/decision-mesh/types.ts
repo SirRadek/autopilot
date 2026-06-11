@@ -82,11 +82,22 @@ export interface ProjectMeshPacket {
   readonly task: string;
   readonly agent?: string;
   readonly relevant_nodes: readonly string[];
+  readonly rules: readonly ProjectMeshPacketRule[];
   readonly required_agents: readonly string[];
   readonly must_read: readonly string[];
+  readonly must_not_assume: readonly string[];
   readonly required_checks: readonly string[];
   readonly stop_conditions: readonly string[];
   readonly why: readonly string[];
+}
+
+export interface ProjectMeshPacketRule {
+  readonly id: string;
+  readonly title: string;
+  readonly severity: DecisionMeshRule["severity"];
+  readonly instruction: string;
+  readonly applies_to: readonly string[];
+  readonly must_not_assume: readonly string[];
 }
 
 export interface NodeExplanation {

@@ -6,7 +6,9 @@ import type {
   DecisionMesh,
   DecisionMeshEdge,
   DecisionMeshNode,
+  DecisionMeshRule,
   NodeExplanation,
+  ProjectMeshPacketRule,
   ProjectMeshPacket,
   ProjectMeshPacketInput,
   RelevantSubgraph,
@@ -48,21 +50,19 @@ export function getRelevantSubgraph(mesh: DecisionMesh, input: RelevantSubgraphI
 
   const selectedIds: string[] = [];
 
-  const primary = scored[0];
+  for (const entry of scored) {
+    addId(selectedIds, entry.node.id, maxNodes);
+    if (selectedIds.length >= maxNodes) {
+      break;
+    }
+  }
 
-  if (primary) {
-    addId(selectedIds, primary.node.id, maxNodes);
-    addConnectedNodes(mesh, primary.node.id, selectedIds, maxNodes);
-
-    for (const entry of scored.slice(1)) {
-      addId(selectedIds, entry.node.id, maxNodes);
+  if (selectedIds.length < maxNodes) {
+    for (const entry of scored) {
+      addConnectedNodes(mesh, entry.node.id, selectedIds, maxNodes);
       if (selectedIds.length >= maxNodes) {
         break;
       }
-    }
-  } else {
-    for (const node of mesh.nodes.slice(0, maxNodes)) {
-      addId(selectedIds, node.id, maxNodes);
     }
   }
 
@@ -117,13 +117,20 @@ export function buildProjectMeshPacket(mesh: DecisionMesh, input: ProjectMeshPac
     max_nodes: input.max_nodes ?? DEFAULT_MAX_NODES
   };
   const subgraph = getRelevantSubgraph(mesh, input.agent ? { ...subgraphInput, agent: input.agent } : subgraphInput);
+  const selectedIds = new Set(subgraph.relevant_nodes.map((node) => node.id));
+  const rules = mesh.rules.filter((rule) => rule.applies_to.some((nodeId) => selectedIds.has(nodeId)));
 
   const packet: ProjectMeshPacket = {
     project_slug: input.project_slug,
     task: input.task,
     relevant_nodes: subgraph.relevant_nodes.map((node) => node.id),
+    rules: rules.map(toProjectMeshPacketRule),
     required_agents: subgraph.required_agents,
     must_read: unique(subgraph.relevant_nodes.flatMap((node) => node.related_files)),
+    must_not_assume: unique([
+      ...subgraph.relevant_nodes.flatMap((node) => node.must_not_assume ?? []),
+      ...rules.flatMap((rule) => rule.must_not_assume ?? [])
+    ]),
     required_checks: unique(subgraph.relevant_nodes.flatMap((node) => node.required_checks)),
     stop_conditions: unique(subgraph.relevant_nodes.flatMap((node) => node.stop_conditions ?? [])),
     why: unique(subgraph.relevant_nodes.map((node) => node.why))
@@ -191,9 +198,23 @@ export function selectCapabilities(mesh: DecisionMesh, input: CapabilitySelectio
   const selection = selectCapabilityModules({ task: input.task });
   const maxNodes = Math.max(1, Math.min(input.max_nodes ?? DEFAULT_MAX_NODES, mesh.nodes.length));
   const nodeIds = new Set(mesh.nodes.map((node) => node.id));
+
+  if (selection.activate.length === 0) {
+    return {
+      task: input.task,
+      capabilities: [],
+      optional_capabilities: [],
+      avoided_capabilities: [],
+      required_agents: [],
+      required_checks: [],
+      relevant_nodes: [],
+      reason: selection.reason,
+      stop_conditions: []
+    };
+  }
+
   const selectedNodeIds = unique([
     ...selection.activate.filter((id) => nodeIds.has(id)),
-    ...selection.optional.filter((id) => nodeIds.has(id)),
     ..."capability_routing context_economy_policy model_spend_policy"
       .split(" ")
       .filter((id) => nodeIds.has(id))
@@ -229,7 +250,7 @@ function scoreNode(node: DecisionMeshNode, task: string, agent?: string): number
     }
   }
 
-  if (agent && node.related_agents.includes(agent)) {
+  if (score > 0 && agent && node.related_agents.includes(agent)) {
     score += 0.5;
   }
 
@@ -278,6 +299,17 @@ function requireNode(mesh: DecisionMesh, nodeId: string): DecisionMeshNode {
   }
 
   return node;
+}
+
+function toProjectMeshPacketRule(rule: DecisionMeshRule): ProjectMeshPacketRule {
+  return {
+    id: rule.id,
+    title: rule.title,
+    severity: rule.severity,
+    instruction: rule.instruction,
+    applies_to: rule.applies_to,
+    must_not_assume: rule.must_not_assume ?? []
+  };
 }
 
 function isRiskNode(node: DecisionMeshNode): boolean {

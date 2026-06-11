@@ -35,12 +35,12 @@ describe("Decision Mesh queries", () => {
 
     expect(result.relevant_nodes.map((node) => node.id)).toEqual([
       "file_upload",
-      "auth_required",
-      "storage_provider",
-      "security_upload",
+      "frontend_form",
       "qa_upload_tests",
+      "security_upload",
+      "auth_required",
       "user_profile",
-      "frontend_form"
+      "storage_provider"
     ]);
     expect(result.required_agents).toEqual(["backend", "frontend", "security", "qa"]);
     expect(result.excluded).toContain("payments_checkout");
@@ -146,6 +146,31 @@ describe("Decision Mesh queries", () => {
     ).toEqual(expect.arrayContaining(["raw_agent_output_used_as_next_prompt", "blocker_without_owner"]));
   });
 
+  it("returns an empty subgraph when no task signal matches", () => {
+    const result = getRelevantSubgraph(mesh, {
+      task: "Polish the archival naming convention",
+      agent: "architect",
+      max_nodes: 4
+    });
+
+    expect(result.relevant_nodes).toEqual([]);
+    expect(result.relevant_edges).toEqual([]);
+    expect(result.required_agents).toEqual([]);
+    expect(result.excluded.length).toBe(mesh.nodes.length);
+  });
+
+  it("keeps exact node matches ahead of neighboring expansion", () => {
+    const result = getRelevantSubgraph(mesh, {
+      task: "Update prompt library, compact context, token policy, and model spend",
+      agent: "architect",
+      max_nodes: 3
+    });
+
+    expect(result.relevant_nodes.map((node) => node.id)).toEqual(
+      expect.arrayContaining(["prompt_library_policy", "context_economy_policy", "model_spend_policy"])
+    );
+  });
+
   it("routes per-project mesh lifecycle work to the project mesh node", () => {
     const result = getRelevantSubgraph(mesh, {
       task: "Create a separate decision mesh for a new project during architecture onboarding and update it after completion",
@@ -170,6 +195,19 @@ describe("Decision Mesh queries", () => {
     expect(result.relevant_nodes).toEqual(expect.arrayContaining(["optimization_mesh", "seo_mesh"]));
   });
 
+  it("does not fall back unknown capability requests to optimization or SEO", () => {
+    const result = selectCapabilities(mesh, {
+      task: "Polish the archival naming convention"
+    });
+
+    expect(result.capabilities).toEqual([]);
+    expect(result.optional_capabilities).toEqual([]);
+    expect(result.avoided_capabilities).toEqual([]);
+    expect(result.relevant_nodes).toEqual([]);
+    expect(result.required_checks).toEqual([]);
+    expect(result.stop_conditions).toEqual([]);
+  });
+
   it("routes diagnostics through observability with project/control-plane separation checks", () => {
     const result = selectCapabilities(mesh, {
       task: "Inspect logs, tracing, runtime errors, and bottlenecks while separating Autopilot from project issues"
@@ -181,6 +219,7 @@ describe("Decision Mesh queries", () => {
         "problem_scope_classified",
         "autopilot_vs_project_boundary",
         "redacted_log_summary",
+        "baseline_metric",
         "suspect_layer_identified"
       ])
     );
@@ -200,6 +239,11 @@ describe("Decision Mesh queries", () => {
 
     expect(packet.project_slug).toBe("radeq");
     expect(packet.relevant_nodes).toContain("lead_capture_pipeline");
+    expect(packet.rules.map((rule) => rule.id)).toContain("RAD-LEADS-001");
+    expect(packet.rules.find((rule) => rule.id === "RAD-LEADS-001")).toMatchObject({
+      severity: "blocker",
+      instruction: expect.stringContaining("Client and server validation")
+    });
     expect(packet.required_checks).toContain("server_validation");
     expect(packet.stop_conditions).toContain("missing_server_validation");
   });
@@ -230,6 +274,10 @@ describe("Decision Mesh queries", () => {
     });
 
     expect(packet.relevant_nodes).toContain("prompt_library_boundary");
+    expect(packet.rules.map((rule) => rule.id)).toEqual(expect.arrayContaining(["ACP-PROMPT-001"]));
+    expect(packet.must_not_assume).toEqual(
+      expect.arrayContaining(["Do not treat public prompt packs as source of truth."])
+    );
     expect(packet.required_checks).toEqual(
       expect.arrayContaining(["prompt_metadata_complete", "prompt_eval_defined", "official_provider_docs_verified"])
     );
