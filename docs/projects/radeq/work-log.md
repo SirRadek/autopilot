@@ -1,5 +1,60 @@
 # Radeq.cz Website Work Log
 
+## 2026-06-12 Static Ukazky Implementation
+
+Date: 2026-06-12
+Request or trigger: owner approved the Czech first wave of static public `/ukazky` examples and asked to implement `/ukazky/`, `/ukazky/chatbot/`, `/ukazky/automatizace/`, and `/ukazky/nabidka-eshop/`, while keeping e-mail provider research separate from the static implementation.
+Mode: WRITE_ALLOWED for the Radeq product checkout, local governance mesh, work log, architecture mirror, and model-output eval record. No production Cloudflare deploy, GitHub deploy, push, PR, D1, migrations, lead API, package files, checkout/payment flow, model API, RAG, analytics, or provider/DNS configuration was changed.
+
+Product implementation:
+
+- Added typed static showcase content in `src/data/showcaseExamples.ts`.
+- Added a typed local decision tree in `src/data/chatbotGuide.ts`.
+- Added `src/components/RuleChatbotGuide.tsx` as a React island for visible choice state only. It does not use network calls, backend inference, analytics, localStorage, or hidden submission.
+- Added `src/pages/ukazky/index.astro` and `src/pages/ukazky/[example].astro`.
+- Made `BaseLayout` and `CommandHeader` tolerate Czech-only pages without false English alternate links.
+- Added `/ukazky/` and detail pages to `sitemap.xml.ts`.
+- Added showcase styles under `.showcase-*` and `.rule-chatbot*` selectors without new A/B/C/D showcase variant selectors.
+- Added Czech header link `Ukázky` after the pages, targeted tests, and initial build were passing.
+- Left old `/demo/*` public and separate.
+
+Verification:
+
+- `npm.cmd run typecheck`: passed with 0 errors, warnings, or hints.
+- `npm.cmd test`: passed, 9 files and 47 tests.
+- `npm.cmd run build`: passed, 14 pages generated including `/ukazky/*`; existing Vite chunk-size warning remained.
+- `DEPLOY_TARGET=github-pages npm.cmd run build`: passed, 14 pages generated; existing Vite chunk-size warning remained.
+- `npm.cmd run test:e2e`: passed, 15 Playwright tests.
+- `git diff --check`: passed; Git reported only LF-to-CRLF working-copy warnings.
+- Local dev sanity check at `http://127.0.0.1:4321` verified all four `/ukazky` routes have expected H1 text, no `.style-toggle`, no desktop or 390px mobile horizontal overflow, and chatbot handoff panel appears only after explicit click.
+
+E-mail research:
+
+- Public DNS read-only check found Cloudflare nameservers `anton.ns.cloudflare.com` and `sharon.ns.cloudflare.com`; no public MX, SPF TXT, or `_dmarc` TXT records were returned by `Resolve-DnsName` during this run.
+- Current official sources were checked for Cloudflare Email Service, Fastmail, Google Workspace, Microsoft Exchange Online, Zoho Mail, Proton Mail, Resend, Formspree, and Basin.
+- Recommendation: use mailbox hosting for human mail and replies as `@radeq.cz`; keep Cloudflare Email Routing as a temporary receive-only forwarding option; use Workers plus Cloudflare Email Service or Resend later for transactional form notifications only.
+- No DNS, mailbox, provider, Worker, or form backend configuration was changed.
+
+Project mesh impact:
+
+- Added `public_showcase_examples` and `domain_email_research` nodes.
+- Added edges from public showcase examples to static site, offer positioning, SEO/performance, and lead capture.
+- Added e-mail research edge to lead capture as future integration.
+- Added rules `RAD-SHOWCASE-001` through `RAD-SHOWCASE-003` and `RAD-EMAIL-001`.
+
+Known limitations and owner decisions:
+
+- No commit, push, PR, GitHub Pages preview, or Cloudflare production deploy was performed.
+- Owner confirmed Fastmail as the final human mailbox provider for `radeq.cz`.
+- Owner confirmed `siroky@radeq.cz`, `info@radeq.cz`, and `poptavky@radeq.cz` work.
+- Owner confirmed DMARC should remain `p=none` during initial monitoring.
+- Owner approved adding Czech contact-form options for `Jednoduchý chatbot / průvodce`, `Automatizace poptávek`, and `Nabídka / e-shop úprava`.
+- English `/ukazky` pages remain out of scope.
+
+Rollback:
+
+- Revert the Radeq product checkout changes in the `/ukazky` files, layout/header/sitemap/style/test updates, and remove the governance mesh/work-log/eval additions if the owner rejects public showcase publishing.
+
 ## 2026-06-12 Static Ukazky Implementation Planning
 
 Date: 2026-06-12

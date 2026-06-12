@@ -1,6 +1,6 @@
 # Radeq.cz Website Architecture
 
-Last updated: 2026-06-11
+Last updated: 2026-06-12
 Next review: 2026-06-18
 Status: active
 Slug: `radeq`
@@ -11,7 +11,7 @@ Visibility: public repository, with private reference assets excluded by policy
 
 ## Purpose And Scope
 
-Radeq.cz is a public static website for selling complete websites and redesigns for small businesses, with supporting proof, pricing, handoff, and lead capture. The current product surface is the Czech route `/`, the English route `/en/`, a fixed public homepage offer, a static three-step primary service path, a separate secondary-services block, a pricing section, optional compatibility/demo routes under `/demo/<module>/` and `/en/demo/<module>/`, a light/dark visual mode toggle, an optional 3D mascot enhancement, and a Cloudflare D1-backed lead capture endpoint.
+Radeq.cz is a public static website for selling complete websites and redesigns for small businesses, with supporting proof, pricing, handoff, and lead capture. The current product surface is the Czech route `/`, the English route `/en/`, Czech static public showcase routes under `/ukazky/`, a fixed public homepage offer, a static three-step primary service path, a separate secondary-services block, a pricing section, optional compatibility/demo routes under `/demo/<module>/` and `/en/demo/<module>/`, a light/dark visual mode toggle, an optional 3D mascot enhancement, and a Cloudflare D1-backed lead capture endpoint.
 
 Business positioning lock, implemented locally on 2026-06-11: the public homepage focuses on complete websites and redesigns for small businesses, not WordPress/WooCommerce repairs. The primary offer covers structure, content, design, implementation, performance/SEO basics, testing, and clear handoff. WordPress, WooCommerce, Shopify, SEO, automation, AI helpers, PC support, migrations, and custom development may remain as secondary or implementation-specific paths, but they must not dominate the first viewport or CTA hierarchy. The paid entry product is `Audit webu s plánem` / `Website audit with a plan`, and the primary CTA starts a website conversation at `#terminal`.
 
@@ -40,7 +40,8 @@ External to this project:
 
 - Cloudflare account configuration and real production D1 database ID
 - GitHub repository hosting and GitHub Pages deployment environment
-- future email notification provider
+- Fastmail human mailbox hosting for `siroky@radeq.cz`, `info@radeq.cz`, and `poptavky@radeq.cz`
+- future transactional email or form-notification provider/backend
 - future Autopilot dashboard or project inventory system
 
 ## Repository Boundary
@@ -68,6 +69,8 @@ Current mesh coverage:
 
 - primary offer positioning, first paid product, CTA hierarchy, and homepage conversion scope
 - static public site boundary
+- Czech static showcase examples for public-safe proof, rule-based chatbot boundaries, and inquiry-only offer/e-shop examples
+- domain email provider research boundary for forwarding, mailbox hosting, transactional mail, and form backend separation
 - lead capture and D1 data flow
 - optional 3D mascot add-on
 - SEO and performance surface
@@ -81,6 +84,7 @@ Static page shell:
 
 - `src/pages/index.astro` renders the Czech route.
 - `src/pages/en/index.astro` renders the English route.
+- `src/pages/ukazky/index.astro` and `src/pages/ukazky/[example].astro` render the Czech-first static showcase hub and detail pages for chatbot, automation, and offer/e-shop inquiry examples. The chatbot detail uses prepared decision-tree data and a local React island only for visible choice state; it is not a model-backed AI chat and does not submit data before explicit contact.
 - `src/pages/demo/[module].astro` renders Czech interactive demo pages. Demo routes are directly addressable compatibility/review surfaces and are not linked from the main homepage decision path. `/demo/service-landing/` remains a shop-only showcase for QA and direct review; `/demo/eshop-offers/`, blog/docs, and team-overview modules remain directly addressable compatibility routes until a separate URL migration removes or redirects them.
 - `src/pages/en/demo/[module].astro` renders the English equivalents.
 - `src/layouts/BaseLayout.astro` sets global metadata, canonical URLs, alternate links, Open Graph URL metadata, language, global CSS, `MotionOrchestrator`, and the route-level style-source boundary. Public homepage routes use fixed `variant-a`; demo routes opt into stored A/B/C/D style state.
