@@ -122,3 +122,11 @@ rules:
       - lead_capture_pipeline
     instruction: "The contact form may send a server-side Cloudflare Email Sending notification to poptavky@radeq.cz only after successful D1 storage. Email sending failures must be logged without exposing lead details and must not turn a successful stored lead into a visitor-facing error."
     severity: blocker
+  - id: RAD-DEPLOY-001
+    title: GitHub-first staging before Cloudflare deploy
+    applies_to:
+      - static_public_site
+      - lead_capture_pipeline
+      - runtime_observability_boundary
+    instruction: "Stage Radeq website changes through GitHub branches and PR review first. Do not deploy Cloudflare Worker radeq, Cloudflare Pages radeq-cz, or production-domain changes without explicit owner approval in the current turn."
+    severity: blocker

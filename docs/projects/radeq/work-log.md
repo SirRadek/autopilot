@@ -1,5 +1,56 @@
 # Radeq.cz Website Work Log
 
+## 2026-06-12 Homepage Trust Strategy Advisory And Deployment Plan
+
+Date: 2026-06-12
+Request or trigger: owner provided `C:/Users/sirok/Desktop/prompt.txt` and asked for multi-model brainstorming, Decision Mesh/MCP use, evaluation, and a deployment plan with latest-model and workflow notes.
+Mode: PLAN_ONLY for Radeq product runtime. No product source change, Cloudflare deploy, DNS change, mailbox/provider change, D1 migration, or production lead submission was performed.
+
+Inputs:
+
+- Proposal strategy: Radeq.cz should sell websites/redesign/audit/repair first; automation, analytics, AI, and agentic systems stay as follow-on value and internal production advantage.
+- Owner deployment preference: keep current work GitHub-first and avoid unnecessary Cloudflare Free-plan usage.
+
+Tools and advisory results:
+
+- Decision Mesh `find_risks` highlighted tool inventory, reasoning/model-spend policy, public API, project mesh lifecycle, model output evaluation, and production mutation stop conditions.
+- Claude Code 2.1.172 was available. Fable and Opus health checks passed, but full-context/max advisory runs timed out; a shorter Fable run then hit a session limit until 22:20 Europe/Prague. No Claude advisory content was accepted as output.
+- Gemini CLI 0.44.1 was available. `gemini-3.1-pro-preview` timed out in this environment; Gemini default/auto returned a usable advisory review. Gemini MCP list showed no MCP servers configured.
+- Codex CLI 0.106.0 was available but unusable for separate advisory: explicit `gpt-5` is unsupported with the current ChatGPT account and default `gpt-5.5` requires a newer Codex CLI.
+
+Plan output:
+
+- Added `docs/superpowers/plans/2026-06-12-radeq-homepage-trust-route-unification.md`.
+- Added mesh rule `RAD-DEPLOY-001` for GitHub-first staging before Cloudflare deployment.
+
+Recommended implementation order:
+
+1. Confirm owner decisions for route pages vs redirects, six form options, public phone, photo asset, measurement backend, English showcase scope, and Cloudflare deploy timing.
+2. Tighten homepage content contract and form options.
+3. Add unified public pages for `/kontakt/`, `/sluzby/`, `/portfolio/`, and `/soukromi/`.
+4. Move trust proof and route consistency ahead of new visual effects.
+5. Add a privacy-safe measurement event contract without external analytics first.
+6. Push through GitHub/PR only.
+7. Use Cloudflare dry-run and live deploy only after explicit owner approval.
+
+Workflow tuning:
+
+- For Claude, use smaller advisory packets and `--fallback-model` before attempting full-context `max`.
+- For Gemini, verify model access interactively via `/model`; do not label default/auto as Gemini 3.1.
+- For Codex CLI, upgrade or repair the CLI before using it as a separate advisory runner.
+- Continue treating model outputs as advisory only; local repo checks and official docs remain source of truth.
+
+Risk notes:
+
+- The attached proposal is strategically aligned with existing Radeq mesh, but implementation should not add all route, copy, measurement, proof, and mascot work in one branch.
+- Privacy-safe measurement needs an owner decision before any external analytics network call.
+- A public phone number and personal photo require owner-provided exact values/assets.
+- Existing `/demo/*` routes should remain public unless a separate URL migration decision is approved.
+
+Rollback:
+
+- This slice created only governance/plan artifacts. Revert the Autopilot commit that added the plan and `RAD-DEPLOY-001` if the owner changes deployment workflow.
+
 ## 2026-06-12 GitHub-Only Rollback For Lead Notification Branch
 
 Date: 2026-06-12
