@@ -1,5 +1,35 @@
 # Radeq.cz Website Work Log
 
+## 2026-06-12 GitHub-Only Rollback For Lead Notification Branch
+
+Date: 2026-06-12
+Request or trigger: owner asked to keep the latest lead notification and cat-mobile-guard work only on GitHub for now to avoid unnecessary Cloudflare Free-plan usage.
+Mode: WRITE_ALLOWED for Cloudflare Worker rollback and local governance records. No product source changes, no DNS change, no mailbox/provider change, no D1 migration, and no additional lead POST test.
+
+Outcome:
+
+- Kept Radeq product commit `731231b` pushed on GitHub branch `codex/radeq-ab-c-preview`.
+- Rolled Cloudflare Worker `radeq` back from version `d075d10a-fa6e-4b19-9ede-9a717543edce` to previous version `747d1ab3-ff49-497b-8cb8-917c67d0153d`.
+- Rollback message: `Owner requested GitHub-only staging to avoid Cloudflare free-tier usage`.
+- The live `radeq.cz` site still serves the approved `/ukazky` implementation, but the lead notification branch is not currently active on Cloudflare production.
+
+Verification:
+
+- `https://radeq.cz/`: 200.
+- `https://radeq.cz/ukazky/`: 200.
+- `OPTIONS https://radeq.cz/api/leads`: 204 with `POST, OPTIONS`.
+- `wrangler deployments list --name radeq` showed the rollback deployment at `2026-06-12T15:42:01.548Z` with 100% traffic on version `747d1ab3-ff49-497b-8cb8-917c67d0153d`.
+
+Cloudflare limit note:
+
+- Official Cloudflare Workers docs list a Workers Free daily request limit of 100,000 requests that resets at 00:00 UTC.
+- Official Workers Static Assets billing docs state requests to static assets are free and unlimited, while requests to the Worker script are billed or limited according to Workers pricing.
+- Practical policy after this owner decision: keep iterative work on GitHub/PR first, and deploy to Cloudflare only when the owner explicitly asks for a Cloudflare preview or production check.
+
+Rollback:
+
+- To put the GitHub branch back on Cloudflare later, redeploy Radeq product commit `731231b` or newer with the local production `wrangler.toml`.
+
 ## 2026-06-12 Lead Email Notification Deploy And Cat Mobile Guard
 
 Date: 2026-06-12
