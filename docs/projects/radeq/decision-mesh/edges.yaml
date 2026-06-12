@@ -81,6 +81,6 @@ edges:
     why: "Showcase CTAs may point to the existing contact form but must not add hidden submission, prefill, or new lead API behavior."
   - from: domain_email_research
     to: lead_capture_pipeline
-    relation: future_integration
-    weight: 0.7
-    why: "Future form notifications may use mailbox, forwarding, or transactional email, but provider setup is separate from current static pages."
+    relation: enables_transactional_notification
+    weight: 0.78
+    why: "Lead notifications may use Cloudflare Email Sending into the Fastmail-hosted poptavky@radeq.cz mailbox, but storage and validation remain the primary form contract."

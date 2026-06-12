@@ -1,5 +1,61 @@
 # Radeq.cz Website Work Log
 
+## 2026-06-12 Lead Email Notification Deploy And Cat Mobile Guard
+
+Date: 2026-06-12
+Request or trigger: owner confirmed Fastmail as the final mailbox provider, asked to keep the contact form, start the cat design work, implement form forwarding/notifications, push the product branch, and put the change directly on `radeq.cz`.
+Mode: WRITE_ALLOWED for the Radeq product checkout, Cloudflare Worker `radeq`, local governance records, and local git commits/pushes. No DNS MX/SPF/DKIM/DMARC mutation, mailbox provider change, checkout/payment flow, model API, RAG, or replacement 3D model asset was introduced.
+
+Product implementation:
+
+- Added `src/lib/leadNotificationEmail.ts` with a server-side Cloudflare Email Sending message for new stored leads.
+- Updated `functions/api/leads.ts` so `/api/leads` sends the notification only after successful D1 storage and keeps the visitor response successful if email sending fails.
+- Updated `worker/index.ts`, local ignored `wrangler.toml`, and committed `wrangler.worker.example.toml` to include the `EMAIL` send binding shape.
+- Added tests proving notification send on success and fail-soft behavior on email errors.
+- Added a mobile lower safe rail for the platform-roaming cat and clamps the final mobile `screenY` so jump interpolation cannot overlap hero text/CTA.
+- Added a mobile header E2E assertion that the English language switch remains visible.
+- Added `.superpowers/` to `.gitignore`.
+
+Cat design follow-up:
+
+- Added `docs/superpowers/specs/2026-06-12-radeq-cat-mascot-next-design.md`.
+- The approved immediate implementation is only mobile overlap protection. Deeper work on a smoother body, texture, behavior logic, or replacement GLB remains a separate asset/design pipeline with license, rig, optimization, reduced-motion, and mobile evidence gates.
+
+Project mesh and architecture impact:
+
+- Updated `domain_email_research`, `lead_capture_pipeline`, mesh edge `domain_email_research -> lead_capture_pipeline`, and rules with `RAD-EMAIL-002`.
+- Updated `docs/projects/radeq/architecture.md` so email notifications are now in scope as a fail-soft transactional Worker binding, while Fastmail remains the human mailbox provider.
+
+Deployment outcome:
+
+- Product commit `731231b` was pushed to `codex/radeq-ab-c-preview`.
+- Initial `wrangler deploy` failed because an environment `CLOUDFLARE_API_TOKEN` overrode OAuth and lacked Worker service access (`Authentication error [code: 10000]`).
+- Retried deploy with that env token removed for the command, using the existing OAuth login with `workers`, `d1`, and `email_sending` permissions.
+- Deployed Worker `radeq` with `ASSETS`, `LEADS_DB`, and `EMAIL` bindings. Current deployed Worker version ID: `d075d10a-fa6e-4b19-9ede-9a717543edce`.
+
+Verification:
+
+- `npm.cmd run typecheck`: passed with 0 errors, warnings, or hints.
+- `npm.cmd test`: passed, 9 files and 50 tests.
+- `npm.cmd run build`: passed, 14 pages generated; existing Vite chunk-size warning remained.
+- `DEPLOY_TARGET=github-pages npm.cmd run build`: passed, 14 pages generated; existing Vite chunk-size warning remained.
+- `npm.cmd run test:e2e`: passed, 15 Playwright tests.
+- `git diff --check`: passed; Git reported only LF-to-CRLF working-copy warnings.
+- `npx.cmd wrangler@latest deploy --dry-run`: passed and confirmed `EMAIL`, `LEADS_DB`, and `ASSETS` bindings.
+- Public checks after deploy: `https://radeq.cz/` 200, `https://radeq.cz/en/` 200, `https://radeq.cz/ukazky/` 200, `OPTIONS https://radeq.cz/api/leads` 204.
+- Synthetic production lead test submitted to `POST https://radeq.cz/api/leads` with `TEST - Codex deploy verification`; API returned 201 and lead ID `lead_mqb2u5q6_b91abd77`.
+
+Risk notes:
+
+- The public API test confirms live D1/API path. Email delivery confirmation still requires checking the Fastmail mailbox `poptavky@radeq.cz` for the test notification because the API intentionally does not expose email delivery state.
+- Wrangler Email Sending beta `list` and `settings` commands returned Cloudflare API `Unauthorized [code: 2036]` under OAuth, despite the deploy accepting the `EMAIL` binding. Treat Cloudflare Dashboard mailbox/log checks as the current delivery evidence path.
+- Email notification is fail-soft: a future Cloudflare Email Sending failure logs an error and does not lose a stored lead.
+- The deeper cat redesign is not implemented in this slice; only mobile overlap containment is live.
+
+Rollback:
+
+- Redeploy previous Worker version `747d1ab3-ff49-497b-8cb8-917c67d0153d`, or revert product commit `731231b` and redeploy Worker `radeq`.
+
 ## 2026-06-12 Production Worker Deploy To Radeq.cz
 
 Date: 2026-06-12

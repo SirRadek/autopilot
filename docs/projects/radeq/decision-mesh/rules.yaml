@@ -115,3 +115,10 @@ rules:
       - lead_capture_pipeline
     instruction: "Fastmail is the owner-confirmed human mailbox provider for radeq.cz, with siroky@radeq.cz, info@radeq.cz, and poptavky@radeq.cz working. Keep Cloudflare as DNS/control surface, keep DMARC at p=none during initial monitoring, and still distinguish mailbox hosting from forwarding, transactional email, and future form backend work. Do not change production deploy, lead API, or provider configuration without an explicit owner decision."
     severity: blocker
+  - id: RAD-EMAIL-002
+    title: Lead notification email is transactional and fail-soft
+    applies_to:
+      - domain_email_research
+      - lead_capture_pipeline
+    instruction: "The contact form may send a server-side Cloudflare Email Sending notification to poptavky@radeq.cz only after successful D1 storage. Email sending failures must be logged without exposing lead details and must not turn a successful stored lead into a visitor-facing error."
+    severity: blocker

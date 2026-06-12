@@ -19,7 +19,6 @@ Out of scope for the current architecture:
 
 - user accounts or authentication
 - payments
-- email notification delivery
 - autonomous agent execution
 - public exposure of private project inventory
 - remote mutation from the UI
@@ -36,14 +35,16 @@ In this project:
 - Cloudflare Pages Function-compatible lead handler at `/api/leads`
 - Worker adapter at `worker/index.ts` routing `/api/leads` to the existing lead handler and all other requests to static assets
 - Cloudflare D1 schema and local integration gate
+- Cloudflare Email Sending Worker binding for fail-soft lead notifications to `poptavky@radeq.cz`
 - Playwright and Vitest verification
 
 External to this project:
 
 - Cloudflare account configuration and real production D1 database ID
+- Cloudflare Email Sending account/zone configuration and dashboard-level delivery logs
 - GitHub repository hosting and GitHub Pages deployment environment
 - Fastmail human mailbox hosting for `siroky@radeq.cz`, `info@radeq.cz`, and `poptavky@radeq.cz`
-- future transactional email or form-notification provider/backend
+- future non-Cloudflare transactional email provider/backend, if the owner changes scope
 - future Autopilot dashboard or project inventory system
 
 ## Repository Boundary
@@ -108,6 +109,7 @@ Lead API:
 - `functions/api/leads.ts` handles `POST /api/leads` and `OPTIONS`.
 - `worker/index.ts` adapts the same lead handler for the production Worker runtime and serves static assets through the Worker `ASSETS` binding.
 - `src/lib/leads.ts` owns payload creation, validation, field limits, context minimization, and lead IDs.
+- `src/lib/leadNotificationEmail.ts` owns the server-side email notification message sent after successful D1 storage.
 - `migrations/0001_create_leads.sql` defines the D1 `leads` table and indexes.
 
 ## Data Flow
@@ -125,8 +127,16 @@ Visitor
   -> minimizeLeadContext()
   -> LEADS_DB.prepare(...).bind(...).run()
   -> D1 table `leads`
+  -> EMAIL.send(...) notification to poptavky@radeq.cz
   -> manual export or future dashboard review
 ```
+
+Lead notification behavior:
+
+- Email is sent only after successful D1 storage.
+- The visitor-facing API response remains successful if the email notification fails.
+- Email failures are logged with lead ID, error code, and generic message only; customer details are not printed to runtime logs.
+- The notification uses `poptavky@radeq.cz` as sender and destination, with `replyTo` set to the visitor's submitted email.
 
 Required lead fields:
 
@@ -204,6 +214,7 @@ Cloudflare Worker production behavior:
 - base path is `/`
 - `wrangler.toml` is ignored locally because it contains environment-specific production binding details
 - safe committed Worker config lives in `wrangler.worker.example.toml`
+- current Worker production shape expects `ASSETS`, `LEADS_DB`, and `EMAIL` bindings
 
 Cloudflare Pages path behavior:
 
@@ -216,6 +227,7 @@ Cloudflare Pages path behavior:
 - `wrangler.toml` must remain untracked/ignored when it contains production binding IDs.
 - `wrangler.example.toml` is a template only.
 - D1 binding is required at runtime; missing binding returns a controlled setup error.
+- EMAIL binding is optional at code level so a missing or failing email binding cannot lose a stored lead.
 - API responses use JSON, `cache-control: no-store`, and CORS headers for POST/OPTIONS.
 - `public/_headers` defines security headers and immutable caching for hashed Astro assets.
 - Private original reference assets must not be shipped or sent to external models.
@@ -251,7 +263,8 @@ git diff --check
 
 ## Known Gaps And Risks
 
-- Cloudflare lead API remote proof is limited to non-mutating `OPTIONS /api/leads`; no production lead insert test was submitted.
+- Cloudflare lead API remote proof now includes a single synthetic production test lead submitted on 2026-06-12 after owner-approved form notification deployment: `lead_mqb2u5q6_b91abd77`.
+- Wrangler Email Sending beta `list` and `settings` commands returned Cloudflare API `Unauthorized [code: 2036]` under OAuth even though the Worker deploy accepted the `EMAIL` binding. Dashboard mailbox/log review remains the delivery confirmation path.
 - No official `@cloudflare/vitest-pool-workers` or Miniflare coverage exists yet.
 - Performance budget checks are not automated.
 - Automated accessibility checks for `ContactTerminal` and `StyleMatrixSimulator` are not yet expanded.
