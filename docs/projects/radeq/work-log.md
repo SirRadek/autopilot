@@ -1,5 +1,43 @@
 # Radeq.cz Website Work Log
 
+## 2026-06-12 Public Trust Route Pages Implemented
+
+Date: 2026-06-12
+Request or trigger: owner confirmed real Czech route pages, no public phone, deferred personal photo, later Cloudflare Web Analytics, and GitHub-only staging before any Cloudflare deployment.
+Mode: WRITE_ALLOWED for Radeq product source and Autopilot governance records. No Cloudflare deploy, DNS change, mailbox change, D1 migration, or production lead submission was performed.
+
+Product outcome:
+
+- Pushed Radeq product commit `dbb59d5` (`Add public trust route pages`) to GitHub branch `codex/radeq-ab-c-preview`.
+- Added real static Czech pages `/kontakt/`, `/sluzby/`, `/portfolio/`, and `/soukromi/`.
+- Reduced Czech contact form options to six website-focused choices: new website, redesign, audit, quick fix, web care, and not-sure/advice.
+- Added a no-network measurement contract and React tracker that emits local `radeq:measurement` events only. Event payloads contain event name and route, not e-mail, message, or project details.
+- Added `withBaseHref()` and applied it to new route and showcase links so GitHub Pages builds under `/radeq` do not escape the base path.
+- Updated sitemap coverage and tests for the new public routes.
+
+Verification:
+
+- `npm.cmd run typecheck`: passed, 0 errors, 0 warnings, 0 hints.
+- `npm.cmd test`: passed, 11 files and 58 tests.
+- `npm.cmd run build`: passed; known Vite large chunk warning remains.
+- `DEPLOY_TARGET=github-pages npm.cmd run build`: passed; known Vite large chunk warning remains.
+- Static GitHub Pages href checks passed for `/radeq/ukazky/`, `/radeq/#pricing`, `/radeq/sluzby/`, and `/radeq/ukazky/chatbot/`.
+- `npm.cmd run test:e2e`: passed, 21 Playwright tests.
+- `git diff --check`: passed; Git reported only LF-to-CRLF working-copy notices.
+- Subagent code review found two issues before final commit: GitHub Pages base-path escaping and declared click measurement events not emitted. Both were fixed and re-reviewed with no remaining blockers.
+
+Risk notes:
+
+- The branch is GitHub-only. The live Cloudflare Worker/site was not deployed from this commit.
+- Measurement remains a local event contract. Cloudflare Web Analytics is still a later owner-approved integration.
+- Personal photo remains deferred until the owner supplies an approved asset.
+- No public phone number was added.
+- English route equivalents for `/kontakt/`, `/sluzby/`, `/portfolio/`, and `/soukromi/` are not implemented in this slice.
+
+Rollback:
+
+- Revert product commit `dbb59d5` on branch `codex/radeq-ab-c-preview`, or reset the GitHub preview branch to prior product commit `731231b`.
+
 ## 2026-06-12 Homepage Trust Owner Decisions Locked
 
 Date: 2026-06-12

@@ -1,0 +1,164 @@
+{
+  "record_version": "v0.1",
+  "eval_id": "radeq-public-trust-routes-implementation-2026-06-12",
+  "created": "2026-06-12",
+  "project": {
+    "slug": "radeq",
+    "name": "Radeq.cz",
+    "control_plane": false
+  },
+  "task": {
+    "task_type": "implementation",
+    "summary": "Implement GitHub-only public trust route pages, narrowed contact form options, and privacy-safe no-network measurement contract.",
+    "risk_level": "medium"
+  },
+  "phase": "verified_branch_output",
+  "state": "accepted",
+  "model_or_worker": {
+    "provider": "openai",
+    "name": "Codex GPT-5 desktop session with subagent review",
+    "role": "product implementer, verifier, and governance recorder"
+  },
+  "reasoning_profile": {
+    "route": "subagent_driven_development",
+    "reasoning_effort": "high",
+    "change_policy": "GitHub-only product branch. No Cloudflare deploy, DNS mutation, mailbox change, D1 migration, or production lead write."
+  },
+  "input_packet_summary": {
+    "summary": "Owner confirmed real Czech route pages, no public phone, deferred photo asset, later Cloudflare Web Analytics, and GitHub approval before Cloudflare deploy.",
+    "allowed_context": [
+      "Radeq product repository",
+      "approved Autopilot implementation plan",
+      "Radeq project mesh guidance",
+      "owner decisions in chat"
+    ],
+    "forbidden_context": [
+      "secrets",
+      "production lead data",
+      "Cloudflare mutation",
+      "DNS mutation",
+      "mailbox mutation"
+    ]
+  },
+  "output_pointer": {
+    "kind": "git_commit",
+    "pointer": "C:/Users/sirok/Documents/Projects/radeq@dbb59d5",
+    "summary": "Added /kontakt, /sluzby, /portfolio, /soukromi; narrowed contact form options; added no-network measurement and base-aware links."
+  },
+  "implementation_summary": {
+    "changed_public_routes": [
+      "/kontakt/",
+      "/sluzby/",
+      "/portfolio/",
+      "/soukromi/"
+    ],
+    "contact_form_options": [
+      "Nový firemní web",
+      "Redesign staršího webu",
+      "Audit webu s plánem",
+      "Rychlá oprava webu",
+      "Webová péče a rozvoj",
+      "Nejsem si jistý, potřebuji poradit"
+    ],
+    "measurement": "Local CustomEvent contract only; no analytics network call.",
+    "deployment": "Pushed to GitHub branch codex/radeq-ab-c-preview; Cloudflare not deployed."
+  },
+  "review_findings": [
+    {
+      "severity": "P1",
+      "summary": "GitHub Pages base path was broken for new absolute CTA links.",
+      "resolution": "Added withBaseHref and applied it to hero, route page, and showcase links; GitHub Pages dist href checks passed."
+    },
+    {
+      "severity": "P2",
+      "summary": "Click measurement events were declared and tagged but not emitted.",
+      "resolution": "Added MeasurementTracker to emit local radeq:measurement CustomEvents from data-track clicks."
+    }
+  ],
+  "verification_evidence": [
+    {
+      "type": "command",
+      "status": "passed",
+      "evidence": "npm.cmd run typecheck: 0 errors, 0 warnings, 0 hints.",
+      "source_pointer": "local command"
+    },
+    {
+      "type": "command",
+      "status": "passed",
+      "evidence": "npm.cmd test: 11 test files and 58 tests passed.",
+      "source_pointer": "local command"
+    },
+    {
+      "type": "command",
+      "status": "passed",
+      "evidence": "npm.cmd run build completed with known Vite large chunk warning.",
+      "source_pointer": "local command"
+    },
+    {
+      "type": "command",
+      "status": "passed",
+      "evidence": "DEPLOY_TARGET=github-pages npm.cmd run build completed with known Vite large chunk warning.",
+      "source_pointer": "local command"
+    },
+    {
+      "type": "command",
+      "status": "passed",
+      "evidence": "Static dist checks confirmed /radeq base prefix for new GitHub Pages links.",
+      "source_pointer": "local command"
+    },
+    {
+      "type": "command",
+      "status": "passed",
+      "evidence": "npm.cmd run test:e2e: 21 Playwright tests passed.",
+      "source_pointer": "local command"
+    },
+    {
+      "type": "command",
+      "status": "passed",
+      "evidence": "git diff --check passed with only LF-to-CRLF working-copy notices.",
+      "source_pointer": "local command"
+    }
+  ],
+  "score_by_dimension": {
+    "task_fit": 94,
+    "instruction_following": 95,
+    "source_grounding": 92,
+    "format_contract": 92,
+    "verification_readiness": 95,
+    "privacy_safety": 96,
+    "handoff_clarity": 94,
+    "token_efficiency": 86,
+    "workflow_compatibility": 94
+  },
+  "failure_labels": [
+    "initial_github_pages_base_path_review_finding",
+    "initial_measurement_click_event_review_finding",
+    "known_vite_large_chunk_warning"
+  ],
+  "prompt_or_input_delta": {
+    "changed": true,
+    "summary": "Review findings caused the implementation to add base-aware internal link handling and a no-network click measurement tracker before commit.",
+    "changed_fields": [
+      "internal link rendering",
+      "measurement click dispatch",
+      "GitHub Pages verification"
+    ],
+    "rollback_path": "Revert Radeq product commit dbb59d5 and this Autopilot governance commit."
+  },
+  "source_pointers": [
+    "C:/Users/sirok/Documents/Projects/radeq/src/data/routePages.ts",
+    "C:/Users/sirok/Documents/Projects/radeq/src/lib/measurement.ts",
+    "C:/Users/sirok/Documents/Projects/radeq/src/lib/links.ts",
+    "C:/Users/sirok/Documents/Projects/radeq/tests/route-pages.spec.ts",
+    "C:/Users/sirok/Documents/Projects/radeq/tests/measurement.test.ts",
+    "docs/projects/radeq/work-log.md"
+  ],
+  "privacy_review": {
+    "redacted_context_only": true,
+    "raw_output_stored": false,
+    "raw_prompt_stored": false,
+    "raw_logs_stored": false,
+    "secrets_or_customer_data_stored": false,
+    "reviewer": "codex-supervisor"
+  }
+}
