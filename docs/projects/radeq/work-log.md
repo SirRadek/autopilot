@@ -9,6 +9,7 @@ Mode: WRITE_ALLOWED for Radeq product source and Autopilot governance records. N
 Product outcome:
 
 - Pushed Radeq product commit `dbb59d5` (`Add public trust route pages`) to GitHub branch `codex/radeq-ab-c-preview`.
+- Updated draft PR `https://github.com/SirRadek/radeq/pull/2` with the current scope, verification evidence, review notes, and explicit Cloudflare not-deployed status.
 - Added real static Czech pages `/kontakt/`, `/sluzby/`, `/portfolio/`, and `/soukromi/`.
 - Reduced Czech contact form options to six website-focused choices: new website, redesign, audit, quick fix, web care, and not-sure/advice.
 - Added a no-network measurement contract and React tracker that emits local `radeq:measurement` events only. Event payloads contain event name and route, not e-mail, message, or project details.
