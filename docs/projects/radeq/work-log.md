@@ -1,5 +1,50 @@
 # Radeq.cz Website Work Log
 
+## 2026-06-12 Production Worker Deploy To Radeq.cz
+
+Date: 2026-06-12
+Request or trigger: owner explicitly asked to put the approved `/ukazky` implementation directly on `radeq.cz` after reviewing the GitHub/Cloudflare preview direction.
+Mode: WRITE_ALLOWED for the Radeq product checkout, Cloudflare Worker `radeq`, Cloudflare Pages project `radeq-cz`, local governance records, and local git commits. No GitHub production merge, GitHub Pages release push, DNS MX/DKIM/SPF/DMARC mutation, mailbox provider change, checkout/payment flow, model API, RAG, or lead data submission was performed.
+
+Deployment outcome:
+
+- Ran a fresh production Astro build.
+- Uploaded the static build to Cloudflare Pages project `radeq-cz` first. Branch `new` created preview deployment `https://e7070554.radeq-cz.pages.dev`; branch `profi` created production Pages deployment `https://787534f2.radeq-cz.pages.dev`.
+- Verified the Pages production deployment had the new `/ukazky/*` pages, but `https://radeq.cz` still served old content because the apex domain is routed through Worker `radeq`.
+- Added a Worker entrypoint in the Radeq repo that routes `/api/leads` to the existing lead handler and serves all other paths from Worker static assets.
+- Deployed Worker `radeq` with Cloudflare Workers static assets and existing `LEADS_DB` binding. Current deployed Worker version ID: `747d1ab3-ff49-497b-8cb8-917c67d0153d`.
+- Kept the real local `wrangler.toml` ignored so the production D1 database ID is not committed; added a safe example Worker config with a placeholder database ID.
+
+Public verification:
+
+- `https://radeq.cz/`: 200 and new homepage title/content.
+- `https://radeq.cz/ukazky/`: 200.
+- `https://radeq.cz/ukazky/chatbot/`: 200.
+- `https://radeq.cz/ukazky/automatizace/`: 200.
+- `https://radeq.cz/ukazky/nabidka-eshop/`: 200.
+- `https://radeq.cz/sitemap.xml`: 200 and contains `/ukazky` routes.
+- `OPTIONS https://radeq.cz/api/leads`: 204 with `POST, OPTIONS`; no real lead payload was submitted.
+
+Verification:
+
+- `npm.cmd run typecheck`: passed with 0 errors, warnings, or hints.
+- `npx.cmd wrangler@latest deploy --dry-run`: passed and confirmed `LEADS_DB` plus `ASSETS` bindings.
+- `npm.cmd test`: passed, 9 files and 47 tests.
+- `npm.cmd run build`: passed, 14 pages generated; existing Vite chunk-size warning remained.
+- `DEPLOY_TARGET=github-pages npm.cmd run build`: passed, 14 pages generated; existing Vite chunk-size warning remained.
+- `npm.cmd run test:e2e`: passed, 15 Playwright tests.
+- `git diff --check`: passed; Git reported only LF-to-CRLF working-copy warnings.
+
+Risk notes:
+
+- Production currently depends on Worker `radeq`, not only Cloudflare Pages custom domains. The Pages custom domains existed but were pending because the apex domain was still routed through the Worker.
+- Future deploy handoffs must name the target explicitly: Worker `radeq` for `radeq.cz`, Pages `radeq-cz` for Pages preview/secondary deployments, and GitHub Pages for PR preview.
+- The local ignored `wrangler.toml` contains production binding details and must not be committed.
+
+Rollback:
+
+- Redeploy the previous Worker version from Cloudflare Workers deploy history, or deploy the previous Radeq build to Worker `radeq`. Pages deployment `f0eded6a` remains the previous Cloudflare Pages production build, but it did not control the apex route during this run.
+
 ## 2026-06-12 Static Ukazky Implementation
 
 Date: 2026-06-12

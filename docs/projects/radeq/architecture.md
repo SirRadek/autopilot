@@ -32,7 +32,9 @@ In this project:
 - React islands for interactive UI
 - typed content and style matrix data
 - optional Three.js mascot runtime
-- Cloudflare Pages Function at `/api/leads`
+- Cloudflare Worker `radeq` serving production static assets for `radeq.cz`
+- Cloudflare Pages Function-compatible lead handler at `/api/leads`
+- Worker adapter at `worker/index.ts` routing `/api/leads` to the existing lead handler and all other requests to static assets
 - Cloudflare D1 schema and local integration gate
 - Playwright and Vitest verification
 
@@ -104,6 +106,7 @@ Interactive islands:
 Lead API:
 
 - `functions/api/leads.ts` handles `POST /api/leads` and `OPTIONS`.
+- `worker/index.ts` adapts the same lead handler for the production Worker runtime and serves static assets through the Worker `ASSETS` binding.
 - `src/lib/leads.ts` owns payload creation, validation, field limits, context minimization, and lead IDs.
 - `migrations/0001_create_leads.sql` defines the D1 `leads` table and indexes.
 
@@ -149,8 +152,10 @@ GitHub:
 
 Cloudflare:
 
-- target platform is Cloudflare Pages
-- `wrangler.example.toml` defines `pages_build_output_dir = "./dist"`
+- production `https://radeq.cz` is served by Cloudflare Worker `radeq` with Workers static assets
+- Cloudflare Pages project `radeq-cz` remains available for Pages deployments and preview URLs
+- `wrangler.worker.example.toml` documents the Worker static-assets deployment shape with a placeholder D1 database ID
+- `wrangler.example.toml` remains a Pages-oriented template
 - D1 binding name is `LEADS_DB`
 - local runtime gate uses `npm run cf:pages:dev`
 
@@ -193,14 +198,22 @@ GitHub Pages path behavior:
 - GitHub Pages build uses base `/radeq`
 - Preview branch `codex/radeq-ab-c-preview` was temporarily allowed to deploy to the `github-pages` environment for draft PR preview `https://github.com/SirRadek/radeq/pull/2`.
 
-Cloudflare Pages path behavior:
+Cloudflare Worker production behavior:
 
 - production site is configured as `https://radeq.cz`
 - base path is `/`
+- `wrangler.toml` is ignored locally because it contains environment-specific production binding details
+- safe committed Worker config lives in `wrangler.worker.example.toml`
+
+Cloudflare Pages path behavior:
+
+- project name is `radeq-cz`
+- latest verified production Pages deployment during the 2026-06-12 deploy was `https://787534f2.radeq-cz.pages.dev`, but the apex route was controlled by Worker `radeq`
 
 ## Security And Privacy Controls
 
 - No secrets or real D1 database IDs belong in the repository.
+- `wrangler.toml` must remain untracked/ignored when it contains production binding IDs.
 - `wrangler.example.toml` is a template only.
 - D1 binding is required at runtime; missing binding returns a controlled setup error.
 - API responses use JSON, `cache-control: no-store`, and CORS headers for POST/OPTIONS.
@@ -238,13 +251,13 @@ git diff --check
 
 ## Known Gaps And Risks
 
-- Cloudflare lead pipeline proof is local happy-path proof, not remote deployment proof.
+- Cloudflare lead API remote proof is limited to non-mutating `OPTIONS /api/leads`; no production lead insert test was submitted.
 - No official `@cloudflare/vitest-pool-workers` or Miniflare coverage exists yet.
 - Performance budget checks are not automated.
 - Automated accessibility checks for `ContactTerminal` and `StyleMatrixSimulator` are not yet expanded.
 - The `/autopilot` dashboard route and typed project inventory do not exist yet.
-- GitHub Pages workflow and Cloudflare Pages target coexist, so deployment target must be named explicitly in handoffs.
-- The business positioning lock is now reflected in the local product runtime, but it has not been deployed or pushed in this supervisor run.
+- GitHub Pages workflow, Cloudflare Pages project `radeq-cz`, and Cloudflare Worker `radeq` coexist, so deployment target must be named explicitly in handoffs.
+- The business positioning lock and `/ukazky` implementation are reflected in the production Worker runtime as of 2026-06-12.
 - The prior WordPress/WooCommerce repair niche from the addendum is explicitly not the selected primary direction after owner correction; complete websites are the selected direction.
 - A/B/C/D preview variants are now treated as internal review or portfolio-proof mechanisms unless the owner explicitly approves them as a public homepage control.
 
