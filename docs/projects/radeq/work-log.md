@@ -1,5 +1,27 @@
 # Radeq.cz Website Work Log
 
+## 2026-06-12 Homepage Trust Owner Decisions Locked
+
+Date: 2026-06-12
+Request or trigger: owner answered the open implementation decisions from the homepage trust and route-unification plan.
+Mode: GOVERNANCE_UPDATE_ONLY for Autopilot records. No Radeq product source change, Cloudflare deploy, DNS change, mailbox change, D1 migration, or production lead submission was performed.
+
+Locked decisions:
+
+- `/kontakt/`, `/sluzby/`, `/portfolio/`, and `/soukromi/` will be real static pages.
+- The proposed contact form project options are `Nový firemní web`, `Redesign staršího webu`, `Audit webu s plánem`, `Rychlá oprava webu`, `Webová péče a rozvoj`, and `Nejsem si jistý, potřebuji poradit`.
+- No public phone number in this wave.
+- Personal photo is deferred until an approved asset is provided.
+- Measurement remains no-network for the implementation branch; Cloudflare Web Analytics is the later preferred backend.
+- Cloudflare deployment remains blocked until GitHub approval and a later explicit deploy instruction.
+
+Plan impact:
+
+- Updated `docs/superpowers/plans/2026-06-12-radeq-homepage-trust-route-unification.md` so the implementation plan no longer treats those items as blockers.
+- Removed the planned `phone_click` measurement event because phone will not be public.
+
+Recommended next work slice: start the GitHub-only Radeq product implementation for the content contract, real route pages, and form option update. Do not deploy to Cloudflare during that slice.
+
 ## 2026-06-12 Homepage Trust Strategy Advisory And Deployment Plan
 
 Date: 2026-06-12

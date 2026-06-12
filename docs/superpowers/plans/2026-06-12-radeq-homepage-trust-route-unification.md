@@ -178,9 +178,9 @@ it('keeps the Czech homepage focused on four primary website offers', () => {
     'Nový firemní web',
     'Redesign staršího webu',
     'Audit webu s plánem',
-    'Rychlá oprava existujícího webu',
+    'Rychlá oprava webu',
     'Webová péče a rozvoj',
-    'Nevím, potřebuji poradit',
+    'Nejsem si jistý, potřebuji poradit',
   ]);
 });
 ```
@@ -213,9 +213,9 @@ projectOptions: [
   'Nový firemní web',
   'Redesign staršího webu',
   'Audit webu s plánem',
-  'Rychlá oprava existujícího webu',
+  'Rychlá oprava webu',
   'Webová péče a rozvoj',
-  'Nevím, potřebuji poradit',
+  'Nejsem si jistý, potřebuji poradit',
 ],
 ```
 
@@ -532,7 +532,6 @@ describe('measurement event contract', () => {
       'form_start',
       'form_submit_success',
       'email_click',
-      'phone_click',
       'audit_click',
       'quick_fix_click',
     ]);
@@ -571,7 +570,6 @@ export const measurementEvents = [
   'form_start',
   'form_submit_success',
   'email_click',
-  'phone_click',
   'audit_click',
   'quick_fix_click',
 ] as const;
@@ -819,13 +817,20 @@ Before the next multi-model advisory:
 - [ ] **Decision Mesh:** Keep using `autopilot_decision_mesh` first for risks, capabilities, and model spend policy.
 - [ ] **Model eval:** Record failed provider runs as failed provider runs, not weak advisory output.
 
-## Owner Decisions Before Implementation
+## Locked Owner Decisions
 
-1. Confirm whether `/kontakt/`, `/sluzby/`, `/portfolio/`, and `/soukromi/` should be real static pages or redirects into homepage anchors.
-2. Confirm final six contact form project options.
-3. Confirm whether phone should be public; if yes, provide exact phone formatting.
-4. Confirm whether a personal photo should be added now, and provide the approved asset.
-5. Confirm whether measurement should stay no-network in phase 1 or use Cloudflare Web Analytics later.
-6. Confirm whether English `/ukazky` should be added or Czech examples can remain the only showcase wave.
-7. Confirm when Cloudflare deploy is allowed again.
+Owner decisions received 2026-06-12:
 
+1. `/kontakt/`, `/sluzby/`, `/portfolio/`, and `/soukromi/` must be real static pages, not redirects into homepage anchors.
+2. Final proposed six contact form project options:
+   - `Nový firemní web`
+   - `Redesign staršího webu`
+   - `Audit webu s plánem`
+   - `Rychlá oprava webu`
+   - `Webová péče a rozvoj`
+   - `Nejsem si jistý, potřebuji poradit`
+3. Do not publish a phone number in this wave.
+4. Personal photo is deferred until the owner provides an approved asset.
+5. Measurement remains no-network in this implementation. Cloudflare Web Analytics is the later preferred measurement backend.
+6. English showcase/localization work is deferred. GitHub approval comes before any Cloudflare deploy.
+7. Cloudflare deploy is still blocked until explicit owner approval in a later current turn after GitHub review.
