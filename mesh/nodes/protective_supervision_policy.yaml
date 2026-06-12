@@ -24,6 +24,11 @@ signals:
   - blocker
   - blocked
   - stop condition
+  - advisory model run
+  - provider run
+  - runner artifact
+  - missing model output
+  - no model output
   - failed process
   - restart
   - session resume
@@ -50,6 +55,9 @@ required_checks:
   - progress_state_updated
   - blocker_owner_declared
   - waiting_dependency_declared
+  - provider_run_status_recorded
+  - model_output_presence_verified
+  - blocked_state_recorded_when_output_missing
   - failure_reproduced_or_failure_pointer_recorded
   - affected_process_identified
   - progress_checkpoint_created_before_fix
@@ -68,6 +76,8 @@ stop_conditions:
   - duplicate_runtime_queue
   - remote_mutation_without_approval
   - paid_or_cloud_required_for_guardrail
+  - provider_run_failed_without_blocked_state
+  - advisory_workflow_continued_after_provider_error
   - raw_project_logs_copied_to_autopilot
   - fix_applied_to_running_process_without_stop_or_drain
   - session_restart_missing_after_process_fix
@@ -77,6 +87,7 @@ must_not_assume:
   - Do not create a duplicate runtime queue or approval authority.
   - Do not copy raw project logs into Autopilot.
   - Do not mutate GitHub, connectors, deployments, or project runtimes without owner approval.
+  - Do not let product/content review continue when the control-plane provider run has no verified model output.
   - Do not apply a fix to an affected running process before it is stopped or drained, unless the owner explicitly accepts a live-patch exception.
   - Do not continue after a restart without a continuity/progress update.
   - Do not make currentness claims without Context7, official docs, local evidence, or source pointers.
@@ -84,5 +95,6 @@ objective:
   - Run report-first currentness sentinel reviews for unstable guidance.
   - Compile reviewed agent outputs into bounded next-agent handoff packets.
   - Maintain visible progress states, blockers, waiting dependencies, and next action sequence.
+  - Convert missing provider output into blocked or waiting_owner state before any next-agent handoff.
   - For failed-process investigations, checkpoint state, stop or drain the affected process, apply the fix, restart or refresh the session, update continuity, and resume from the last verified state.
   - Feed prompt, mesh, model, context, observability, and project-work-log governance without becoming a runtime.

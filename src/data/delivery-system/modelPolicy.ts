@@ -14,7 +14,8 @@ export type ReasoningProviderId =
   | "openai_gpt"
   | "anthropic_claude_subscription"
   | "gemini_cli"
-  | "deepseek_api_or_self_hosted";
+  | "deepseek_api_or_self_hosted"
+  | "deepseek_web_chat_manual";
 
 export type ReasoningTaskLaneId =
   | "deterministic_verification"
@@ -33,7 +34,8 @@ export type ReasoningAccessMode =
   | "session_cli"
   | "subscription_cli"
   | "subscription_interactive"
-  | "api_or_self_hosted";
+  | "api_or_self_hosted"
+  | "manual_web_login";
 
 export type AdvisoryTrustTier =
   | "local_evidence"
@@ -219,6 +221,8 @@ export const reasoningEscalationPolicy = {
   ],
   requiredChecks: [
     "provider_availability_verified",
+    "provider_run_status_recorded",
+    "model_output_presence_verified",
     "free_tier_or_no_cost_confirmed",
     "subscription_entitlement_confirmed_for_subscription_tools",
     "google_ai_subscription_entitlement_confirmed_for_gemini_cli",
@@ -234,6 +238,9 @@ export const reasoningEscalationPolicy = {
     "cloud_model_for_routine_worker_loop",
     "frontier_used_for_simple_worker_task",
     "provider_availability_unverified",
+    "provider_run_failed_without_blocked_state",
+    "model_output_missing_from_artifact",
+    "advisory_workflow_continued_after_provider_error",
     "paid_model_or_credit_required",
     "subscription_entitlement_unverified",
     "google_ai_subscription_entitlement_unverified",
@@ -397,6 +404,48 @@ export const reasoningProviderPolicies = [
       "model_output_used_as_source_of_truth"
     ],
     sourceIds: ["deepseek-reasoning-model", "deepseek-json-output", "deepseek-function-calling"]
+  },
+  {
+    id: "deepseek_web_chat_manual",
+    provider: "deepseek",
+    accessMode: "manual_web_login",
+    advisoryTrustTier: "comparison_only",
+    advisoryWeight: 38,
+    contextScope:
+      "tiny redacted manual web-chat packet through chat.deepseek.com after browser-login availability is verified; no broad private repository context",
+    bestFor: [
+      "free web-chat second opinion",
+      "Quick mode low-latency advisory",
+      "Expert mode reasoning advisory",
+      "manual prompt critique"
+    ],
+    avoidFor: [
+      "CLI or API automation",
+      "routine local loops",
+      "broad private repository context",
+      "headless browser automation as a stable runtime",
+      "final approval"
+    ],
+    requiredChecks: [
+      "provider_availability_verified",
+      "free_tier_or_no_cost_confirmed",
+      "authentication_state_verified_without_token_disclosure",
+      "controlled_browser_evidence_required",
+      "fresh_chat_started_for_each_mode_test",
+      "redacted_context_only",
+      "prompt_packet_bounded",
+      "local_verification_required"
+    ],
+    stopConditions: [
+      "provider_availability_unverified",
+      "authentication_missing",
+      "browser_session_unavailable",
+      "mode_switch_unverified",
+      "private_data_not_redacted",
+      "broad_private_context_sent_to_lower_trust_model",
+      "model_output_used_as_source_of_truth"
+    ],
+    sourceIds: ["deepseek-web-chat", "deepseek-thinking-mode", "deepseek-first-api-call", "deepseek-deepcode-integration"]
   }
 ] as const satisfies readonly ReasoningProviderPolicy[];
 
@@ -446,7 +495,13 @@ export const reasoningTaskLanePolicies = [
   {
     id: "architecture_security_review",
     taskSignals: ["architecture", "security", "audit", "threat", "privacy", "edge case"],
-    preferredProviders: ["openai_gpt", "anthropic_claude_subscription", "gemini_cli", "deepseek_api_or_self_hosted"],
+    preferredProviders: [
+      "openai_gpt",
+      "anthropic_claude_subscription",
+      "gemini_cli",
+      "deepseek_api_or_self_hosted",
+      "deepseek_web_chat_manual"
+    ],
     requiredChecks: ["redacted_context_only", "independent_review", "factual_claims_verified", "local_verification_required"],
     stopConditions: ["model_output_used_as_source_of_truth", "private_data_not_redacted"]
   },
@@ -634,7 +689,11 @@ function selectAdvisoryProviders(
     }
 
     if (provider === "deepseek_api_or_self_hosted") {
-      return hasAny(normalizedTask, ["deepseek", "json", "function calling", "cost aware"]);
+      return hasAny(normalizedTask, ["deepseek", "json", "function calling", "cost aware", "api", "self hosted"]);
+    }
+
+    if (provider === "deepseek_web_chat_manual") {
+      return hasAny(normalizedTask, ["deepseek", "web chat", "web login", "manual", "quick", "expert", "free"]);
     }
 
     return provider === "gemini_cli" || provider === "qwen_local" || provider === "deterministic_tools";

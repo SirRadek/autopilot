@@ -21,6 +21,15 @@ signals:
   - context7
   - handoff clarity
   - codex workflow
+  - advisory model run
+  - provider run
+  - runner artifact
+  - runner log
+  - cli error
+  - cli syntax error
+  - prompt only
+  - no model output
+  - missing model output
 related_agents:
   - architect
   - qa
@@ -44,6 +53,10 @@ related_files:
 required_checks:
   - model_output_scored_before_acceptance
   - score_dimensions_recorded
+  - runner_artifact_contract_verified
+  - provider_run_status_recorded
+  - model_output_presence_verified
+  - blocked_state_recorded_when_output_missing
   - caveman_or_token_efficiency_route_selected
   - provider_best_practice_sources_checked
   - context7_or_official_docs_verified
@@ -59,6 +72,10 @@ required_checks:
   - source_pointers_recorded
 stop_conditions:
   - output_accepted_without_score
+  - provider_run_failed_without_blocked_state
+  - model_output_missing_from_artifact
+  - advisory_workflow_continued_after_provider_error
+  - prompt_or_runner_log_treated_as_model_output
   - score_dimensions_missing
   - bad_output_retried_without_prompt_or_input_delta
   - repeated_bad_output_without_model_or_reasoning_review
@@ -73,11 +90,13 @@ stop_conditions:
   - automation_runtime_added_without_architecture_decision
 must_not_assume:
   - Do not treat raw model output as a prompt or routing authority.
+  - Do not treat a provider runner log, prompt echo, shell transcript, or CLI error as model output.
   - Do not change prompt defaults without an eval record, source pointer, and rollback path.
   - Do not change model/reasoning route after one bad output unless a blocker or safety failure requires it.
   - Do not store raw private context, raw logs, secrets, or customer data in eval records.
 objective:
   - Add a scoring and tuning loop for model output while keeping the control plane report-first.
+  - Block advisory workflows when provider execution failed, output is missing, or the artifact contains only a prompt/log transcript.
   - Use Caveman/compact routing, Context7 or official docs, provider best practices, and plugin/skill compatibility checks before prompt/input changes.
   - During learning, immediately tune and rerun poor outputs until acceptable or blocked.
   - After repeated similar failures, reroute reasoning/model selection through verified provider guidance and local tests.

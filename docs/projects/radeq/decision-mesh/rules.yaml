@@ -1,4 +1,40 @@
 rules:
+  - id: RAD-OFFER-001
+    title: Primary offer is complete websites
+    applies_to:
+      - offer_positioning_conversion
+      - static_public_site
+    instruction: "The first public homepage direction must focus on complete websites for small businesses: structure, content, design, implementation, performance/SEO basics, and clear handoff. Do not narrow the primary positioning to WordPress/WooCommerce repairs unless the owner explicitly changes scope."
+    severity: blocker
+  - id: RAD-OFFER-002
+    title: Paid entry product and CTA need owner lock
+    applies_to:
+      - offer_positioning_conversion
+      - lead_capture_pipeline
+    instruction: "The homepage and lead path must use an owner-approved paid entry product and CTA for the complete-website path before implementation. Do not treat the prior under-5000-CZK repair/check package as locked."
+    severity: blocker
+  - id: RAD-OFFER-003
+    title: Broader services remain secondary
+    applies_to:
+      - offer_positioning_conversion
+      - seo_performance_surface
+    instruction: "SEO, automation, AI helpers, PC support, migrations, Shopify, WordPress, WooCommerce, and broader custom work may appear only as secondary or implementation-specific paths until the complete-website offer is clear."
+    severity: major
+  - id: RAD-OFFER-004
+    title: Public effects do not replace positioning
+    applies_to:
+      - offer_positioning_conversion
+      - static_public_site
+      - three_d_mascot_addon
+    instruction: "A/B/C/D visual variants, demo shop, and 3D mascot are proof or review mechanisms; they must not become the main public decision path on the homepage."
+    severity: major
+  - id: RAD-OFFER-005
+    title: Safety proof is part of the offer
+    applies_to:
+      - offer_positioning_conversion
+      - lead_capture_pipeline
+    instruction: "Complete-website copy must include proof of safe process: scope clarity, content/SEO structure, technical implementation, testing, performance/accessibility checks, and clear handoff. Risky recovery, payment, large migration, or complex ecommerce promises require a separate owner-approved scope."
+    severity: major
   - id: RAD-STATIC-001
     title: Core content remains static-readable
     applies_to:

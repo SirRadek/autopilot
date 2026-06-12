@@ -1,0 +1,140 @@
+{
+  "record_version": "v0.1",
+  "eval_id": "radeq-static-ukazky-planning-2026-06-12",
+  "created": "2026-06-12",
+  "project": {
+    "slug": "radeq",
+    "name": "Radeq.cz",
+    "control_plane": false
+  },
+  "task": {
+    "task_type": "planning",
+    "summary": "Evaluate the multi-agent and external-model planning output for static Radeq /ukazky pages: chatbot/pruvodce, automation, and offer/e-shop examples with security and data-protection constraints.",
+    "risk_level": "medium"
+  },
+  "phase": "learning_immediate_loop",
+  "state": "accepted",
+  "model_or_worker": {
+    "provider": "unknown",
+    "name": "Codex supervisor, Codex GPT agents, Claude CLI, Gemini CLI, and Decision Mesh",
+    "role": "implementation planning and advisory review"
+  },
+  "reasoning_profile": {
+    "route": "subscription_cli",
+    "reasoning_effort": "medium",
+    "change_policy": "Use as an implementation plan only after owner approves the recorded gates; product code changes remain blocked until approval."
+  },
+  "token_efficiency_profile": {
+    "mode": "relevant_subgraph",
+    "context_scope": "Repo file map, targeted product files/tests, prior agent summaries, redacted external-model prompt packets, and Radeq project mesh packet.",
+    "caveman_applied": true
+  },
+  "provider_best_practice_sources": [
+    "anthropic-prompting-best-practices",
+    "autopilot-supervisor-base",
+    "decision-mesh-policy",
+    "gemini-prompt-design-strategies",
+    "openai-evals",
+    "prompt-library-policy"
+  ],
+  "input_packet_summary": {
+    "summary": "A bounded Radeq planning packet covering static Astro/GitHub Pages constraints, first-wave /ukazky routes, no-model chatbot boundaries, prior advisory findings, and owner stop conditions.",
+    "allowed_context": [
+      "public-safe route strategy",
+      "repo file map and test scripts",
+      "prior GPT agent summaries",
+      "redacted Claude and Gemini advisory prompts",
+      "Radeq project mesh rules"
+    ],
+    "forbidden_context": [
+      "raw prompts",
+      "raw private logs",
+      "secrets",
+      "customer data",
+      "private client examples",
+      "raw authentication state",
+      "raw model output as source of truth"
+    ],
+    "source_pointers": [
+      "docs/superpowers/plans/2026-06-12-radeq-static-ukazky.md",
+      "docs/projects/radeq/work-log.md",
+      "mcp__autopilot_decision_mesh.build_project_mesh_packet",
+      "C:/Users/sirok/Documents/Projects/radeq/package.json",
+      "C:/Users/sirok/Documents/Projects/radeq/src/pages/demo/[module].astro",
+      "C:/Users/sirok/Documents/Projects/radeq/tests/smoke.spec.ts"
+    ]
+  },
+  "output_pointer": {
+    "kind": "local_file",
+    "pointer": "docs/superpowers/plans/2026-06-12-radeq-static-ukazky.md",
+    "summary": "Accepted planning synthesis: implement /ukazky as Czech static Astro pages with typed data, a local rule-based chatbot island, explicit security copy, sitemap/test coverage, and owner gates for navigation, language scope, email/provider work, and demo-route migration."
+  },
+  "score_by_dimension": {
+    "task_fit": 94,
+    "instruction_following": 92,
+    "source_grounding": 88,
+    "format_contract": 90,
+    "verification_readiness": 92,
+    "privacy_safety": 97,
+    "handoff_clarity": 94,
+    "token_efficiency": 84,
+    "workflow_compatibility": 92
+  },
+  "failure_labels": [],
+  "prompt_or_input_delta": {
+    "changed": true,
+    "summary": "The prompt packet was narrowed after owner clarified that the chatbot should remain static/rule-based and that AI should be framed only as an adjacent possibility.",
+    "changed_fields": [
+      "chatbot capability boundary",
+      "owner gates",
+      "parallel workstream split",
+      "test strategy",
+      "external advisory handling"
+    ],
+    "rollback_path": "Remove this eval and the related plan/work-log entries if owner rejects the static /ukazky implementation direction."
+  },
+  "rerun_count": 2,
+  "accepted_state": "accepted",
+  "verification_evidence": [
+    {
+      "type": "source_check",
+      "status": "passed",
+      "evidence": "Product repo file map, package scripts, Astro routes, BaseLayout, sitemap, and existing Playwright/Vitest tests were inspected read-only before planning.",
+      "source_pointer": "C:/Users/sirok/Documents/Projects/radeq"
+    },
+    {
+      "type": "mesh_route",
+      "status": "passed",
+      "evidence": "Radeq project mesh packet identified static public site, offer positioning, SEO, lead capture, runtime observability, and 3D mascot constraints; plan includes relevant owner gates and stop conditions.",
+      "source_pointer": "mcp__autopilot_decision_mesh.build_project_mesh_packet"
+    },
+    {
+      "type": "manual_review",
+      "status": "passed",
+      "evidence": "Four Codex GPT agents produced independent read-only plans covering IA, chatbot architecture, security/privacy, and QA; outputs converged on static pages, no-model chatbot, explicit handoff, and tests.",
+      "source_pointer": "docs/projects/radeq/work-log.md#2026-06-12-static-ukazky-implementation-planning"
+    },
+    {
+      "type": "command",
+      "status": "passed",
+      "evidence": "Claude CLI and Gemini CLI were invoked with redacted advisory prompts; Gemini capacity limitations were recorded and lower-confidence generic output was not treated as source of truth.",
+      "source_pointer": "claude -p; gemini.cmd --prompt"
+    }
+  ],
+  "source_pointers": [
+    "docs/autopilot/model-output-evaluation-operating-model.md",
+    "src/data/delivery-system/modelOutputEvaluation.ts",
+    "docs/projects/radeq/work-log.md",
+    "docs/superpowers/plans/2026-06-12-radeq-static-ukazky.md",
+    "docs/projects/radeq/decision-mesh/rules.yaml",
+    "prompt-library/source-catalog.json"
+  ],
+  "privacy_review": {
+    "redacted_context_only": true,
+    "raw_output_stored": false,
+    "raw_prompt_stored": false,
+    "raw_logs_stored": false,
+    "secrets_or_customer_data_stored": false,
+    "reviewer": "codex-supervisor"
+  }
+}

@@ -1,0 +1,127 @@
+{
+  "record_version": "v0.1",
+  "eval_id": "radeq-chatbot-security-examples-brainstorm-2026-06-12",
+  "created": "2026-06-12",
+  "project": {
+    "slug": "radeq",
+    "name": "Radeq.cz",
+    "control_plane": false
+  },
+  "task": {
+    "task_type": "brainstorming",
+    "summary": "Evaluate cross-model advisory output after the owner clarified that the chatbot demo must be static/rule-based and AI should be framed as an adjacent possibility, with emphasis on security, data protection, and time/money savings.",
+    "risk_level": "medium"
+  },
+  "phase": "learning_immediate_loop",
+  "state": "accepted",
+  "model_or_worker": {
+    "provider": "unknown",
+    "name": "Codex GPT agents, Claude CLI, Gemini CLI, and Decision Mesh",
+    "role": "cross-model examples and chatbot positioning advisory"
+  },
+  "reasoning_profile": {
+    "route": "subscription_cli",
+    "reasoning_effort": "model_default",
+    "change_policy": "Use as advisory positioning only; implementation still requires an approved spec and local verification."
+  },
+  "token_efficiency_profile": {
+    "mode": "relevant_subgraph",
+    "context_scope": "Redacted examples strategy, previous agent notes, static chatbot constraint, and compact Decision Mesh guidance.",
+    "caveman_applied": true
+  },
+  "provider_best_practice_sources": [
+    "anthropic-prompting-best-practices",
+    "autopilot-supervisor-base",
+    "decision-mesh-policy",
+    "gemini-prompt-design-strategies",
+    "openai-evals",
+    "prompt-library-policy"
+  ],
+  "input_packet_summary": {
+    "summary": "A bounded Radeq examples packet covering the owner correction, prior GPT agent findings, Claude/Gemini advisory prompts, and the no-LLM static chatbot constraint.",
+    "allowed_context": [
+      "owner route correction",
+      "prior agent summaries",
+      "public-safe examples strategy",
+      "static chatbot and email handoff constraint"
+    ],
+    "forbidden_context": [
+      "raw prompts",
+      "raw private logs",
+      "secrets",
+      "customer data",
+      "private client examples",
+      "raw authentication state"
+    ],
+    "source_pointers": [
+      "docs/projects/radeq/work-log.md",
+      "mcp__autopilot_decision_mesh.get_relevant_subgraph",
+      "mcp__autopilot_decision_mesh.select_reasoning_model_route"
+    ]
+  },
+  "output_pointer": {
+    "kind": "work_log_entry",
+    "pointer": "docs/projects/radeq/work-log.md#2026-06-12-chatbot-and-data-safe-automation-examples-brainstorm",
+    "summary": "Accepted synthesis: first wave should use a static chatbot/pruvodce demo, automation and e-shop offer examples, while AI is described as an optional light extension and data safety is a repeated trust layer."
+  },
+  "score_by_dimension": {
+    "task_fit": 92,
+    "instruction_following": 90,
+    "source_grounding": 86,
+    "format_contract": 84,
+    "verification_readiness": 86,
+    "privacy_safety": 96,
+    "handoff_clarity": 92,
+    "token_efficiency": 84,
+    "workflow_compatibility": 90
+  },
+  "failure_labels": [],
+  "prompt_or_input_delta": {
+    "changed": true,
+    "summary": "The input changed from AI-helper/RAG-like wording to a static chatbot/pruvodce with prepared rules, small database, and explicit email handoff.",
+    "changed_fields": [
+      "route naming",
+      "chatbot capability boundary",
+      "security positioning",
+      "first-wave examples"
+    ],
+    "rollback_path": "Remove this eval and work-log entry if the owner decides to ship a model-backed assistant instead."
+  },
+  "rerun_count": 2,
+  "accepted_state": "accepted",
+  "verification_evidence": [
+    {
+      "type": "manual_review",
+      "status": "passed",
+      "evidence": "Codex GPT agents, Claude CLI, and Gemini CLI converged that the helper should be bounded and that AI language must not overpromise a static rule-based demo.",
+      "source_pointer": "docs/projects/radeq/work-log.md#2026-06-12-chatbot-and-data-safe-automation-examples-brainstorm"
+    },
+    {
+      "type": "mesh_route",
+      "status": "passed",
+      "evidence": "Decision Mesh selected external advisory review and bot/data/security constraints, with redacted context only.",
+      "source_pointer": "mcp__autopilot_decision_mesh.select_reasoning_model_route"
+    },
+    {
+      "type": "command",
+      "status": "passed",
+      "evidence": "Claude and Gemini CLI availability was verified; Gemini required a .cmd wrapper because PowerShell script execution was blocked.",
+      "source_pointer": "Get-Command claude; Get-Command gemini.cmd"
+    }
+  ],
+  "source_pointers": [
+    "docs/autopilot/model-output-evaluation-operating-model.md",
+    "src/data/delivery-system/modelOutputEvaluation.ts",
+    "docs/projects/radeq/work-log.md",
+    "docs/projects/radeq/decision-mesh/rules.yaml",
+    "prompt-library/source-catalog.json"
+  ],
+  "privacy_review": {
+    "redacted_context_only": true,
+    "raw_output_stored": false,
+    "raw_prompt_stored": false,
+    "raw_logs_stored": false,
+    "secrets_or_customer_data_stored": false,
+    "reviewer": "codex-supervisor"
+  }
+}

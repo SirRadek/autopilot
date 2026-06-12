@@ -120,6 +120,14 @@ Required checks:
 
 Free cloud advisory output is never source of truth and never approval evidence by itself.
 
+Provider execution evidence is separate from model output. A command transcript,
+prompt echo, CLI syntax error, trust-flag failure, login failure, or provider
+availability failure is a provider runner artifact, not an advisory answer.
+When a runner artifact does not contain model output, the workflow must set
+`blocked` or `waiting_owner` and stop before content review. Do not silently
+drop the unavailable provider from a multi-model advisory request unless the
+owner changes scope.
+
 ## Reasoning Agent Routing Mesh
 
 Reasoning routing is a lane decision first and a provider decision second.
@@ -148,6 +156,7 @@ Provider policies:
 | `anthropic_claude_subscription` | subscription interactive | high-trust architecture/security/planning critique, broad repo-read review after owner scope, and agent validation | subscription entitlement, no API-credit claim, redaction, no secrets/customer data/raw logs |
 | `gemini_cli` | Google AI subscription CLI | standard advisory long-context brainstorming, multimodal critique, edge cases | subscription/license entitlement, no API-key claim, selected redacted context, ideas labeled until verified |
 | `deepseek_api_or_self_hosted` | API or self-hosted | JSON/reasoning comparison and cost-aware critique | hosted cost or self-hosting checks, official docs, minimal redacted context |
+| `deepseek_web_chat_manual` | manual web login | free web-chat second opinion, Quick mode sanity checks, Expert mode reasoning critique | logged-in browser session, fresh chat per prompt, selected mode, redacted packet, controlled browser evidence |
 
 Gemini and Claude brainstorming output remains advisory. It can propose options,
 risks, and critique, but any factual, API, library, model, pricing, or tool-use
@@ -202,6 +211,12 @@ Use free/no-cost cloud advisory models for:
 - agent validation
 - research synthesis
 
+Use manual web-login advisory providers for:
+
+- DeepSeek web chat manual second opinion
+- DeepSeek Quick mode low-latency advice
+- DeepSeek Expert mode reasoning advice
+
 Use subscription-interactive providers for:
 
 - Gemini CLI advisory through Google AI subscription or license entitlement
@@ -237,6 +252,10 @@ Use frontier reasoning only when:
 - final independent review is needed
 
 Stop if provider availability is unverified, if free/no-cost use is unconfirmed for a free route, if a routine local-worker task depends on a non-local model, if paid credits are required, or if model choice affects risk without disclosure.
+
+For DeepSeek web chat, stop if browser login is missing, the browser session is
+unavailable, the Quick/Expert mode switch cannot be verified, the packet is not
+redacted and bounded, or the output would be treated as source of truth.
 
 For subscription tools, stop if subscription entitlement is unverified or if the
 task silently switches into an API-credit path. For API/self-hosted providers,
@@ -274,12 +293,16 @@ Learning-loop rule:
 1. Score output by task fit, instruction following, source grounding, format
    contract, verification readiness, privacy/safety, handoff clarity, token
    efficiency, and workflow compatibility.
-2. If the score is weak, select Caveman or compact routing before adding more
+2. Before scoring, verify the provider run status, runner artifact type, and
+   model-output presence.
+3. If the provider run failed, output is missing, or the artifact is prompt/log
+   only, set `blocked` or `waiting_owner` and do not review content.
+4. If the score is weak, select Caveman or compact routing before adding more
    context or model spend.
-3. Verify provider-specific prompt or reasoning claims through Context7 when
+5. Verify provider-specific prompt or reasoning claims through Context7 when
    connected, otherwise official provider docs.
-4. Record the exact prompt or input-packet delta.
-5. Rerun until the output is acceptable or blocked.
+6. Record the exact prompt or input-packet delta.
+7. Rerun until the output is acceptable or blocked.
 
 Repeated-failure rule:
 
@@ -425,6 +448,76 @@ Gemini has lower advisory weight than scoped Claude Code subscription review and
 higher advisory weight than Qwen or DeepSeek drafts. It should receive selected
 redacted packets rather than broad private repository context by default.
 
+## DeepSeek Web Chat Policy
+
+DeepSeek has two separate Autopilot paths:
+
+1. `deepseek_web_chat_manual`: manual free web-chat advisory through
+   `https://chat.deepseek.com/`.
+2. `deepseek_api_or_self_hosted`: API or self-hosted provider use.
+
+The manual web-chat path is allowed only as an external opinion. It is not a
+CLI, API runtime, connector, stable headless browser contract, default worker,
+approval authority, or source of truth. Official DeepSeek docs describe free web
+access from the public product page, while API and terminal-agent integrations
+require an API key and token/cost checks.
+
+Manual web-chat workflow:
+
+1. Use the Browser plugin and open `https://chat.deepseek.com/`.
+2. Verify a logged-in chat session without reading, printing, or storing
+   credentials, tokens, cookies, or account identifiers.
+3. Start a fresh chat for every advisory request.
+4. Select `Rychlý` / Quick or `Expert` before sending the prompt.
+5. For mode tests, run two fresh chats: one Quick, one Expert, and verify the
+   post-send chat header.
+6. Treat `Hluboké přemýšlení` / deep thinking as a separate UI control; Expert
+   may enable it, but Quick can also show thinking if the control is left on.
+7. Paste only the bounded redacted packet from
+   `prompt-library/07-deepseek/manual-web-advisory.md`.
+8. Normalize the answer into advisory ideas, risks, assumptions, and
+   verification needs before any local plan uses it.
+
+Prompt input shape:
+
+```md
+# DeepSeek Advisory Packet
+
+Role: external advisory reviewer.
+Authority: advisory only. Do not approve implementation and do not treat your
+answer as source of truth.
+
+Mode requested: Quick | Expert.
+Task:
+-
+
+Verified facts:
+-
+
+Assumptions:
+-
+
+Constraints:
+- no secrets, credentials, customer data, raw logs, private identifiers, or full
+  repository dumps
+- keep the answer concise
+- mark factual, API, library, pricing, security, or implementation claims as
+  verification_needed unless already proven in the packet
+
+Output format:
+1. Short answer
+2. Risks or objections
+3. Better alternative if any
+4. What must be verified locally or in official docs
+5. Advisory verdict: use | do_not_use | needs_more_evidence
+```
+
+If the owner asks for a DeepSeek opinion without a concrete prompt, build the
+smallest safe fallback packet from local evidence: one task, at least one
+verified fact with a source pointer, one assumption, one concrete question, and
+the output format above. If that cannot be filled safely, ask the owner for a
+bounded prompt instead of sending a broad request.
+
 ## Claude Code Policy
 
 Claude Code is registered as an optional subscription-interactive advisory
@@ -502,6 +595,8 @@ Autopilot distinguishes:
 - session-callable plugins exposed in the current Codex session
 - local skills listed in the current session
 - cached plugin bundles found on disk but not exposed as callable tools
+- model provider policy records such as DeepSeek that exist in mesh/model
+  routing but are not active credentials or runtime connectors by themselves
 
 Current inventory is captured in `src/data/delivery-system/toolInventory.ts` and
 exposed by the read-only MCP tool `select_tool_inventory_route`.
@@ -511,8 +606,23 @@ Rules:
 - Use current session callable plugins before cached-only bundles.
 - Use `tool_search` for deferred MCP tools when the task names a plugin capability.
 - Do not claim a cached plugin is callable until it is surfaced by active tools or `tool_search`.
+- Do not claim a provider-policy record is connected until credentialed runtime
+  access is separately verified without exposing secrets.
 - Read the relevant `SKILL.md` before applying a skill workflow.
 - Treat connector/provider output as advisory until verified by local files, official docs, tests, or connector evidence.
+
+DeepSeek is registered as `provider_policy_only` inventory. That means the
+mesh can route DeepSeek JSON, reasoning-model, function-calling, and
+cost-aware comparison requests to the right checks, but actual DeepSeek use
+remains blocked until provider availability, cost or self-hosting, redacted
+context, and official-provider-doc checks pass.
+
+DeepSeek web chat is separately registered as a manual web-login advisory path.
+It was verified on 2026-06-11 in the in-app Browser with fresh Quick and Expert
+chats. It remains provider-policy inventory, not a callable runtime connector.
+Quick/Expert selection must happen before sending the prompt in a fresh chat;
+hidden/headless browser automation is not treated as a stable command-line
+interface.
 
 Cached-only examples observed on 2026-06-11 include ClickUp, Shopify, Remotion,
 and OpenAI Developers bundles. They are installation or availability leads, not

@@ -31,6 +31,7 @@ prompt-library/
   04-qwen-local/
   05-evaluation/
   06-supervisor/
+  07-deepseek/
   prompt.schema.json
   source-catalog.md
   source-catalog.json
@@ -65,6 +66,10 @@ IDs; `source-catalog.md` remains the human-readable source policy.
 - For Gemini, send a compact redacted advisory packet. Use
   `02-gemini/input-packet-template.md`; for RadeQ design work use
   `02-gemini/radeq-design-brainstorming.md`.
+- For DeepSeek free web-chat advisory, use
+  `07-deepseek/manual-web-advisory.md`. Start a fresh chat, select Quick or
+  Expert before sending, keep the packet redacted, and treat the answer as
+  advisory only.
 - For supervised projects, use a prompt stack: shared supervisor base prompt
   first, then a short project-specific task prompt, then the owner's current
   instruction.

@@ -20,6 +20,10 @@ export type ModelOutputScoreDimension =
 
 export type ModelProviderFamily = "openai" | "anthropic" | "google" | "qwen" | "deepseek" | "local" | "unknown";
 
+export type ModelProviderRunStatus = "not_run" | "succeeded" | "failed" | "unknown";
+
+export type ModelOutputArtifactKind = "model_output" | "runner_log" | "prompt_only" | "mixed_log" | "unknown";
+
 export interface ModelOutputEvaluationPolicy {
   readonly sourceOfTruth: "local_eval_records_and_verified_outputs";
   readonly defaultPhase: ModelOutputEvaluationPhase;
@@ -41,6 +45,9 @@ export interface ModelOutputEvaluationRouteInput {
   readonly repeatedFailures?: number | undefined;
   readonly provider?: ModelProviderFamily | undefined;
   readonly phase?: ModelOutputEvaluationPhase | undefined;
+  readonly runnerStatus?: ModelProviderRunStatus | undefined;
+  readonly artifactKind?: ModelOutputArtifactKind | undefined;
+  readonly outputPresent?: boolean | undefined;
 }
 
 export interface ModelOutputEvaluationRouteResult {
@@ -102,6 +109,10 @@ export const modelOutputEvaluationPolicy = {
   requiredChecks: [
     "model_output_scored_before_acceptance",
     "score_dimensions_recorded",
+    "runner_artifact_contract_verified",
+    "provider_run_status_recorded",
+    "model_output_presence_verified",
+    "blocked_state_recorded_when_output_missing",
     "caveman_or_token_efficiency_route_selected",
     "provider_best_practice_sources_checked",
     "context7_or_official_docs_verified",
@@ -116,6 +127,10 @@ export const modelOutputEvaluationPolicy = {
   ],
   stopConditions: [
     "output_accepted_without_score",
+    "provider_run_failed_without_blocked_state",
+    "model_output_missing_from_artifact",
+    "advisory_workflow_continued_after_provider_error",
+    "prompt_or_runner_log_treated_as_model_output",
     "score_dimensions_missing",
     "bad_output_retried_without_prompt_or_input_delta",
     "repeated_bad_output_without_model_or_reasoning_review",
@@ -146,7 +161,14 @@ export function selectModelOutputEvaluationRoute(
   const repeatedFailures = input.repeatedFailures ?? inferRepeatedFailures(normalizedTask);
   const score = input.score;
   const provider = input.provider ?? inferProvider(normalizedTask);
-  const qualityState = selectQualityState(score, repeatedFailures, normalizedTask);
+  const qualityState = selectQualityState(
+    score,
+    repeatedFailures,
+    normalizedTask,
+    input.runnerStatus,
+    input.artifactKind,
+    input.outputPresent
+  );
 
   return {
     phase,
@@ -176,8 +198,15 @@ function selectPhase(normalizedTask: string, explicitPhase?: ModelOutputEvaluati
 function selectQualityState(
   score: number | undefined,
   repeatedFailures: number,
-  normalizedTask: string
+  normalizedTask: string,
+  runnerStatus?: ModelProviderRunStatus,
+  artifactKind?: ModelOutputArtifactKind,
+  outputPresent?: boolean
 ): ModelOutputQualityState {
+  if (hasRunnerArtifactBlocker(normalizedTask, runnerStatus, artifactKind, outputPresent)) {
+    return "blocked";
+  }
+
   if (hasAny(normalizedTask, ["blocked", "missing source", "missing owner", "secret", "private data"])) {
     return "blocked";
   }
@@ -249,7 +278,13 @@ function nextActionsForState(
   }
 
   if (qualityState === "blocked") {
-    return ["record_blocker_owner_or_source_needed", "do_not_rerun_until_missing_context_or_privacy_issue_is_resolved"];
+    return [
+      "record_provider_run_artifact",
+      "verify_model_output_presence",
+      "set_progress_blocked_or_waiting_owner",
+      "record_blocker_owner_or_source_needed",
+      "do_not_rerun_until_missing_context_or_privacy_issue_is_resolved"
+    ];
   }
 
   if (phase === "weekly_batch_tuning") {
@@ -257,6 +292,41 @@ function nextActionsForState(
   }
 
   return ["score_output_by_dimension", "adjust_prompt_or_input_packet", "rerun_same_route_once", "record_delta_and_result"];
+}
+
+function hasRunnerArtifactBlocker(
+  normalizedTask: string,
+  runnerStatus?: ModelProviderRunStatus,
+  artifactKind?: ModelOutputArtifactKind,
+  outputPresent?: boolean
+): boolean {
+  if (runnerStatus === "failed" || runnerStatus === "not_run") {
+    return true;
+  }
+
+  if (outputPresent === false) {
+    return true;
+  }
+
+  if (artifactKind === "runner_log" || artifactKind === "prompt_only" || artifactKind === "mixed_log") {
+    return true;
+  }
+
+  return hasAny(normalizedTask, [
+    "cli syntax error",
+    "command failed",
+    "provider unavailable",
+    "provider availability unverified",
+    "runner log",
+    "prompt only",
+    "no model output",
+    "missing model output",
+    "model output missing",
+    "output missing",
+    "incomplete output",
+    "invalid artifact",
+    "trust flag failed"
+  ]);
 }
 
 function promptTuningActions(provider: ModelProviderFamily): string[] {

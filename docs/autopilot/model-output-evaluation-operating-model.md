@@ -57,6 +57,33 @@ During the learning phase:
 Do not rerun the same model with the same prompt/input unless the reason is
 recorded.
 
+## Provider Run Artifact Gate
+
+External advisory providers have two separate artifacts:
+
+1. the provider runner artifact: command/tool, status, stdout/stderr summary,
+   prompt pointer, mode, and provider availability evidence
+2. the model output artifact: the actual advisory answer to evaluate
+
+The provider runner artifact is not model output. Shell transcripts, prompt
+echoes, CLI syntax errors, trust-flag errors, login failures, and provider
+availability failures must be recorded as control-plane diagnostics.
+
+If provider execution failed, the artifact is prompt/log-only, or no model
+output is present, Autopilot must set `blocked` or `waiting_owner` and stop
+content review. It may not silently drop the provider, continue with a narrower
+multi-model brainstorm, or pass the raw runner log as the next prompt.
+
+Minimum run fields:
+
+- provider and access path
+- command or manual workflow pointer
+- run status
+- artifact kind: `model_output`, `runner_log`, `prompt_only`, `mixed_log`, or
+  `unknown`
+- whether model output is present
+- blocking stop condition or owner/external dependency when output is missing
+
 ## Weekly Tuning
 
 After enough eval records exist, routine prompt and input tuning should move to

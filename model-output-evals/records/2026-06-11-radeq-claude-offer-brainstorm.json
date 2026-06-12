@@ -1,0 +1,117 @@
+{
+  "record_version": "v0.1",
+  "eval_id": "radeq-claude-offer-brainstorm-2026-06-11",
+  "created": "2026-06-11",
+  "project": {
+    "slug": "radeq",
+    "name": "Radeq.cz",
+    "control_plane": false
+  },
+  "task": {
+    "task_type": "brainstorming",
+    "summary": "Evaluate Claude advisory output for Radeq public offer positioning after a failed first handoff.",
+    "risk_level": "medium"
+  },
+  "phase": "learning_immediate_loop",
+  "state": "accepted",
+  "model_or_worker": {
+    "provider": "anthropic",
+    "name": "Claude Code subscription CLI",
+    "role": "external advisory reviewer"
+  },
+  "reasoning_profile": {
+    "route": "subscription_cli",
+    "reasoning_effort": "model_default",
+    "change_policy": "Use only as advisory input; local project mesh and owner decisions remain source of truth."
+  },
+  "token_efficiency_profile": {
+    "mode": "caveman",
+    "context_scope": "Compact public-safe positioning packet only; no local files, secrets, customer data, or raw project logs.",
+    "caveman_applied": true
+  },
+  "provider_best_practice_sources": [
+    "anthropic-evals",
+    "anthropic-prompting-best-practices"
+  ],
+  "input_packet_summary": {
+    "summary": "A redacted Radeq offer-positioning packet covering target audience, owner-safe experience, complete-website focus, secondary digitalization services, and requested Czech critique format.",
+    "allowed_context": [
+      "public preview URL",
+      "public-safe owner skill summary",
+      "Radeq complete-website positioning summary",
+      "current recommended offer hypothesis"
+    ],
+    "forbidden_context": [
+      "raw prompts",
+      "raw model output",
+      "raw project logs",
+      "secrets",
+      "customer data",
+      "private local file paths"
+    ],
+    "source_pointers": [
+      "docs/projects/radeq/architecture.md",
+      "docs/projects/radeq/work-log.md",
+      "docs/projects/radeq/decision-mesh/"
+    ]
+  },
+  "output_pointer": {
+    "kind": "mcp_tool_result",
+    "pointer": "current-session:claude-radeq-offer-advisory-summary",
+    "summary": "Accepted advisory summary: narrow the hero to client peace of mind, lead with a functional complete website, show model solutions instead of client case studies, and add pricing/package clarity."
+  },
+  "score_by_dimension": {
+    "task_fit": 90,
+    "instruction_following": 88,
+    "source_grounding": 84,
+    "format_contract": 88,
+    "verification_readiness": 86,
+    "privacy_safety": 95,
+    "handoff_clarity": 90,
+    "token_efficiency": 86,
+    "workflow_compatibility": 85
+  },
+  "failure_labels": [],
+  "prompt_or_input_delta": {
+    "changed": true,
+    "summary": "First Claude attempt requested WebFetch and did not answer. The retry removed URL browsing, sent context through stdin, and requested direct Czech output from the supplied packet only.",
+    "changed_fields": [
+      "transport",
+      "tool_access",
+      "format_contract",
+      "context_scope"
+    ],
+    "rollback_path": "Use the original public-safe offer packet and omit this eval record if the advisory summary is not used."
+  },
+  "rerun_count": 1,
+  "accepted_state": "accepted",
+  "verification_evidence": [
+    {
+      "type": "mesh_route",
+      "status": "passed",
+      "evidence": "Decision Mesh model-output route classified the accepted Claude retry as accepted at score 88.",
+      "source_pointer": "mcp__autopilot_decision_mesh.select_model_output_e_988a2f660b90"
+    },
+    {
+      "type": "manual_review",
+      "status": "passed",
+      "evidence": "Output matched the complete-website direction and did not rely on unsupported client-project claims.",
+      "source_pointer": "docs/projects/radeq/decision-mesh/rules.yaml"
+    }
+  ],
+  "source_pointers": [
+    "docs/autopilot/model-output-evaluation-operating-model.md",
+    "src/data/delivery-system/modelOutputEvaluation.ts",
+    "docs/projects/radeq/architecture.md",
+    "docs/projects/radeq/decision-mesh/rules.yaml",
+    "prompt-library/source-catalog.json"
+  ],
+  "privacy_review": {
+    "redacted_context_only": true,
+    "raw_output_stored": false,
+    "raw_prompt_stored": false,
+    "raw_logs_stored": false,
+    "secrets_or_customer_data_stored": false,
+    "reviewer": "codex-supervisor"
+  }
+}

@@ -19,6 +19,7 @@ describe("prompt library validation", () => {
     expect(report.checkedFiles).toContain("prompt-library/source-catalog.schema.json");
     expect(report.checkedFiles).toContain("prompt-library/source-catalog.json");
     expect(report.checkedFiles).toContain("prompt-library/02-gemini/input-packet-template.md");
+    expect(report.checkedFiles).toContain("prompt-library/07-deepseek/manual-web-advisory.md");
   });
 
   it("formats validation reports for CLI output", () => {

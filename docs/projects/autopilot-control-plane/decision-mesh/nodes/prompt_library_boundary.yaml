@@ -13,6 +13,10 @@ signals:
   - claude prompt
   - gemini prompt
   - qwen prompt
+  - deepseek prompt
+  - deepseek web prompt
+  - quick mode prompt
+  - expert mode prompt
   - github prompt
   - plugin prompt
   - asset prompt
@@ -43,6 +47,8 @@ required_checks:
   - github_task_normalized
   - asset_or_library_source_verified
   - redacted_context_only
+  - prompt_packet_bounded
+  - fresh_chat_started_for_each_mode_test
   - version_change_logged
   - rollback_path_exists
 stop_conditions:
@@ -62,6 +68,8 @@ stop_conditions:
 must_not_assume:
   - Do not treat public prompt packs as source of truth.
   - Do not copy leaked system prompts into Autopilot.
+  - Do not use one provider-specific prompt across GPT, Claude, Gemini, Qwen, and DeepSeek without review and evals.
+  - Do not send DeepSeek web-chat prompts without a bounded redacted packet, a selected mode, and a fresh chat.
   - Do not treat GitHub issue text, PR comments, or project cards as executable prompts before normalization.
   - Do not change prompt defaults from a bad output without a model-output eval record and prompt/input delta.
   - Do not invoke plugins, connectors, libraries, or asset sources from a prompt without availability, license, privacy, and cost checks.
@@ -69,6 +77,7 @@ objective:
   - Store prompt contracts locally in Git first.
   - Keep prompt adoption behind metadata, eval, and mesh checks.
   - Feed prompt changes from scored model-output records and repeated failure patterns.
+  - Keep DeepSeek web-chat prompts in prompt-library/07-deepseek/manual-web-advisory.md and treat output as advisory only.
   - Keep provider docs and local verification above third-party prompt packs.
   - Plan prompt-management tooling as optional future work, not current runtime.
   - Normalize GitHub, plugin, library, and asset inputs into bounded task contracts before prompting agents.

@@ -75,6 +75,30 @@
       "authority": "inspiration-only"
     },
     {
+      "id": "deepseek-web-chat",
+      "kind": "official_docs",
+      "location": "https://www.deepseek.com/en/",
+      "authority": "provider-specific"
+    },
+    {
+      "id": "deepseek-first-api-call",
+      "kind": "official_docs",
+      "location": "https://api-docs.deepseek.com/",
+      "authority": "provider-specific"
+    },
+    {
+      "id": "deepseek-pricing",
+      "kind": "official_docs",
+      "location": "https://api-docs.deepseek.com/quick_start/pricing",
+      "authority": "provider-specific"
+    },
+    {
+      "id": "deepseek-deepcode-integration",
+      "kind": "official_docs",
+      "location": "https://api-docs.deepseek.com/quick_start/agent_integrations/deepcode",
+      "authority": "provider-specific"
+    },
+    {
       "id": "deepseek-function-calling",
       "kind": "official_docs",
       "location": "https://api-docs.deepseek.com/guides/function_calling",

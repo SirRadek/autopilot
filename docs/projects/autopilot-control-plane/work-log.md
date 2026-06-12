@@ -1,5 +1,218 @@
 # Autopilot Control Plane Work Log
 
+## 2026-06-12 Advisory Provider Run Artifact Gate
+
+Date: 2026-06-12
+Request or trigger: owner pointed out that a copied `prompt.txt` from a new
+session should have been reviewed as an Autopilot workflow/mesh failure, not as
+Radeq content. The file contained prompt echoes and CLI runner logs without
+actual Claude, Gemini, or DeepSeek advisory output.
+Mode: WRITE_ALLOWED for local governance contracts, Decision Mesh metadata,
+docs, deterministic tests, and work log only. No provider call, connector
+mutation, remote mutation, model gateway, runtime queue, or product content
+change was added.
+
+Scope:
+
+- Treat failed external advisory runs as control-plane diagnostics.
+- Separate provider runner artifacts from model output artifacts.
+- Block content review when provider execution failed or no model output is
+  present.
+- Preserve the existing boundary: external model output remains advisory and
+  product/project content stays in the supervised project.
+
+Files changed:
+
+- `src/data/delivery-system/modelOutputEvaluation.ts`
+- `src/data/delivery-system/modelPolicy.ts`
+- `src/data/delivery-system/modelSpend.ts`
+- `src/data/delivery-system/capabilities.ts`
+- `tests/delivery-system/model-output-evaluation-policy.test.ts`
+- `tests/delivery-system/model-policy.test.ts`
+- `tests/delivery-system/context-economy-policy.test.ts`
+- `tests/decision-mesh/query.test.ts`
+- `mesh/nodes/model_output_evaluation_policy.yaml`
+- `mesh/nodes/observability_mesh.yaml`
+- `mesh/nodes/reasoning_strategy.yaml`
+- `mesh/nodes/model_spend_policy.yaml`
+- `mesh/nodes/protective_supervision_policy.yaml`
+- `mesh/edges.yaml`
+- `mesh/rules.yaml`
+- `docs/projects/autopilot-control-plane/decision-mesh/`
+- `docs/autopilot/model-output-evaluation-operating-model.md`
+- `docs/autopilot/delivery-system-model-policy.md`
+- `docs/projects/autopilot-control-plane/architecture.md`
+- `docs/projects/autopilot-control-plane/work-log.md`
+
+Architecture impact:
+
+- External advisory runs now require provider run status, runner artifact type,
+  and model-output presence before content review.
+- Runner logs, prompt echoes, shell transcripts, CLI syntax errors, trust-flag
+  failures, login failures, and provider availability failures are not model
+  output.
+- If a required advisory provider is unavailable or output is missing, the
+  workflow must set `blocked` or `waiting_owner` and stop unless the owner
+  changes scope.
+- Capability routing now recognizes advisory model run failures as
+  `observability_mesh` diagnostics, then routes into model-output evaluation,
+  reasoning, and protective-supervision stop conditions.
+
+Verification:
+
+- `npm.cmd test -- tests/delivery-system/model-output-evaluation-policy.test.ts tests/decision-mesh/query.test.ts` failed before implementation on the new regression tests.
+- `npm.cmd test -- tests/delivery-system/model-output-evaluation-policy.test.ts tests/delivery-system/model-policy.test.ts tests/delivery-system/context-economy-policy.test.ts tests/decision-mesh/query.test.ts` passed after implementation: 4 files, 47 tests.
+- `npm.cmd run verify` passed after updating the read-only command-center E2E graph expectation from `29 nodes / 64 links` to `29 nodes / 66 links`.
+
+## 2026-06-11 DeepSeek Web Chat Advisory Workflow
+
+Date: 2026-06-11
+Request or trigger: owner verified DeepSeek web login and asked Autopilot to
+record how to use it through the mesh, including Quick vs Expert mode, exact
+paths, prompt best practices, and fallback input shape.
+Mode: WRITE_ALLOWED for local governance contracts, prompt library, mesh
+metadata, docs, tests, and work log only. No DeepSeek API key, stored
+credential, CLI runtime, connector, provider gateway, remote mutation, or paid
+provider usage was added.
+
+Evidence:
+
+- Browser login to `https://chat.deepseek.com/` was verified without reading or
+  storing credentials, cookies, tokens, or account identifiers.
+- Basic web chat returned `BASIC_OK`.
+- Deep thinking toggle produced visible `Přemýšlení po dobu 1 sekundy` evidence
+  and returned `REASONING_OK=42`.
+- Fresh Quick-mode chat from `https://chat.deepseek.com/` showed `Rychlý režim`
+  before send, `Rychlý` in the chat header after send, and returned
+  `QUICK_SWITCH_OK`.
+- Fresh Expert-mode chat from `https://chat.deepseek.com/` showed
+  `Expert režim` before send, `Expert` in the chat header after send, and
+  returned `EXPERT_SWITCH_OK`.
+- Hiding the in-app Browser did not preserve a stable DeepSeek tab in this
+  session, so hidden/headless browser control is not registered as a stable CLI
+  or runtime path.
+- Official DeepSeek docs verified that API and terminal-agent integrations
+  require an API key, while the public product page links to free web access.
+
+Architecture impact:
+
+- Added `deepseek_web_chat_manual` as a separate manual web-login advisory
+  provider policy, distinct from `deepseek_api_or_self_hosted`.
+- Added `deepseek_web_chat_manual` to tool inventory as provider-policy routing
+  metadata, not a callable runtime connector.
+- Added `prompt-library/07-deepseek/manual-web-advisory.md` as the bounded
+  redacted input packet and missing-input fallback contract.
+- Updated root mesh and Autopilot project mesh nodes so future packets route
+  DeepSeek web chat through fresh-chat, selected-mode, redaction, browser
+  evidence, and local-verification checks.
+
+Stop conditions preserved:
+
+- `authentication_missing`
+- `browser_session_unavailable`
+- `mode_switch_unverified`
+- `private_data_not_redacted`
+- `broad_private_context_sent_to_lower_trust_model`
+- `model_output_used_as_source_of_truth`
+- `api_credit_path_requested_without_owner_decision`
+
+Verification:
+
+- `npm.cmd run prompt:validate` passed.
+- `npm.cmd test -- tests/delivery-system/model-policy.test.ts tests/delivery-system/context-economy-policy.test.ts tests/delivery-system/tool-inventory.test.ts tests/delivery-system/prompt-library-policy.test.ts tests/delivery-system/prompt-library-validation.test.ts` passed with 5 files and 38 tests.
+- `npm.cmd run mesh:check` passed.
+- `npm.cmd run typecheck` passed.
+- Local `tsx` route smoke test returned `deepseek_web_chat_manual` for
+  reasoning, `deepseek_web_chat_manual` in tool inventory, and
+  `manual_web_advisory_prompt` with
+  `prompt-library/07-deepseek/manual-web-advisory.md` guidance.
+- `npm.cmd run diff:check` passed.
+
+## 2026-06-11 DeepSeek Provider Mesh Connection Fix
+
+Date: 2026-06-11
+Request or trigger: owner asked to resolve why DeepSeek was not connected to
+the Decision Mesh.
+Mode: WRITE_ALLOWED for local governance contracts, Decision Mesh metadata,
+docs, tests, and work log only. No DeepSeek API call, API key creation,
+credential storage, provider gateway, connector mutation, remote mutation, or
+paid provider usage was added.
+Scope:
+
+- Reproduce the mismatch through read-only MCP routes.
+- Keep DeepSeek registered as an advisory API/self-hosted provider, not as a
+  callable runtime.
+- Add DeepSeek to provider/tool inventory as a `provider_policy_only` item so
+  inventory routing returns its availability, cost, redaction, official-doc, and
+  source-of-truth gates.
+- Add DeepSeek to Prompt Library provider guidance so provider-specific prompt
+  work routes through official-doc and eval checks.
+
+Findings:
+
+- `select_reasoning_model_route` already returned
+  `deepseek_api_or_self_hosted` for structured-output and architecture/security
+  advisory tasks.
+- `select_tool_inventory_route` did not know DeepSeek because
+  `toolInventory.ts` only modeled plugins, local skills, and cached bundles.
+- `selectPromptLibraryRoute` did not include `deepseek` in provider guidance
+  even though `prompt-library/source-catalog.*` and model-output evaluation
+  already had DeepSeek source IDs.
+- No `DEEPSEEK_*` environment variable name was present in the inspected local
+  environment; no token value was read or printed.
+
+Files changed:
+
+- `src/data/delivery-system/toolInventory.ts`
+- `src/data/delivery-system/promptLibrary.ts`
+- `tests/delivery-system/tool-inventory.test.ts`
+- `tests/delivery-system/prompt-library-policy.test.ts`
+- `mesh/nodes/tool_inventory_policy.yaml`
+- `mesh/nodes/prompt_library_policy.yaml`
+- `docs/projects/autopilot-control-plane/decision-mesh/nodes/tool_inventory_boundary.yaml`
+- `docs/projects/autopilot-control-plane/decision-mesh/nodes/prompt_library_boundary.yaml`
+- `docs/autopilot/delivery-system-model-policy.md`
+- `docs/projects/autopilot-control-plane/architecture.md`
+- `docs/projects/autopilot-control-plane/work-log.md`
+
+Architecture impact:
+
+- DeepSeek is now connected to the mesh as a provider-policy routing record
+  across reasoning, model-output evaluation, prompt guidance, and inventory.
+- DeepSeek remains blocked for actual use until availability, cost or
+  self-hosting, redacted context, official provider documentation, and local
+  verification checks pass.
+- The change does not add a multi-provider gateway, autonomous worker loop,
+  API-key handling, stored credentials, or model output authority.
+
+Verification:
+
+- Local DeepSeek inventory check through `selectToolInventoryForTask` returned
+  `deepseek_provider_policy` with provider availability, API/self-hosting cost,
+  redaction, official-doc, and local-verification checks.
+- Local DeepSeek prompt check through `selectPromptLibraryRoute` returned
+  `provider_guidance` with `deepseek` included in the provider list.
+- Local `getRelevantSubgraph` from source returned `prompt_library_policy`,
+  `tool_inventory_policy`, `model_spend_policy`, and `reasoning_strategy` for
+  the DeepSeek provider-policy inventory task.
+- The active Codex-thread MCP server still returned the pre-change inventory
+  result, confirming it needs a restart/reload before the new local source is
+  visible through `mcp__autopilot_decision_mesh`.
+- `npm.cmd test -- tests/delivery-system/tool-inventory.test.ts tests/delivery-system/prompt-library-policy.test.ts tests/delivery-system/model-policy.test.ts tests/delivery-system/model-output-evaluation-policy.test.ts` passed:
+  `4` files, `28` tests.
+- `npm.cmd run mesh:generate` regenerated `mesh/generated/decision-mesh.json`.
+- `npm.cmd run verify` passed:
+  - `mesh:check`
+  - `prompt:validate` (`34` files, `0` errors)
+  - `model-output:validate` (`5` files, `3` records, `0` errors)
+  - `pdos:validate` (`64` files, `0` errors, `0` warnings)
+  - `contracts:validate` (`5` files, `0` errors)
+  - `diff:check`
+  - `typecheck`
+  - `vitest run` (`32` files, `173` tests)
+  - `astro build`
+  - `playwright test` (`4` Chromium tests)
+
 ## 2026-06-11 Dependency Refresh
 
 Date: 2026-06-11

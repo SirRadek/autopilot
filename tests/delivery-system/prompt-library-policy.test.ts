@@ -62,6 +62,30 @@ describe("prompt library policy", () => {
     expect(route.notes.join(" ")).toContain("bounded");
   });
 
+  it("routes DeepSeek prompts through provider guidance checks", () => {
+    const route = selectPromptLibraryRoute({
+      task: "Review DeepSeek JSON mode and reasoning model prompt guidance"
+    });
+
+    expect(promptLibraryPolicy.approvedReferenceProviders).toContain("deepseek");
+    expect(route.route).toBe("provider_guidance");
+    expect(route.providers).toContain("deepseek");
+    expect(route.requiredChecks).toContain("official_provider_docs_verified");
+    expect(route.stopConditions).toContain("model_specific_prompt_used_cross_model_without_review");
+  });
+
+  it("routes DeepSeek web chat prompts through the manual advisory template", () => {
+    const route = selectPromptLibraryRoute({
+      task: "Prepare a DeepSeek web chat Expert mode prompt for manual advisory review"
+    });
+
+    expect(route.route).toBe("manual_web_advisory_prompt");
+    expect(route.providers).toEqual(expect.arrayContaining(["deepseek", "local"]));
+    expect(route.notes.join(" ")).toContain("prompt-library/07-deepseek/manual-web-advisory.md");
+    expect(route.requiredChecks).toContain("redacted_context_only");
+    expect(route.stopConditions).toContain("model_output_used_as_source_of_truth");
+  });
+
   it("requires eval workflow for prompt versioning and rollback work", () => {
     const route = selectPromptLibraryRoute({
       task: "Add prompt management, versioning, regression evals, and rollback labels"

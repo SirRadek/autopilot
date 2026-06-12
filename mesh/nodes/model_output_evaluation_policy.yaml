@@ -25,6 +25,15 @@ signals:
   - context7
   - handoff clarity
   - workflow compatibility
+  - advisory model run
+  - provider run
+  - runner artifact
+  - runner log
+  - cli error
+  - cli syntax error
+  - prompt only
+  - no model output
+  - missing model output
 related_agents:
   - architect
   - qa
@@ -47,6 +56,10 @@ related_files:
 required_checks:
   - model_output_scored_before_acceptance
   - score_dimensions_recorded
+  - runner_artifact_contract_verified
+  - provider_run_status_recorded
+  - model_output_presence_verified
+  - blocked_state_recorded_when_output_missing
   - caveman_or_token_efficiency_route_selected
   - provider_best_practice_sources_checked
   - context7_or_official_docs_verified
@@ -62,6 +75,10 @@ required_checks:
   - source_pointers_recorded
 stop_conditions:
   - output_accepted_without_score
+  - provider_run_failed_without_blocked_state
+  - model_output_missing_from_artifact
+  - advisory_workflow_continued_after_provider_error
+  - prompt_or_runner_log_treated_as_model_output
   - score_dimensions_missing
   - bad_output_retried_without_prompt_or_input_delta
   - repeated_bad_output_without_model_or_reasoning_review
@@ -78,11 +95,13 @@ must_not_assume:
   - Do not accept weak model output without a recorded score and verification evidence.
   - Do not rerun a bad output with the same prompt and input packet unless the reason is recorded.
   - Do not change model or reasoning level just because one output was poor.
+  - Do not treat a provider runner log, prompt echo, shell transcript, or CLI error as model output.
   - Do not batch weekly prompt updates without collected eval records and failure patterns.
   - Do not store private raw context, secrets, raw logs, or customer data in eval records.
 objective:
   - Score model outputs against task fit, instruction following, source grounding, format contract, verification readiness, privacy, handoff clarity, token efficiency, and workflow compatibility.
   - During learning, immediately tune prompt or input packets and rerun until output is acceptable or blocked.
+  - Block advisory workflows when provider execution failed, output is missing, or the artifact contains only a prompt/log transcript.
   - After repeated similar failures, rerun token-efficiency and reasoning-model routes before changing reasoning or provider.
   - After the learning baseline, tune prompts weekly from collected eval records and source-grounded failure patterns.
   - Keep model output advisory until local verification, source pointers, and acceptance evidence exist.

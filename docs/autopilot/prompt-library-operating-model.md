@@ -15,7 +15,7 @@ validated and routed through the Decision Mesh.
 Use the prompt library to:
 
 - keep reusable prompts out of ad hoc chat history
-- separate GPT, Claude, Gemini, and Qwen guidance where behavior differs
+- separate GPT, Claude, Gemini, DeepSeek, and Qwen guidance where behavior differs
 - record official sources and local validation evidence
 - require evals before prompt adoption
 - use scored model-output records before prompt/input tuning
@@ -65,6 +65,17 @@ Gemini:
 - Gemini output is advisory until verified against local files, tests,
   Context7 when connected, official docs, or controlled evidence.
 - Cloud use still requires redaction and free/no-cost confirmation.
+
+DeepSeek:
+
+- Use `prompt-library/07-deepseek/manual-web-advisory.md` for the verified
+  free web-chat path.
+- Start a fresh web chat, select Quick or Expert before sending, and include the
+  whole bounded prompt packet in that chat.
+- DeepSeek web-chat output is advisory until verified against local files,
+  tests, Context7 when connected, official docs, or controlled browser evidence.
+- Official API and terminal-agent workflows are separate from web login and
+  require API-key, pricing, and auth checks.
 
 Qwen local:
 

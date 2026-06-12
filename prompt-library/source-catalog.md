@@ -78,6 +78,14 @@ task to an API path.
 
 DeepSeek:
 
+- Web chat and app/API entry:
+  https://www.deepseek.com/en/
+- First API call:
+  https://api-docs.deepseek.com/
+- Models and pricing:
+  https://api-docs.deepseek.com/quick_start/pricing
+- Deep Code terminal integration:
+  https://api-docs.deepseek.com/quick_start/agent_integrations/deepcode
 - Reasoning model:
   https://api-docs.deepseek.com/guides/reasoning_model
 - Thinking mode:
@@ -87,8 +95,10 @@ DeepSeek:
 - Function calling:
   https://api-docs.deepseek.com/guides/function_calling
 
-Use for DeepSeek-specific reasoning, thinking effort, JSON output, and
-function-calling constraints. Hosted API use requires cost/auth checks;
+Use for DeepSeek-specific web-chat advisory boundaries, API-vs-web separation,
+reasoning, thinking effort, JSON output, and function-calling constraints. Free
+web chat use remains a manual browser-login advisory path. Hosted API and
+terminal-agent use require API-key, cost/auth, and official-doc checks;
 self-hosted use requires infrastructure and model-availability checks.
 
 Qwen:

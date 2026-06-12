@@ -375,6 +375,18 @@
       "weight": 0.72
     },
     {
+      "source": "observability_mesh",
+      "target": "model_output_evaluation_policy",
+      "relation": "classifies_failed_provider_run",
+      "weight": 0.86
+    },
+    {
+      "source": "observability_mesh",
+      "target": "protective_supervision_policy",
+      "relation": "reports_blocker",
+      "weight": 0.82
+    },
+    {
       "source": "project_mesh_lifecycle",
       "target": "observability_mesh",
       "relation": "separates_scope",

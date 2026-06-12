@@ -5,6 +5,7 @@ export interface ModelSpendPolicy {
   readonly creativeReviewUse: readonly string[];
   readonly freeCloudAdvisoryUse: readonly string[];
   readonly subscriptionInteractiveUse: readonly string[];
+  readonly manualWebAdvisoryUse: readonly string[];
   readonly apiOrSelfHostedUse: readonly string[];
   readonly repoExecutorUse: readonly string[];
   readonly advisoryHierarchy: readonly string[];
@@ -49,6 +50,11 @@ export const modelSpendPolicy = {
     "claude_code_agent_validation",
     "bounded_interactive_repo_session_after_owner_scope"
   ],
+  manualWebAdvisoryUse: [
+    "deepseek_web_chat_manual_second_opinion",
+    "deepseek_quick_mode_low_latency_advice",
+    "deepseek_expert_mode_reasoning_advice"
+  ],
   apiOrSelfHostedUse: [
     "openai_structured_outputs",
     "openai_tool_orchestration",
@@ -63,6 +69,7 @@ export const modelSpendPolicy = {
     "openai_gpt_high_trust_structured_or_deep_reasoning_after_cost_or_entitlement_check",
     "gemini_cli_standard_advisory_redacted_context_after_subscription_check",
     "qwen_local_bounded_draft_requires_review",
+    "deepseek_web_chat_manual_advisory_after_login_and_mode_check",
     "deepseek_comparison_only_after_cost_or_self_hosting_check"
   ],
   frontierOnlyWhen: [
@@ -75,6 +82,8 @@ export const modelSpendPolicy = {
   ],
   requiredChecks: [
     "provider_availability_verified",
+    "provider_run_status_recorded",
+    "model_output_presence_verified",
     "free_tier_or_no_cost_confirmed",
     "subscription_entitlement_confirmed_for_subscription_tools",
     "google_ai_subscription_entitlement_confirmed_for_gemini_cli",
@@ -84,6 +93,10 @@ export const modelSpendPolicy = {
     "model_output_evaluation_before_model_change",
     "repeated_failure_evidence_before_model_switch",
     "api_credit_or_self_hosting_cost_confirmed",
+    "authentication_state_verified_without_token_disclosure",
+    "controlled_browser_evidence_required",
+    "fresh_chat_started_for_each_mode_test",
+    "prompt_packet_bounded",
     "redacted_context_only",
     "context7_or_official_docs_verified",
     "gemini_brainstorm_claims_labeled_and_verified",
@@ -94,6 +107,9 @@ export const modelSpendPolicy = {
   ],
   stopConditions: [
     "provider_availability_unverified",
+    "provider_run_failed_without_blocked_state",
+    "model_output_missing_from_artifact",
+    "advisory_workflow_continued_after_provider_error",
     "non_local_worker_dependency",
     "cloud_model_for_routine_worker_loop",
     "frontier_used_for_simple_worker_task",
@@ -105,6 +121,8 @@ export const modelSpendPolicy = {
     "api_credit_path_requested_without_owner_decision",
     "gemini_api_key_or_paid_api_path_requested_without_owner_decision",
     "authentication_missing",
+    "browser_session_unavailable",
+    "mode_switch_unverified",
     "technology_claim_without_context7_or_official_docs",
     "gemini_claim_adopted_without_verification",
     "lower_trust_model_overrides_claude_without_verified_evidence",

@@ -1,5 +1,253 @@
 # Radeq.cz Website Work Log
 
+## 2026-06-12 Static Ukazky Implementation Planning
+
+Date: 2026-06-12
+Request or trigger: owner asked for a proper implementation plan for the Radeq `/ukazky` direction, with work split across agents and external advisory models, explicit reasoning, plugin/skill usage, logging, evaluation, and stop/owner-decision handling.
+Mode: ADVISORY_AND_PLANNING_ONLY. No RadeQ product runtime files, GitHub remote, deployment, workflow, package/dependency files, lead API, D1, migrations, secrets, Cloudflare configuration, payment flow, email provider, model API, or analytics integration were changed.
+Skills and tools used:
+
+- `superpowers:brainstorming` to preserve the design approval gate before implementation.
+- `superpowers:dispatching-parallel-agents` to split read-only planning into IA, chatbot architecture, security/privacy, and QA workstreams.
+- `superpowers:writing-plans` to create a task-by-task implementation plan.
+- `build-web-apps:frontend-app-builder` as a planning-only quality frame for frontend/verification expectations; no visual concepting or implementation was started.
+- Autopilot Decision Mesh project packet for Radeq-specific rules and stop conditions.
+- Claude CLI and Gemini CLI as redacted external advisory reviewers. Gemini hit a capacity/rate-limit path on one run, so only matching low-risk planning observations were adopted.
+
+Agent workstreams:
+
+- IA/content agent recommended a Czech `/ukazky/` hub plus `/ukazky/chatbot/`, `/ukazky/automatizace/`, and `/ukazky/nabidka-eshop/`, while skipping `/ukazky/firemni-web/`.
+- Chatbot architecture agent recommended an Astro SEO page plus a single React island for a local rule-based decision tree, with static TS data and no network/model/storage behavior.
+- Security/privacy agent required visible no-model/static-copy disclaimers, no sensitive-data prompts, explicit handoff, no payment/order claims, and no hidden tracking.
+- QA agent required Vitest data contracts, Playwright route/SEO/mobile tests, A/B/C/D isolation, homepage CTA preservation, sitemap checks, and GitHub Pages build verification.
+
+External advisory synthesis:
+
+- Claude aligned on owner gates for URL/navigation, decision-tree content, handoff provider, final copy, and preview before merge.
+- Gemini aligned on static JSON/rules, explicit handoff, and avoiding AI overclaims, but was treated as lower-confidence due capacity/error behavior and generic output in part of the run.
+
+Plan artifact:
+
+- Added `docs/superpowers/plans/2026-06-12-radeq-static-ukazky.md`.
+
+Selected planning direction:
+
+- Use a typed data layer (`showcaseExamples.ts`) for public-safe static showcase copy.
+- Use a separate typed `chatbotGuide.ts` decision tree and `RuleChatbotGuide.tsx` island only for `/ukazky/chatbot/`.
+- Use `src/pages/ukazky/index.astro` and `src/pages/ukazky/[example].astro` for SEO-readable pages.
+- Keep `/demo/*` as a separate compatibility/review surface unless owner later approves migration or redirects.
+- Keep the chatbot static and rule-based. No LLM, RAG, model provider, fetch, localStorage, analytics, or backend inference in this slice.
+- Handoff should be explicit and should initially point to the existing contact path. `mailto:`, provider integrations, tracking, API prefill, or email delivery require a separate owner decision.
+
+Required owner gates before product implementation:
+
+- Confirm Czech-only first slice or request bilingual `/en/examples/*`.
+- Confirm public discoverability: header `Ukázky` link after pages pass tests, or direct/sitemap-only access.
+- Confirm no new email provider or `mailto:` in this slice.
+- Confirm old `/demo/*` routes stay public for now.
+- Confirm `/ukazky/nabidka-eshop/` is static SEO explanation with optional link to existing demo, not a checkout-like flow.
+
+Verification performed for planning:
+
+- Product repo was inspected read-only and was clean before planning.
+- Project mesh packet for Radeq was retrieved and applied to the plan.
+- Agent outputs were closed after completion.
+
+Stop condition:
+
+- Do not implement product files until owner approves the plan gates above. If implementation encounters a need for English pages, email/provider setup, analytics, API prefill, redirects, payment, upload, auth, storage, or a model-backed assistant, stop and request owner decision.
+
+## 2026-06-12 Chatbot And Data-Safe Automation Examples Brainstorm
+
+Date: 2026-06-12
+Request or trigger: owner corrected the examples strategy: skip `/ukazky/firemni-web` because the public Radeq site itself is the website proof; keep a chatbot/pruvodce example, but do not make it an LLM/RAG chatbot. AI work should be mentioned as adjacent possibilities for light bots and automations, with the public value framed around security, data protection, saving money, and saving time.
+Mode: ADVISORY_ONLY. No RadeQ product runtime files, GitHub remote, deployment, workflow, package/dependency files, lead API, D1, migrations, secrets, or Cloudflare configuration were changed.
+Inputs:
+
+- Codex GPT route agent: problem-oriented examples are clearer than seven equal demo categories; design should be cross-cutting; storage/warehouse should wait.
+- Codex GPT security agent: the helper should be bounded, collect minimal data, warn against sensitive details, and hand off to a human/contact path when needed.
+- Claude CLI: do not call a static decision tree an AI assistant; use a guide/questionnaire/configurator framing instead, and keep data security as a practical trust layer rather than an enterprise security route.
+- Gemini CLI: a static JSON/rule-based helper can recommend relevant services, examples, and next steps; email handoff should be explicit and user-controlled.
+- Decision Mesh: bot/RAG-like surfaces require source boundaries, answer policy, private-data boundaries, fallback, and no ungrounded answers. For this Radeq slice the bot is not a model-backed RAG surface, so the constraints become simpler rule/database boundaries.
+
+Synthesis:
+
+- Supersedes the earlier first-wave recommendation that used `/ukazky/firemni-web`. The homepage is the company-website example.
+- Recommended first-wave public examples:
+  - `/ukazky/chatbot` as a static chatbot/pruvodce demo: predefined questions, small static knowledge database, rule/decision tree answers, clear "I do not know / contact me" fallback, and optional email handoff.
+  - `/ukazky/automatizace` as the practical time/money-saving route: forms, notifications, sheets/CRM handoff, status tracking, manual fallback, and visible error paths.
+  - `/ukazky/nabidka-eshop` or `/ukazky/eshop` as an offer/category clarity route, not a promise of a full e-commerce platform.
+- Do not launch `/ukazky/design` as a standalone first-wave route. Show design quality through all examples.
+- Do not launch `/ukazky/skladovaci_system` unless there is a concrete audience and model scenario; keep it as a later internal-system example.
+- Do not make `/ukazky/bezpecnost-dat` the primary demo unless the owner wants a separate trust page. Prefer repeating data-safety language across chatbot, automation, lead form, handoff, and FAQ.
+
+Positioning:
+
+- Use "chatbot", "pruvodce", or "konfigurator" language for the static demo.
+- Mention AI as a possible extension: light AI bots, internal assistants, FAQ helpers, and automation copilots can be added when sources, data boundaries, and human fallback are defined.
+- Avoid wording that implies the demo is already model-backed, autonomous, or trained on visitor input.
+- Core promise: safer data handling, less manual copying, faster first answers, fewer repeated questions, and lower operational cost.
+
+Acceptance criteria for any implementation:
+
+- The chatbot works without an LLM, RAG service, model API, or private backend inference.
+- The visible copy says the helper uses prepared answers/rules and that sensitive information should not be entered.
+- No passwords, API keys, client records, contracts, or personal customer data are requested.
+- Email/form handoff happens only after explicit user action and shows what will be sent.
+- Unknown or sensitive questions produce a bounded fallback rather than invented answers.
+- Security copy stays practical: minimization, control, clear handoff, and no unnecessary storage.
+- Claims about saved time or money are framed as examples or mechanisms unless backed by real measured evidence.
+
+## 2026-06-12 Examples Route Strategy Brainstorm
+
+Date: 2026-06-12
+Request or trigger: owner proposed separate examples routes such as `/ukazky/eshop`, `/ukazky/automatizace`, `/ukazky/web`, `/ukazky/chatbot`, `/ukazky/design`, `/ukazky/workflow`, and `/ukazky/skladovaci_system`, and asked to brainstorm what is most suitable.
+Mode: ADVISORY_ONLY. No RadeQ product runtime files, GitHub remote, deployment, workflow, package/dependency files, lead API, D1, migrations, secrets, or Cloudflare configuration were changed.
+Inputs:
+
+- Current public preview: `https://sirradek.github.io/radeq/?v=558d228&brainstorm=examples`
+- Current product branch: `codex/radeq-ab-c-preview` at `558d228`
+- Existing demo infrastructure: `blog-docs`, `service-landing`, `admin-dashboard`, and `eshop-offers`
+- Existing content proof themes: website structure, redesign/audit, e-shop offer, automation/data dashboard, chatbot, workflow prototype, design/handoff, web care
+
+Advisory model notes:
+
+- Claude recommended a first wave of `/ukazky/firemni-web`, `/ukazky/eshop`, and conditionally `/ukazky/chatbot` only if a live bounded demo exists. It recommended merging `/ukazky/workflow` into automation, dropping standalone `/ukazky/design`, and deferring storage/warehouse-system positioning.
+- GPT route-strategy agent recommended first-wave examples as model outputs from website work: `/ukazky/firemni-web`, a renamed e-shop offer route such as `/ukazky/nabidka-eshop`, a renamed automation route such as `/ukazky/poptavky-data`, and a handoff/documentation route such as `/ukazky/predani-webu`. It recommended deferring chatbot, merging design into web/redesign, merging workflow into data/handoff, and strongly deferring storage system.
+
+Synthesis:
+
+- First wave should not expose seven equal products. It should prove the main website offer first, then adjacent add-ons.
+- Recommended first wave:
+  - `/ukazky/firemni-web` as the anchor page for complete small-business website delivery.
+  - `/ukazky/nabidka-eshop` or `/ukazky/uprava-eshopu` instead of generic `/ukazky/eshop`, to avoid promising a full e-commerce platform.
+  - `/ukazky/poptavky-data` or `/ukazky/formulare-data` instead of broad `/ukazky/automatizace`, to keep automation attached to website lead flow.
+  - `/ukazky/predani-webu` as proof of sitemap, content map, launch checklist, SEO basics, and handoff.
+- Deferred or merged:
+  - `/ukazky/chatbot` should wait unless there is a bounded live demo; later use `/ukazky/ai-pomocnik`.
+  - `/ukazky/design` should be part of `firemni-web` or a future `redesign-webu`, not a standalone offer for small businesses.
+  - `/ukazky/workflow` is too abstract; merge into `poptavky-data` or `predani-webu`.
+  - `/ukazky/skladovaci_system` should not launch as a public first-wave route. If used later, rename to `/ukazky/skladovy-system` or better `/ukazky/interni-prehled`, and keep it clearly secondary.
+
+Acceptance criteria for any implementation:
+
+- Examples are labeled as `modelová ukázka`, `bez klientských dat`, or equivalent.
+- No fake logos, fake clients, fake metrics, or unsupported outcomes.
+- Routes use static, SEO-readable DOM content with sections such as `zadání`, `rozhodnutí`, `výstup`, `předání`, and `co není součástí ukázky`.
+- Header navigation does not become an examples/demo menu.
+- Homepage primary CTA still routes to the website conversation.
+- The public homepage remains fixed to `variant-a`; A/B/C/D demo state stays isolated to demo/review surfaces.
+
+## 2026-06-12 Proof Examples Brainstorm
+
+Date: 2026-06-12
+Request or trigger: owner reviewed the latest GitHub Pages preview and said the current clearer homepage is missing examples of work. Owner requested brainstorming with Claude, Gemini, and GPT, comparing the latest version with older variants.
+Mode: ADVISORY_ONLY. No RadeQ product runtime files, GitHub remote, deployment, workflow, package/dependency files, lead API, D1, migrations, secrets, or Cloudflare configuration were changed.
+Inputs:
+
+- Current preview: `https://sirradek.github.io/radeq/?v=558d228&brainstorm=1`
+- Current commit: `558d228` on `codex/radeq-ab-c-preview`
+- Older comparison points: `a649c4a`, `f36a81f`, and `591e2f8`, which included A/B/C/D proposal variants, `StudioProof`, `DemoWorlds`, shop demo, proof ledger, artifact grid, and handoff strip.
+
+Model notes:
+
+- Claude recommendation: latest version wins on offer clarity, but should regain proof through a static `Co jsem postavil` / work examples section after the approach and before or near pricing. Use before/after, factual scope cards, micro case study, live links only with permission, and process artifacts.
+- GPT recommendation: add a compact `Ukázky práce a výstupů` section as proof support, not a new decision path. Keep hero, website path, and pricing first; add example cards for new website, redesign, clearer offer/e-shop, audit, and a small handoff strip.
+- Gemini result: both attempts failed to answer the specific preview/work-examples task. The output drifted into generic fractional CTO, AI consulting, newsletter, and workspace-orientation advice, so it was not adopted.
+
+Synthesis:
+
+- Do not return the old A/B/C/D demo-first public homepage.
+- Do reintroduce proof format from older versions: artifact grid, proof ledger, process evidence, safe demo cards, and handoff examples.
+- Recommended next slice: add a static SEO-readable `Ukázky práce a výstupů` section after pricing and before About, plus optionally change the secondary hero CTA to `Ukázat ukázky výstupů`.
+- Example cards should be labeled as `ukázka`, `modelový výstup`, or `bez klientských dat`; avoid fake logos, fake metrics, unsupported client claims, and demo links in the header.
+- Acceptance checks for any implementation: homepage primary CTA remains contact, pricing stays before examples, no public style toggle, stored A/B/C/D state does not affect homepage, examples are DOM text, and no fake client evidence is introduced.
+
+## 2026-06-12 GitHub Pages Brainstorm Preview
+
+Date: 2026-06-12
+Request or trigger: owner asked to upload the current RadeQ repositioning slice to a development Cloudflare or GitHub target so it can be brainstormed externally.
+Mode: WRITE_ALLOWED for the RadeQ GitHub preview branch and Autopilot governance log. No Cloudflare production deploy, D1 binding, workflow file, package/dependency, lead API, migration, or secrets were changed.
+Decision: use GitHub Pages rather than Cloudflare because the repository already has a working GitHub Pages workflow, while Cloudflare still has only `wrangler.example.toml` with placeholder D1 ID and no verified dev target.
+Published product commit: `558d228710cf844ff8e8382912e822cd122a907d` on `codex/radeq-ab-c-preview`.
+PR: `https://github.com/SirRadek/radeq/pull/2`
+GitHub Actions run: `https://github.com/SirRadek/radeq/actions/runs/27399901003`
+Preview URL: `https://sirradek.github.io/radeq/?v=558d228&brainstorm=1`
+Verification:
+
+- Workflow `Deploy to GitHub Pages` completed successfully for `558d228`.
+- Public URL returned HTTP 200.
+- Public HTML contained the new homepage H1 `Web pro malé firmy, kterému rozumíte vy i vaši zákazníci.`
+- Public HTML contained `data-style-source="fixed"` and the pricing section, confirming the deployed artifact is the brainstorm repositioning slice.
+
+Risk notes:
+
+- This overwrites the GitHub Pages preview site with the selected branch artifact. It does not deploy to Cloudflare production or `radeq.cz`.
+- Cloudflare remains blocked until a real Pages project, account ID, D1 binding, and rollback path are verified.
+
+## 2026-06-11 Homepage Repositioning Supervisor Run
+
+Date: 2026-06-11
+Request or trigger: user asked Codex to act as supervisor, split the RadeQ offer repositioning into agent workstreams, use the Decision Mesh, log/evaluate the work, and improve through review loops.
+Mode: WRITE_ALLOWED for the RadeQ product runtime at `C:\Users\sirok\Documents\Projects\radeq` and Autopilot governance records only. No lead API, D1, migrations, workflow files, package/dependency files, secrets, Cloudflare production configuration, GitHub remote push, or deployment mutation was changed.
+Product branch: `codex/radeq-ab-c-preview`.
+Scope: reposition public `/` and `/en/` homepages from A/B/C/D proposal/demo choice to a fixed complete-website offer for small businesses. The implementation hides the public style variant toggle, removes demo links from the main homepage path, adds a pricing section, separates three primary website paths from five secondary services, keeps demo routes directly addressable, and isolates stored A/B/C/D style state to demo routes.
+Agent workstreams:
+
+- Mesh/scope auditor: locked repository boundary, allowed files, stop conditions, and verification commands.
+- Content/offer strategist: recommended complete-website hero, audit as paid entry product, CTA hierarchy, pricing, proof, and FAQ direction.
+- Frontend/product scout: identified Astro/React route composition, existing A/B/C/D test coupling, and safe component boundaries.
+- Design/asset explorer: recommended proof/checklist artifacts over fake logos, heavy assets, or mascot-led positioning.
+- QA/SEO/eval planner: defined typecheck, unit, build, GitHub Pages build, E2E, audit, diff, SEO, mobile, and eval evidence gates.
+- Code/spec reviewer: found untracked `PricingSection`, mixed secondary services, homepage demo link, and theme hydration timing; all were corrected.
+- Post-fix reviewer: found stored demo style still controlling homepage; `BaseLayout` style-source isolation and regression coverage corrected it, then the reviewer confirmed no remaining finding for that issue.
+
+Decisions:
+
+- Public homepage H1/offer: complete websites/redesigns for small businesses.
+- Paid entry product: `Audit webu s plánem` / `Website audit with a plan`.
+- Primary CTA: `Chci probrat nový web` / `Discuss a new website`, routed to `#terminal`.
+- A/B/C/D style matrix remains a demo/review surface only; public homepage is fixed to `variant-a` even when `radeq-style-variant` exists in localStorage.
+- Secondary work such as care, quick fixes, forms/data automation, shop-offer adjustments, documents, and AI helpers appears below the primary website path.
+
+Verification:
+
+- `npm.cmd run typecheck` passed after final route-level style isolation.
+- `npm.cmd test` passed: 7 files, 41 tests.
+- `npm.cmd run test:e2e` passed: 9 Playwright tests, including homepage with stored demo style, demo route variants, mobile overflow, reduced motion, 3D activation, SEO/indexability, and i18n.
+- `npm.cmd run build` passed for the static Astro build.
+- `$env:DEPLOY_TARGET='github-pages'; npm.cmd run build` passed.
+- `npm.cmd audit --audit-level=high` passed with 0 vulnerabilities.
+- `git diff --check` passed with only Git CRLF conversion warnings in the working copy.
+- Known residual warning: Vite still reports chunks larger than 500 kB after minification. This warning existed in the same Three.js/React-heavy surface class and was not resolved in this scope.
+
+Changed RadeQ product files:
+
+- `src/data/siteContent.ts`
+- `src/pages/index.astro`
+- `src/pages/en/index.astro`
+- `src/components/CommandHeader.astro`
+- `src/components/ServiceCatalog.astro`
+- `src/components/PricingSection.astro`
+- `src/components/ThemeModeToggle.tsx`
+- `src/layouts/BaseLayout.astro`
+- `src/pages/demo/[module].astro`
+- `src/pages/en/demo/[module].astro`
+- `src/styles/global.css`
+- `tests/i18n-content.test.ts`
+- `tests/i18n.spec.ts`
+- `tests/smoke.spec.ts`
+
+Governance/eval impact:
+
+- Updated `docs/projects/radeq/architecture.md` to reflect fixed public homepage positioning, audit/CTA lock, no homepage demo-link path, and route-level stored-style isolation.
+- Added `model-output-evals/records/2026-06-11-radeq-gpt-supervisor-homepage-repositioning.json` to record the GPT supervisor/subagent output as accepted after review and verification.
+
+Rollback:
+
+- In the RadeQ product repo, revert the uncommitted homepage repositioning changes on `codex/radeq-ab-c-preview` if the owner rejects this direction.
+- In Autopilot, revert this work-log entry, the related architecture update, and the eval record if the product slice is abandoned.
+
 ## 2026-06-05 Coin Flip Theme Toggle
 
 Date: 2026-06-05
@@ -715,6 +963,109 @@ Rollback:
 - Revert product commit `c64331c`, or redeploy previous preview commit `de67f2c`.
 
 Project mesh impact: existing `static_public_site`, `seo_performance_surface`, and `runtime_observability_boundary` nodes cover the change. No new project-mesh node or rule was needed.
+
+## 2026-06-11 Owner Correction: Complete Websites Positioning
+
+Date: 2026-06-11
+Request or trigger: owner clarified that Radeq should not narrow the public offer to WordPress/WooCommerce; the primary direction is complete websites.
+Mode: WRITE_ALLOWED for Autopilot governance records and the Radeq project mesh only. No Radeq product runtime files, GitHub remote, deployment, workflow, package files, lead API, D1, migrations, model assets, automation, or secrets were changed.
+Scope: revise the project-mesh offer route, architecture note, and work-log continuity so the direct path reflects complete websites as the primary positioning.
+
+Architecture impact: `docs/projects/radeq/architecture.md` now records the corrected positioning lock: complete websites for small businesses are the selected primary direction. WordPress, WooCommerce, Shopify, SEO, automation, AI helpers, PC support, migrations, and custom development remain secondary or implementation-specific paths until the complete-website offer and CTA hierarchy are clear.
+
+Project mesh impact:
+
+- Updated `docs/projects/radeq/decision-mesh/nodes/offer_positioning_conversion.yaml` from WordPress/WooCommerce repair positioning to complete-website positioning.
+- Updated `docs/projects/radeq/decision-mesh/edges.yaml` so lead capture and SEO strategy point to complete-website context.
+- Updated `docs/projects/radeq/decision-mesh/rules.yaml` so `RAD-OFFER-001` through `RAD-OFFER-005` protect the corrected direction.
+
+Classification:
+
+- Change request class: C direction change and owner correction.
+- Primary goal: qualified complete-website leads, not narrow repair/check leads.
+- Target users: small businesses needing a complete website or meaningful rebuild.
+- Critical action: start a complete-website conversation through a concrete CTA.
+- Open owner decision: paid entry product and exact CTA wording for the complete-website path.
+
+Stop conditions for implementation:
+
+- Do not implement homepage repositioning from the prior WordPress/WooCommerce repair niche.
+- Do not lock the under-5000-CZK repair/check package as the first paid product without renewed owner approval.
+- Do not edit product runtime until owner approves exact scope, target branch, files, and acceptance checks.
+
+## 2026-06-11 Offer Advisory Brainstorm And Deploy Blocker
+
+Date: 2026-06-11
+Request or trigger: owner asked to force a joint advisory brainstorm with Claude, Google/Gemini, and DeepSeek, consider the owner's public-safe background, and optionally publish the current Radeq work to Cloudflare production for outside review.
+Mode: WRITE_ALLOWED for Autopilot governance and model-output eval records only. No Radeq product runtime files, GitHub remote, Cloudflare production deployment, workflow, package files, lead API, D1, migrations, model assets, automation, or secrets were changed.
+Scope: verify production deploy readiness, run bounded advisory review with available model tools, score usable model output, and preserve only redacted evaluation records.
+
+Deployment status:
+
+- Cloudflare production deploy is blocked. `npx wrangler@latest` is available, but Wrangler could not retrieve account IDs for the logged-in user; it reported expired or insufficient authentication/permissions and suggested re-authentication, `CLOUDFLARE_ACCOUNT_ID`, or account configuration.
+- The Radeq product checkout remained clean at `591e2f8` on `codex/radeq-ab-c-preview`.
+- The project contains only `wrangler.example.toml` with a placeholder D1 database ID, so production deploy is not safe until the real Cloudflare Pages project, production branch, D1 binding, and account ID are verified.
+
+Advisory model status:
+
+- Claude Code subscription CLI was available. The first prompt attempted to request WebFetch, so it was rejected and retried with a smaller stdin-only packet. The accepted advisory output scored 88 through the model-output route and was recorded as `model-output-evals/records/2026-06-11-radeq-claude-offer-brainstorm.json`.
+- Gemini CLI was available. Initial attempts failed on trust/workspace behavior and Google policy checks; the accepted retry used an empty temp directory and a stdin-only packet. The accepted advisory output scored 82 and was recorded as `model-output-evals/records/2026-06-11-radeq-gemini-offer-brainstorm.json`.
+- DeepSeek was not available as a local CLI, self-hosted model, or approved API path in this session, so no DeepSeek output was used or simulated.
+- Local Qwen through Ollama was available and briefly checked as a no-cost fallback, but the output was weak and was not adopted as strategic guidance.
+
+Advisory synthesis:
+
+- Keep the primary offer centered on complete websites for small firms and sole traders, but sell the buyer's outcome as clarity, calm, and a web the owner understands after handoff.
+- Use "digital order" or "digital peace" as a secondary differentiator; do not let it replace the complete-website offer.
+- Show talent through Radeq's own execution, model solution demos, clear process artifacts, simple checklists, and educational notes rather than unsupported client case studies.
+- Avoid revenue guarantees, top-position SEO promises, broad "complex digital solution" phrasing, and technical acronym-heavy copy.
+- Add first paid-product clarity before implementation: main website path, entry consultation or audit path, and optional support/automation path.
+
+Model-output evaluation status:
+
+- `npm.cmd run model-output:validate` passed after adding the advisory eval records: 5 checked files, 3 checked records, 0 errors.
+- Targeted tests passed: `npm.cmd test -- tests/delivery-system/model-output-evaluation-policy.test.ts tests/delivery-system/model-output-eval-validation.test.ts` returned 2 files and 12 tests passing.
+
+Recommended next work slice:
+
+- Do not deploy production until Cloudflare account/auth, Pages project name, production branch/domain mapping, D1 binding, and rollback path are verified.
+- Implement the homepage repositioning only after owner locks the exact first-screen H1/H2, paid entry product, CTA hierarchy, and allowed files for the Radeq product repository.
+
+## 2026-06-11 Business Positioning Mesh Route
+
+Date: 2026-06-11
+Request or trigger: owner asked to process the business/positioning addendum through the project mesh and create a direct path if none existed.
+Mode: WRITE_ALLOWED for Autopilot governance records and the Radeq project mesh only. No Radeq product runtime files, GitHub remote, deployment, workflow, package files, lead API, D1, migrations, model assets, automation, or secrets were changed.
+Scope: classify the addendum as a product direction change before implementation; add a project-mesh route for primary offer positioning, first paid product, CTA hierarchy, homepage scope, secondary-service containment, and A/B/C/D usage.
+
+Architecture impact: superseded by the later 2026-06-11 owner correction above. This entry initially recorded the addendum's WordPress/WooCommerce repair direction, but that direction is no longer the selected primary positioning. The active contract is complete websites.
+
+Project mesh impact:
+
+- Added `docs/projects/radeq/decision-mesh/nodes/offer_positioning_conversion.yaml`.
+- Updated `docs/projects/radeq/decision-mesh/edges.yaml` so the offer route defines the static site purpose, drives lead capture, sets SEO/content strategy, and constrains optional effects.
+- Updated `docs/projects/radeq/decision-mesh/rules.yaml` with `RAD-OFFER-001` through `RAD-OFFER-005`.
+
+Classification:
+
+- Project type: public marketing/service website.
+- Primary goal at time of this addendum review: qualified repair/check leads for WordPress and WooCommerce technical help. Superseded by owner correction to complete websites.
+- Target users at time of this addendum review: small businesses with broken or risky WordPress/WooCommerce sites. Superseded by owner correction to small businesses needing complete websites.
+- Critical action at time of this addendum review: request a website/e-shop repair or technical check. Superseded by owner correction to start a complete-website conversation.
+- Logic priority: high because offer, risk handling, and lead intake must be clear before visual polish.
+- Design priority: medium-high, serving trust and conversion rather than public theme exploration.
+- Motion level: optional enhancement only.
+- Risk level: high until production target, lead capture, privacy minimization, and abuse controls are resolved.
+- Change request class: C direction change, because it narrows the public offer and changes the homepage success criteria.
+
+Stop conditions for implementation:
+
+- Do not edit product runtime until owner approves an implementation scope with exact files and target branch.
+- Superseded by owner correction: do not let the homepage read as a broad unrelated portfolio, but do not narrow the primary offer to WordPress/WooCommerce repairs. The active primary direction is complete websites.
+- Do not make A/B/C/D the main public decision mechanism unless owner explicitly changes that scope.
+- Do not deploy, merge, push, or mutate remote services without explicit owner approval.
+
+Recommended next work slice: owner should approve a scoped product brief for homepage repositioning on the Radeq product branch, after release target and lead-capture deployment constraints are named.
 
 ## 2026-06-06 Homepage Readability And Form Semantics
 

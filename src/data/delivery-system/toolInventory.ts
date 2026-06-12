@@ -1,9 +1,13 @@
-export type ToolInventoryStatus = "session_callable" | "cached_not_session_callable" | "local_skill";
+export type ToolInventoryStatus =
+  | "session_callable"
+  | "cached_not_session_callable"
+  | "local_skill"
+  | "provider_policy_only";
 
 export interface ToolInventoryItem {
   readonly id: string;
   readonly title: string;
-  readonly category: "plugin" | "skill_group" | "mcp_tool";
+  readonly category: "plugin" | "skill_group" | "mcp_tool" | "model_provider";
   readonly status: ToolInventoryStatus;
   readonly source: string;
   readonly useFor: readonly string[];
@@ -36,14 +40,16 @@ export const toolInventorySnapshot = {
     "current_codex_session_plugin_list",
     "current_codex_session_skill_list",
     "local_plugin_cache_listing",
-    "openai_codex_manual_agent_skills_plugins_mcp_sections"
+    "openai_codex_manual_agent_skills_plugins_mcp_sections",
+    "deepseek_web_chat_quick_and_expert_smoke_tests_2026_06_11"
   ],
   rules: [
     "Use current session callable plugins before cached-only bundles.",
     "Do not claim a cached plugin is callable until it is surfaced by the active tools or tool_search.",
     "Use tool_search for deferred MCP tools when the task names a plugin capability.",
     "Use skills only after reading the relevant SKILL.md workflow.",
-    "External connector or provider claims remain advisory until verified by local files, official docs, tests, or connector evidence."
+    "External connector or provider claims remain advisory until verified by local files, official docs, tests, or connector evidence.",
+    "Model providers registered in policy are not callable tools unless a separate credentialed runtime or connector is verified."
   ],
   items: [
     {
@@ -146,6 +152,71 @@ export const toolInventorySnapshot = {
       stopConditions: ["design_scope_unclassified", "conflict_with_goal_unresolved"]
     },
     {
+      id: "deepseek_web_chat_manual",
+      title: "DeepSeek Web Chat Manual Advisory",
+      category: "model_provider",
+      status: "provider_policy_only",
+      source: "chat.deepseek.com controlled browser evidence and src/data/delivery-system/modelPolicy.ts",
+      useFor: [
+        "DeepSeek web chat",
+        "free web-login advisory",
+        "manual Quick mode second opinion",
+        "manual Expert mode reasoning second opinion",
+        "redacted prompt critique"
+      ],
+      activationRule:
+        "Open https://chat.deepseek.com/ in the Browser plugin, verify logged-in chat without reading credentials, start a fresh chat, select Rychly or Expert before sending the full prompt, and treat the response as advisory only.",
+      requiredChecks: [
+        "provider_availability_verified",
+        "free_tier_or_no_cost_confirmed",
+        "authentication_state_verified_without_token_disclosure",
+        "controlled_browser_evidence_required",
+        "fresh_chat_started_for_each_mode_test",
+        "redacted_context_only",
+        "prompt_packet_bounded",
+        "local_verification_required"
+      ],
+      stopConditions: [
+        "provider_availability_unverified",
+        "authentication_missing",
+        "browser_session_unavailable",
+        "mode_switch_unverified",
+        "private_data_not_redacted",
+        "model_output_used_as_source_of_truth"
+      ]
+    },
+    {
+      id: "deepseek_provider_policy",
+      title: "DeepSeek",
+      category: "model_provider",
+      status: "provider_policy_only",
+      source: "src/data/delivery-system/modelPolicy.ts",
+      useFor: [
+        "DeepSeek",
+        "JSON output comparison",
+        "reasoning model comparison",
+        "function calling review",
+        "cost-aware coding critique",
+        "API or self-hosted advisory review"
+      ],
+      activationRule:
+        "Route through select_reasoning_model_route; do not call DeepSeek until provider availability, cost or self-hosting, redaction, and official-doc checks pass.",
+      requiredChecks: [
+        "provider_availability_verified",
+        "api_credit_or_self_hosting_cost_confirmed",
+        "redacted_context_only",
+        "official_provider_docs_verified",
+        "local_verification_required"
+      ],
+      stopConditions: [
+        "provider_availability_unverified",
+        "paid_model_or_credit_required_without_owner_decision",
+        "private_data_not_redacted",
+        "unsupported_tool_mode_assumed",
+        "model_output_used_as_source_of_truth"
+      ]
+    },
+    {
       id: "local_core_skills",
       title: "Local Core Skills",
       category: "skill_group",
@@ -218,6 +289,8 @@ export function selectToolInventoryForTask(input: ToolInventoryRouteInput): Tool
     notes: [
       "Session-callable plugins may be used through their exposed skills or MCP tools.",
       "Cached-only plugin bundles are evidence of local cache state, not callable capability.",
+      "Provider-policy-only items are mesh routing records, not active credentials or runtime connectors.",
+      "DeepSeek web chat is a manual browser-login advisory path, not a CLI, API runtime, or stable headless automation contract.",
       "Provider or plugin best-practice claims still require official documentation, local files, tests, or controlled evidence."
     ]
   };

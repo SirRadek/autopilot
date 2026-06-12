@@ -164,6 +164,16 @@ edges:
     relation: may_trace
     weight: 0.72
     why: "Public API diagnostics often need request IDs, status codes, and bounded error contracts."
+  - from: observability_mesh
+    to: model_output_evaluation_policy
+    relation: classifies_failed_provider_run
+    weight: 0.86
+    why: "Control-plane diagnostics for provider runner logs must verify model-output presence before content evaluation."
+  - from: observability_mesh
+    to: protective_supervision_policy
+    relation: reports_blocker
+    weight: 0.82
+    why: "Missing provider output should become a blocked or waiting_owner progress state before the next handoff."
   - from: project_mesh_lifecycle
     to: observability_mesh
     relation: separates_scope

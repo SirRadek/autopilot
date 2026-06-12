@@ -1,0 +1,63 @@
+id: offer_positioning_conversion
+type: product_strategy_contract
+name: Primary offer and conversion path
+question: "Does this change preserve the first public offer, target buyer, paid entry product, CTA hierarchy, and homepage scope?"
+why: "The owner corrected the business direction on 2026-06-11: Radeq should focus on complete websites, not narrow itself to WordPress/WooCommerce repairs. The homepage still must avoid reading as a broad unrelated portfolio and should guide visitors toward a clear complete-website conversation."
+signals:
+  - positioning
+  - primary offer
+  - complete websites
+  - website build
+  - redesign
+  - landing page
+  - content structure
+  - seo basics
+  - performance
+  - handoff
+  - small business
+  - paid entry product
+  - cta
+  - homepage
+  - conversion
+  - pricing
+related_agents:
+  - business
+  - design_ux
+  - content
+  - seo_performance
+  - frontend
+  - security
+  - qa
+related_files:
+  - docs/projects/radeq/architecture.md
+  - docs/projects/radeq/work-log.md
+  - product-design-os/rules/logic-first.md
+  - product-design-os/rules/strict-process.md
+  - product-design-os/rules/change-request-rules.md
+required_checks:
+  - project_type_lock
+  - primary_offer_lock
+  - target_audience_lock
+  - paid_entry_product_lock
+  - cta_hierarchy_lock
+  - homepage_scope_check
+  - secondary_services_below_primary
+  - proof_and_safety_message
+  - design_seo_tradeoff_declared
+  - mobile_first_viewport_check
+  - no_public_abcd_choice_as_primary
+  - implementation_lock_before_runtime_edit
+stop_conditions:
+  - primary_offer_unclear
+  - homepage_reads_as_broad_portfolio
+  - paid_entry_product_unapproved
+  - cta_generic_or_conflicting
+  - abcd_public_choice_overrides_offer
+  - secondary_services_dominate_first_viewport
+  - safety_testing_proof_missing
+  - implementation_without_scope_lock
+objective:
+  - "Keep the homepage focused on complete websites for small businesses: structure, content, design, implementation, performance/SEO basics, and clear handoff."
+  - "Do not lock WordPress/WooCommerce repair as the primary public niche unless the owner explicitly changes direction again."
+  - "Define an owner-approved paid entry product for the complete-website path before product runtime implementation."
+  - "Route visitors toward a concrete complete-website CTA before broader services, portfolio effects, automation, AI, or visual experiments."

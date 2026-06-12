@@ -3,6 +3,7 @@ export type PromptLibraryProvider =
   | "anthropic"
   | "google"
   | "qwen"
+  | "deepseek"
   | "dair_ai"
   | "github_catalog"
   | "local";
@@ -12,6 +13,7 @@ export type PromptLibraryRoute =
   | "local_prompt_library"
   | "local_worker_prompt"
   | "advisory_brainstorm_prompt"
+  | "manual_web_advisory_prompt"
   | "plugin_asset_library_prompt"
   | "github_control_surface_prompt"
   | "role_scope_prompt"
@@ -56,7 +58,16 @@ export const promptLibraryPolicy = {
     "dair_ai_and_github_catalogs_as_inspiration",
     "optional_prompt_management_tool_docs"
   ],
-  approvedReferenceProviders: ["openai", "anthropic", "google", "qwen", "dair_ai", "github_catalog", "local"],
+  approvedReferenceProviders: [
+    "openai",
+    "anthropic",
+    "google",
+    "qwen",
+    "deepseek",
+    "dair_ai",
+    "github_catalog",
+    "local"
+  ],
   requiredMetadata: [
     "id",
     "title",
@@ -189,6 +200,14 @@ export function selectPromptLibraryRoute(input: PromptLibraryRouteInput): Prompt
     ]);
   }
 
+  if (hasAny(normalizedTask, ["deepseek web", "deepseek chat", "web login", "quick mode", "expert mode"])) {
+    return buildRoute("manual_web_advisory_prompt", ["deepseek", "local"], [
+      "DeepSeek web-chat prompts use prompt-library/07-deepseek/manual-web-advisory.md.",
+      "Start a fresh chat, select Quick or Expert before sending, and keep the packet tiny and redacted.",
+      "DeepSeek web output is advisory only and must be normalized before any local verification."
+    ]);
+  }
+
   if (hasAny(normalizedTask, ["gemini", "brainstorm", "variant", "creative critique", "second opinion"])) {
     return buildRoute("advisory_brainstorm_prompt", ["google", "local"], [
       "Gemini prompts are advisory only and must use redacted context.",
@@ -202,8 +221,8 @@ export function selectPromptLibraryRoute(input: PromptLibraryRouteInput): Prompt
     ]);
   }
 
-  if (hasAny(normalizedTask, ["openai", "gpt", "codex", "claude", "anthropic", "qwen", "gemini"])) {
-    return buildRoute("provider_guidance", ["openai", "anthropic", "google", "qwen"], [
+  if (hasAny(normalizedTask, ["openai", "gpt", "codex", "claude", "anthropic", "qwen", "gemini", "deepseek"])) {
+    return buildRoute("provider_guidance", ["openai", "anthropic", "google", "qwen", "deepseek"], [
       "Provider-specific behavior must be verified against official provider documentation."
     ]);
   }

@@ -21,6 +21,8 @@ describe("delivery system model policy", () => {
     expect(reasoningEscalationPolicy.frontierEscalationUse).toContain("architecture review");
     expect(reasoningEscalationPolicy.frontierEscalationUse).toContain("security audit");
     expect(reasoningEscalationPolicy.freeCloudAdvisoryUse).toContain("brainstorming");
+    expect(reasoningEscalationPolicy.requiredChecks).toContain("provider_run_status_recorded");
+    expect(reasoningEscalationPolicy.requiredChecks).toContain("model_output_presence_verified");
     expect(reasoningEscalationPolicy.requiredChecks).toContain("free_tier_or_no_cost_confirmed");
     expect(reasoningEscalationPolicy.requiredChecks).toContain("subscription_entitlement_confirmed_for_subscription_tools");
     expect(reasoningEscalationPolicy.requiredChecks).toContain("google_ai_subscription_entitlement_confirmed_for_gemini_cli");
@@ -36,6 +38,9 @@ describe("delivery system model policy", () => {
     expect(reasoningEscalationPolicy.stopConditions).toContain("cloud_model_for_routine_worker_loop");
     expect(reasoningEscalationPolicy.stopConditions).toContain("frontier_used_for_simple_worker_task");
     expect(reasoningEscalationPolicy.stopConditions).toContain("paid_model_or_credit_required");
+    expect(reasoningEscalationPolicy.stopConditions).toContain("provider_run_failed_without_blocked_state");
+    expect(reasoningEscalationPolicy.stopConditions).toContain("model_output_missing_from_artifact");
+    expect(reasoningEscalationPolicy.stopConditions).toContain("advisory_workflow_continued_after_provider_error");
     expect(reasoningEscalationPolicy.stopConditions).toContain("subscription_entitlement_unverified");
     expect(reasoningEscalationPolicy.stopConditions).toContain("google_ai_subscription_entitlement_unverified");
     expect(reasoningEscalationPolicy.stopConditions).toContain("api_credit_path_requested_without_owner_decision");
@@ -57,7 +62,13 @@ describe("delivery system model policy", () => {
     );
     expect(route.taskLanes).toContain("architecture_security_review");
     expect(route.providerPolicies).toEqual(
-      expect.arrayContaining(["openai_gpt", "anthropic_claude_subscription", "gemini_cli", "deepseek_api_or_self_hosted"])
+      expect.arrayContaining([
+        "openai_gpt",
+        "anthropic_claude_subscription",
+        "gemini_cli",
+        "deepseek_api_or_self_hosted",
+        "deepseek_web_chat_manual"
+      ])
     );
     expect(route.requiredChecks).toEqual(
       expect.arrayContaining([
@@ -134,7 +145,8 @@ describe("delivery system model policy", () => {
         "openai_gpt",
         "anthropic_claude_subscription",
         "gemini_cli",
-        "deepseek_api_or_self_hosted"
+        "deepseek_api_or_self_hosted",
+        "deepseek_web_chat_manual"
       ])
     );
 
@@ -157,6 +169,24 @@ describe("delivery system model policy", () => {
     expect(gemini?.requiredChecks).not.toContain("free_tier_or_no_cost_confirmed");
     expect(gemini?.stopConditions).toContain("gemini_api_key_or_paid_api_path_requested_without_owner_decision");
     expect(gemini?.sourceIds).toEqual(expect.arrayContaining(["gemini-code-assist-quotas", "gemini-subscriptions"]));
+
+    const deepseekWeb = reasoningProviderPolicies.find((provider) => provider.id === "deepseek_web_chat_manual");
+    expect(deepseekWeb).toMatchObject({
+      provider: "deepseek",
+      accessMode: "manual_web_login",
+      advisoryTrustTier: "comparison_only"
+    });
+    expect(deepseekWeb?.requiredChecks).toEqual(
+      expect.arrayContaining([
+        "free_tier_or_no_cost_confirmed",
+        "authentication_state_verified_without_token_disclosure",
+        "controlled_browser_evidence_required",
+        "fresh_chat_started_for_each_mode_test",
+        "prompt_packet_bounded"
+      ])
+    );
+    expect(deepseekWeb?.avoidFor).toContain("headless browser automation as a stable runtime");
+    expect(deepseekWeb?.stopConditions).toContain("mode_switch_unverified");
   });
 
   it("orders advisory trust by owner preference while keeping outputs advisory", () => {
@@ -164,6 +194,7 @@ describe("delivery system model policy", () => {
     const gemini = reasoningProviderPolicies.find((provider) => provider.id === "gemini_cli");
     const qwen = reasoningProviderPolicies.find((provider) => provider.id === "qwen_local");
     const deepseek = reasoningProviderPolicies.find((provider) => provider.id === "deepseek_api_or_self_hosted");
+    const deepseekWeb = reasoningProviderPolicies.find((provider) => provider.id === "deepseek_web_chat_manual");
 
     expect(claude?.advisoryTrustTier).toBe("high_trust_advisory");
     expect(claude?.contextScope).toContain("broad repository read after owner scope");
@@ -171,7 +202,28 @@ describe("delivery system model policy", () => {
     expect((claude?.advisoryWeight ?? 0) > (gemini?.advisoryWeight ?? 0)).toBe(true);
     expect((gemini?.advisoryWeight ?? 0) > (qwen?.advisoryWeight ?? 0)).toBe(true);
     expect((gemini?.advisoryWeight ?? 0) > (deepseek?.advisoryWeight ?? 0)).toBe(true);
+    expect((gemini?.advisoryWeight ?? 0) > (deepseekWeb?.advisoryWeight ?? 0)).toBe(true);
     expect(claude?.stopConditions).toContain("model_output_used_as_source_of_truth");
+  });
+
+  it("routes DeepSeek web chat as manual advisory rather than API runtime", () => {
+    const route = selectReasoningModelRoute({
+      task: "Use DeepSeek web login Expert mode for a redacted architecture second opinion"
+    });
+
+    expect(route.route).toBe("external_advisory_review");
+    expect(route.providerPolicies).toContain("deepseek_web_chat_manual");
+    expect(route.advisoryProviders).toContain("deepseek_web_chat_manual");
+    expect(route.requiredChecks).toEqual(
+      expect.arrayContaining([
+        "free_tier_or_no_cost_confirmed",
+        "authentication_state_verified_without_token_disclosure",
+        "fresh_chat_started_for_each_mode_test",
+        "prompt_packet_bounded"
+      ])
+    );
+    expect(route.stopConditions).toContain("browser_session_unavailable");
+    expect(route.stopConditions).toContain("model_output_used_as_source_of_truth");
   });
 
   it("registers Claude Code as an optional subscription advisory provider", () => {

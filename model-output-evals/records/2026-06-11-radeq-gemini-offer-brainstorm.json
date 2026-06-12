@@ -1,0 +1,118 @@
+{
+  "record_version": "v0.1",
+  "eval_id": "radeq-gemini-offer-brainstorm-2026-06-11",
+  "created": "2026-06-11",
+  "project": {
+    "slug": "radeq",
+    "name": "Radeq.cz",
+    "control_plane": false
+  },
+  "task": {
+    "task_type": "brainstorming",
+    "summary": "Evaluate Gemini advisory output for Radeq public offer positioning after trust and workspace-scope retries.",
+    "risk_level": "medium"
+  },
+  "phase": "learning_immediate_loop",
+  "state": "accepted",
+  "model_or_worker": {
+    "provider": "google",
+    "name": "Gemini CLI",
+    "role": "external advisory reviewer"
+  },
+  "reasoning_profile": {
+    "route": "subscription_cli",
+    "reasoning_effort": "model_default",
+    "change_policy": "Use only as advisory input; reject overpromising phrasing and verify implementation through local project checks."
+  },
+  "token_efficiency_profile": {
+    "mode": "caveman",
+    "context_scope": "Compact public-safe positioning packet from an empty temp working directory after earlier workspace-scope failure.",
+    "caveman_applied": true
+  },
+  "provider_best_practice_sources": [
+    "gemini-api-prompting-strategies",
+    "gemini-prompt-design-strategies"
+  ],
+  "input_packet_summary": {
+    "summary": "A redacted Radeq offer-positioning packet provided through stdin with explicit no-tools, no-files, no-web instruction.",
+    "allowed_context": [
+      "public-safe owner skill summary",
+      "Radeq complete-website positioning summary",
+      "current recommended offer hypothesis"
+    ],
+    "forbidden_context": [
+      "raw prompts",
+      "raw model output",
+      "raw project logs",
+      "secrets",
+      "customer data",
+      "private local file paths"
+    ],
+    "source_pointers": [
+      "docs/projects/radeq/architecture.md",
+      "docs/projects/radeq/work-log.md",
+      "docs/projects/radeq/decision-mesh/"
+    ]
+  },
+  "output_pointer": {
+    "kind": "mcp_tool_result",
+    "pointer": "current-session:gemini-radeq-offer-advisory-summary",
+    "summary": "Accepted advisory summary: digital order and digital peace are useful differentiators; structure the page around pain points, clear solution paths, model solutions, owner trust, and FAQ."
+  },
+  "score_by_dimension": {
+    "task_fit": 84,
+    "instruction_following": 82,
+    "source_grounding": 78,
+    "format_contract": 84,
+    "verification_readiness": 80,
+    "privacy_safety": 84,
+    "handoff_clarity": 84,
+    "token_efficiency": 80,
+    "workflow_compatibility": 82
+  },
+  "failure_labels": [
+    "verification_gap"
+  ],
+  "prompt_or_input_delta": {
+    "changed": true,
+    "summary": "Earlier Gemini attempts failed on trust and workspace behavior. The accepted retry ran from an empty temp directory with a direct stdin packet and explicit no-tools instruction.",
+    "changed_fields": [
+      "workspace_scope",
+      "transport",
+      "tool_access",
+      "format_contract"
+    ],
+    "rollback_path": "Ignore Gemini advisory suggestions and remove this eval record if the output is not used in Radeq planning."
+  },
+  "rerun_count": 2,
+  "accepted_state": "accepted",
+  "verification_evidence": [
+    {
+      "type": "mesh_route",
+      "status": "passed",
+      "evidence": "Decision Mesh model-output route classified the accepted Gemini retry as accepted at score 82.",
+      "source_pointer": "mcp__autopilot_decision_mesh.select_model_output_e_988a2f660b90"
+    },
+    {
+      "type": "manual_review",
+      "status": "passed",
+      "evidence": "Useful positioning ideas were retained, but an overpromising revenue phrase was explicitly rejected.",
+      "source_pointer": "docs/projects/radeq/decision-mesh/rules.yaml"
+    }
+  ],
+  "source_pointers": [
+    "docs/autopilot/model-output-evaluation-operating-model.md",
+    "src/data/delivery-system/modelOutputEvaluation.ts",
+    "docs/projects/radeq/architecture.md",
+    "docs/projects/radeq/decision-mesh/rules.yaml",
+    "prompt-library/source-catalog.json"
+  ],
+  "privacy_review": {
+    "redacted_context_only": true,
+    "raw_output_stored": false,
+    "raw_prompt_stored": false,
+    "raw_logs_stored": false,
+    "secrets_or_customer_data_stored": false,
+    "reviewer": "codex-supervisor"
+  }
+}

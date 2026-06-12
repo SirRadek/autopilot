@@ -28,7 +28,7 @@
     },
     "model_family": {
       "type": "string",
-      "enum": ["gpt", "gemini", "claude", "qwen-local", "provider-neutral"]
+      "enum": ["gpt", "gemini", "claude", "deepseek", "qwen-local", "provider-neutral"]
     },
     "task_type": {
       "type": "string",

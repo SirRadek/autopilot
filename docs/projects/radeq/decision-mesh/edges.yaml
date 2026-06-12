@@ -1,4 +1,24 @@
 edges:
+  - from: offer_positioning_conversion
+    to: static_public_site
+    relation: defines_purpose
+    weight: 0.92
+    why: "The static homepage must serve the locked primary offer and visitor action before broader portfolio content."
+  - from: offer_positioning_conversion
+    to: lead_capture_pipeline
+    relation: drives_conversion
+    weight: 0.84
+    why: "The lead form and CTA copy must collect the right complete-website context without broad or unsafe promises."
+  - from: offer_positioning_conversion
+    to: seo_performance_surface
+    relation: sets_content_strategy
+    weight: 0.82
+    why: "SEO topics and metadata should support complete-website delivery before wider services."
+  - from: offer_positioning_conversion
+    to: three_d_mascot_addon
+    relation: constrains_optional_effects
+    weight: 0.72
+    why: "3D and A/B/C/D effects must support proof and memorability without replacing the primary offer."
   - from: static_public_site
     to: seo_performance_surface
     relation: requires

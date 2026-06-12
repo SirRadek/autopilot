@@ -1,6 +1,6 @@
 # Autopilot Control Plane Architecture
 
-Last updated: 2026-06-11
+Last updated: 2026-06-12
 Next review: 2026-06-11
 Status: active process layer
 Release: `v0.2.0`
@@ -200,12 +200,13 @@ Decision Mesh:
 - Product & Design OS library records distinguish commercial-safe source pools from inspiration-only references. External assets require source, license, cost, commercial-use, provenance, fallback, performance, and QA evidence before project adoption. Reference screenshots, OCR, DOM/CSS inspection, and HTML captures are evidence only; implementation must use a clean-room brief and original code/assets unless a license explicitly permits reuse.
 - Visual Analyst and Design Critic are governed roles for pre-production visual analysis, post-production critique, research evidence, and architecture-library recommendations. They do not produce final assets, approve their own work, or approve runtime adoption.
 - The Graphic Production Agent is a governed execution role and typed policy for routing static graphics, motion backgrounds, physics visuals, model assets, and video storyboards. It defaults to local/free tools, allows cloud tools when the free/no-cost path is confirmed, and blocks paid tools such as Kling AI without a later owner exception.
-- Reasoning agent routing is modeled explicitly as task lanes plus provider policies: deterministic tools, local Qwen, GPT/OpenAI, Claude Code subscription, Gemini CLI through Google AI subscription/license entitlement, and DeepSeek API/self-hosted each have separate checks, advisory weights, context scopes, and stop conditions.
+- Reasoning agent routing is modeled explicitly as task lanes plus provider policies: deterministic tools, local Qwen, GPT/OpenAI, Claude Code subscription, Gemini CLI through Google AI subscription/license entitlement, DeepSeek API/self-hosted, and DeepSeek manual web chat each have separate checks, advisory weights, context scopes, and stop conditions.
 - Advisory weight is ordered by source authority and owner preference: local deterministic evidence and project records outrank all models; scoped Claude Code subscription critique has higher advisory weight and broader repo-read scope than Gemini; Gemini has higher advisory weight than Qwen or DeepSeek drafts.
 - External advisory reasoning models are allowed as redacted advisory support for brainstorming, critique, validation, and second opinions across agents. Routine worker loops remain local by default, paid credits are blocked, subscription and license tools require entitlement checks, API/self-hosted tools require cost or infrastructure checks, and model output is never source-of-truth evidence without local verification.
 - Model-output evaluation is modeled explicitly: outputs that affect prompts, handoffs, routing, governance, architecture, security, or delivery decisions must be scored by dimension before acceptance. During learning, poor outputs trigger prompt/input deltas and reruns until acceptable or blocked; repeated similar failures trigger token-efficiency and reasoning-model route review before changing reasoning or provider; later weekly tuning uses collected eval records and failure patterns.
+- Advisory provider execution is modeled separately from model output. Provider runner logs, prompt echoes, CLI syntax errors, trust-flag failures, login failures, and provider availability failures are control-plane diagnostics. If no model output artifact is present, Protective Supervision must set `blocked` or `waiting_owner` and content review must not continue until the owner changes scope or a valid output exists.
 - Model-output eval records are deterministic local JSON contracts. `npm run model-output:validate` checks the schema, examples, provider source IDs, score dimensions, privacy review, retry deltas, repeated-failure route review, and weekly aggregates; it is included in `npm run verify`.
-- Plugin and skill inventory is modeled explicitly. Current-session callable plugins and local skills can be routed through their exposed tools/workflows; cached plugin bundles are only availability leads until `tool_search` or active tools expose them.
+- Plugin, skill, and provider-policy inventory is modeled explicitly. Current-session callable plugins and local skills can be routed through their exposed tools/workflows; cached plugin bundles are only availability leads until `tool_search` or active tools expose them. Model provider records such as DeepSeek are read-only routing metadata until credentialed runtime access, or manual web-login availability for web chat, is separately verified.
 - Context7 is the preferred docs-verification lane for reasoning, Gemini brainstorming, design critique, architecture-library review, and technology/best-practice recommendations when it is connected. If Context7 is unavailable or does not cover the topic, the handoff must record the fallback and verify the claim through official documentation, local files, tests, or controlled browser evidence.
 - Context7 is configured as a global local Codex MCP server via `npx.cmd -y @upstash/context7-mcp`, but a running thread may need restart or reload before the `mcp__context7` tools appear in the available tool list.
 - 3D visualization is deferred until the query/MCP layer is stable, and 3D remains a premium add-on capability rather than a default service path.
@@ -310,6 +311,17 @@ Claude Code:
 - allowed uses are architecture/security/planning critique, agent validation, edge-case review, and bounded repo sessions after owner scope
 - forbidden uses are routine local-worker loops, final approval, governance approval, unredacted context, unbounded autonomous execution, and remote mutation without explicit approval
 - project `CLAUDE.md` defines the local memory contract and points Claude back to `AGENTS.md`, Decision Mesh routing, local checks, and Autopilot boundaries
+
+DeepSeek:
+
+- API/self-hosted advisory comparison provider only; not a connected runtime, default worker, gateway, approval authority, or source of truth
+- manual web-chat advisory through `https://chat.deepseek.com/`; not a CLI, API runtime, connector, stable headless automation contract, default worker, approval authority, or source of truth
+- represented in reasoning-model routing, model-output evaluation, prompt-provider guidance, and tool/provider inventory as `provider_policy_only`
+- allowed API/self-hosted uses are DeepSeek JSON output comparison, reasoning-model comparison, function-calling guidance review, and cost-aware coding critique after provider availability, cost or self-hosting, redacted-context, official-doc, and local-verification checks
+- allowed web-chat uses are free/manual advisory second opinions after browser login, fresh chat, selected `Rychlý`/Quick or `Expert` mode, bounded redacted prompt packet, and controlled browser evidence
+- forbidden uses are routine local-worker loops, broad private repository context, unverified hosted-cost assumptions, unsupported tool-mode assumptions, CLI/API claims without key evidence, hidden/headless browser use as a stable runtime, and final approval
+- no `DEEPSEEK_*` credential marker was present in the inspected local environment on 2026-06-11; registering the provider in mesh does not create credentials or call the provider
+- Browser verification on 2026-06-11 confirmed logged-in web chat, fresh Quick and Expert chats, expected response tokens, and `Přemýšlení po dobu 1 sekundy` evidence for thinking; outputs remain advisory only
 
 ## Security And Privacy Controls
 

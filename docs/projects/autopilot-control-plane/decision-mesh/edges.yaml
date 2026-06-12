@@ -24,6 +24,16 @@ edges:
     relation: routes_project_scope
     weight: 0.84
     why: "A symptom must be classified as Autopilot or project-owned before capability routing continues."
+  - from: control_plane_observability_boundary
+    to: model_output_evaluation_boundary
+    relation: classifies_failed_provider_run
+    weight: 0.86
+    why: "Control-plane diagnostics for provider runner logs must verify model-output presence before content evaluation."
+  - from: control_plane_observability_boundary
+    to: protective_supervision_boundary
+    relation: reports_blocker
+    weight: 0.82
+    why: "Missing provider output should become a blocked or waiting_owner progress state before the next handoff."
   - from: capability_routing_layer
     to: read_only_mcp_boundary
     relation: exposed_through

@@ -80,4 +80,38 @@ describe("model output evaluation policy", () => {
     expect(route.nextActions).toContain("record_blocker_owner_or_source_needed");
     expect(route.sourceIds).toEqual(expect.arrayContaining(["prompt-source-catalog", "prompt-library-policy"]));
   });
+
+  it("blocks advisory runner artifacts that do not contain model output", () => {
+    const route = selectModelOutputEvaluationRoute({
+      task: "Gemini CLI syntax error produced a runner log with no model output after Claude and DeepSeek provider checks",
+      provider: "google",
+      runnerStatus: "failed",
+      artifactKind: "runner_log",
+      outputPresent: false
+    });
+
+    expect(route.qualityState).toBe("blocked");
+    expect(route.requiredChecks).toEqual(
+      expect.arrayContaining([
+        "runner_artifact_contract_verified",
+        "provider_run_status_recorded",
+        "model_output_presence_verified",
+        "blocked_state_recorded_when_output_missing"
+      ])
+    );
+    expect(route.stopConditions).toEqual(
+      expect.arrayContaining([
+        "provider_run_failed_without_blocked_state",
+        "model_output_missing_from_artifact",
+        "advisory_workflow_continued_after_provider_error"
+      ])
+    );
+    expect(route.nextActions).toEqual(
+      expect.arrayContaining([
+        "record_provider_run_artifact",
+        "verify_model_output_presence",
+        "set_progress_blocked_or_waiting_owner"
+      ])
+    );
+  });
 });

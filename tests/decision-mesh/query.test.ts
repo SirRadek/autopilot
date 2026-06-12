@@ -296,6 +296,44 @@ describe("Decision Mesh queries", () => {
     );
   });
 
+  it("routes failed advisory model runs as control-plane diagnostics before content review", () => {
+    const task =
+      "Diagnose Autopilot advisory model run: Claude CLI syntax error, Gemini trust flag failed, DeepSeek unavailable, runner log contains prompt only, no model output, waiting owner";
+    const result = selectCapabilities(mesh, { task });
+
+    expect(result.capabilities).toContain("observability_mesh");
+    expect(result.required_checks).toEqual(
+      expect.arrayContaining([
+        "problem_scope_classified",
+        "provider_run_status_recorded",
+        "runner_artifact_contract_verified",
+        "model_output_presence_verified"
+      ])
+    );
+
+    const subgraph = getRelevantSubgraph(mesh, {
+      task,
+      agent: "protective-supervisor",
+      max_nodes: 8
+    });
+
+    expect(subgraph.relevant_nodes.map((node) => node.id)).toEqual(
+      expect.arrayContaining([
+        "observability_mesh",
+        "model_output_evaluation_policy",
+        "reasoning_strategy",
+        "protective_supervision_policy"
+      ])
+    );
+    expect(findRisks(mesh, { task }).stop_conditions).toEqual(
+      expect.arrayContaining([
+        "provider_run_failed_without_blocked_state",
+        "model_output_missing_from_artifact",
+        "advisory_workflow_continued_after_provider_error"
+      ])
+    );
+  });
+
   it("builds a compact project-specific mesh packet", () => {
     const projectMesh = loadProjectDecisionMeshFromRoot(process.cwd(), "radeq");
     const packet = buildProjectMeshPacket(projectMesh, {
@@ -371,6 +409,41 @@ describe("Decision Mesh queries", () => {
       ])
     );
     expect(packet.stop_conditions).toContain("repeated_bad_output_without_model_or_reasoning_review");
+  });
+
+  it("keeps failed advisory runner artifacts inside the control-plane project mesh", () => {
+    const projectMesh = loadProjectDecisionMeshFromRoot(process.cwd(), "autopilot-control-plane");
+    const packet = buildProjectMeshPacket(projectMesh, {
+      project_slug: "autopilot-control-plane",
+      task: "Diagnose failed Claude Gemini DeepSeek advisory runner artifact: CLI syntax error, provider unavailable, prompt-only log, no model output, blocked waiting owner",
+      agent: "protective-supervisor",
+      max_nodes: 7
+    });
+
+    expect(packet.relevant_nodes).toEqual(
+      expect.arrayContaining([
+        "control_plane_observability_boundary",
+        "model_output_evaluation_boundary",
+        "model_reasoning_boundary",
+        "protective_supervision_boundary"
+      ])
+    );
+    expect(packet.rules.map((rule) => rule.id)).toContain("ACP-MODEL-RUN-001");
+    expect(packet.required_checks).toEqual(
+      expect.arrayContaining([
+        "provider_run_status_recorded",
+        "runner_artifact_contract_verified",
+        "model_output_presence_verified",
+        "blocked_state_recorded_when_output_missing"
+      ])
+    );
+    expect(packet.stop_conditions).toEqual(
+      expect.arrayContaining([
+        "provider_run_failed_without_blocked_state",
+        "model_output_missing_from_artifact",
+        "advisory_workflow_continued_after_provider_error"
+      ])
+    );
   });
 
   it("keeps Autopilot protective supervision inside the control-plane project mesh", () => {

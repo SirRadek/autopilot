@@ -111,6 +111,18 @@ rules:
       - protective_supervision_boundary
     instruction: "After the learning baseline, weekly prompt/input updates must be based on collected eval records and repeated failure patterns, not anecdotes or raw model preference."
     severity: major
+  - id: ACP-MODEL-RUN-001
+    title: Advisory provider runs need valid output artifacts
+    applies_to:
+      - control_plane_observability_boundary
+      - model_output_evaluation_boundary
+      - model_reasoning_boundary
+      - protective_supervision_boundary
+    instruction: "External advisory runs must record provider run status, runner artifact type, and model-output presence separately. If the provider command fails, the artifact is prompt/log-only, or no model output is present, set blocked or waiting_owner and do not continue into content review."
+    severity: blocker
+    must_not_assume:
+      - Do not treat shell logs, prompt echoes, CLI syntax errors, or provider availability failures as model output.
+      - Do not continue a multi-model brainstorm by silently dropping an unavailable provider.
   - id: ACP-PROTECT-001
     title: Protective supervision is report-first
     applies_to:

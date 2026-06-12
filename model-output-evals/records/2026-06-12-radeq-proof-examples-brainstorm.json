@@ -1,0 +1,137 @@
+{
+  "record_version": "v0.1",
+  "eval_id": "radeq-proof-examples-brainstorm-2026-06-12",
+  "created": "2026-06-12",
+  "project": {
+    "slug": "radeq",
+    "name": "Radeq.cz",
+    "control_plane": false
+  },
+  "task": {
+    "task_type": "brainstorming",
+    "summary": "Evaluate Claude, Gemini, and GPT advisory output for adding work examples back to the latest Radeq preview.",
+    "risk_level": "medium"
+  },
+  "phase": "learning_immediate_loop",
+  "state": "accepted",
+  "model_or_worker": {
+    "provider": "unknown",
+    "name": "Claude CLI, Gemini CLI, and Codex GPT subagent",
+    "role": "external and internal advisory comparison"
+  },
+  "reasoning_profile": {
+    "route": "subscription_cli",
+    "reasoning_effort": "model_default",
+    "change_policy": "Use as advisory input only; product implementation still requires scoped local edits and verification."
+  },
+  "token_efficiency_profile": {
+    "mode": "caveman",
+    "context_scope": "Compact public-safe packet with current preview URL, older commit summary, owner concern, and mesh constraints.",
+    "caveman_applied": true
+  },
+  "provider_best_practice_sources": [
+    "anthropic-evals",
+    "anthropic-prompting-best-practices",
+    "autopilot-supervisor-base",
+    "decision-mesh-policy",
+    "gemini-api-prompting-strategies",
+    "openai-evals",
+    "openai-prompt-engineering",
+    "prompt-library-policy"
+  ],
+  "input_packet_summary": {
+    "summary": "A redacted Radeq proof-examples packet comparing the latest GitHub Pages preview with older A/B/C/D proposal variants.",
+    "allowed_context": [
+      "current public GitHub Pages preview URL",
+      "older preview commit summaries",
+      "owner concern that work examples are missing",
+      "project mesh constraints about demos, proof, SEO-readable content, and no fake references"
+    ],
+    "forbidden_context": [
+      "raw prompts",
+      "raw model output",
+      "raw project logs",
+      "secrets",
+      "customer data",
+      "private client examples"
+    ],
+    "source_pointers": [
+      "docs/projects/radeq/work-log.md",
+      "docs/projects/radeq/architecture.md",
+      "C:/Users/sirok/Documents/Projects/radeq"
+    ]
+  },
+  "output_pointer": {
+    "kind": "work_log_entry",
+    "pointer": "docs/projects/radeq/work-log.md#2026-06-12-proof-examples-brainstorm",
+    "summary": "Accepted synthesis: add a static work-examples/proof section using safe output cards and process artifacts; do not return to demo-first A/B/C/D homepage behavior."
+  },
+  "score_by_dimension": {
+    "task_fit": 86,
+    "instruction_following": 82,
+    "source_grounding": 84,
+    "format_contract": 84,
+    "verification_readiness": 86,
+    "privacy_safety": 94,
+    "handoff_clarity": 88,
+    "token_efficiency": 82,
+    "workflow_compatibility": 88
+  },
+  "failure_labels": [
+    "instruction_miss"
+  ],
+  "prompt_or_input_delta": {
+    "changed": true,
+    "summary": "Gemini's first answer drifted into generic positioning, so the second prompt narrowed the task to exact homepage placement and cards. Gemini still failed to answer the specific task and was not adopted.",
+    "changed_fields": [
+      "format_contract",
+      "task_boundary",
+      "forbidden_topics"
+    ],
+    "rollback_path": "Ignore this advisory synthesis and remove the work-log/eval entries if proof examples are not implemented."
+  },
+  "rerun_count": 1,
+  "accepted_state": "accepted",
+  "verification_evidence": [
+    {
+      "type": "source_check",
+      "status": "passed",
+      "evidence": "Public preview returned HTTP 200 and contains the latest repositioned homepage content at commit 558d228.",
+      "source_pointer": "https://sirradek.github.io/radeq/?v=558d228&brainstorm=1"
+    },
+    {
+      "type": "manual_review",
+      "status": "passed",
+      "evidence": "Claude and GPT independently converged on a static proof/work-examples section that supports rather than replaces the primary website offer.",
+      "source_pointer": "docs/projects/radeq/work-log.md#2026-06-12-proof-examples-brainstorm"
+    },
+    {
+      "type": "manual_review",
+      "status": "failed",
+      "evidence": "Gemini failed to answer the specific work-examples comparison task after one narrowed retry, so its output was rejected.",
+      "source_pointer": "docs/projects/radeq/work-log.md#2026-06-12-proof-examples-brainstorm"
+    },
+    {
+      "type": "mesh_route",
+      "status": "passed",
+      "evidence": "Decision Mesh constraints preserved complete websites as primary, demos as non-primary, and static SEO-readable proof content.",
+      "source_pointer": "mcp__autopilot_decision_mesh.get_relevant_subgraph"
+    }
+  ],
+  "source_pointers": [
+    "docs/autopilot/model-output-evaluation-operating-model.md",
+    "src/data/delivery-system/modelOutputEvaluation.ts",
+    "docs/projects/radeq/architecture.md",
+    "docs/projects/radeq/work-log.md",
+    "docs/projects/radeq/decision-mesh/rules.yaml",
+    "prompt-library/source-catalog.json"
+  ],
+  "privacy_review": {
+    "redacted_context_only": true,
+    "raw_output_stored": false,
+    "raw_prompt_stored": false,
+    "raw_logs_stored": false,
+    "secrets_or_customer_data_stored": false,
+    "reviewer": "codex-supervisor"
+  }
+}

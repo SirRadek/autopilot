@@ -24,6 +24,15 @@ signals:
   - deploy log
   - ci log
   - runtime log
+  - control plane
+  - advisory model run
+  - provider run
+  - runner log
+  - cli error
+  - cli syntax error
+  - prompt only
+  - no model output
+  - missing model output
 related_agents:
   - architect
   - qa
@@ -40,6 +49,9 @@ required_checks:
   - problem_scope_classified
   - autopilot_vs_project_boundary
   - project_slug_or_control_plane_identified
+  - provider_run_status_recorded
+  - runner_artifact_contract_verified
+  - model_output_presence_verified
   - log_window_defined
   - source_inventory
   - redacted_log_summary
@@ -58,12 +70,17 @@ stop_conditions:
   - production_mutation_without_approval
   - log_dump_too_large
   - correlation_missing_for_distributed_issue
+  - provider_run_failed_without_blocked_state
+  - model_output_missing_from_artifact
+  - advisory_workflow_continued_after_provider_error
 must_not_assume:
   - Do not treat Autopilot operational logs as product runtime evidence.
   - Do not treat product runtime logs as Autopilot source of truth.
   - Do not copy raw project logs into Autopilot; store redacted summaries and source pointers only.
   - Do not diagnose before classifying whether the symptom belongs to Autopilot or a supervised project.
+  - Do not inspect supervised-project content when the symptom is a failed Autopilot advisory-model runner.
 objective:
   - Separate control-plane problems from project runtime problems before analysis.
   - Localize failures to the narrowest layer with bounded evidence.
+  - Verify provider run status and model-output presence before content review continues.
   - Preserve project ownership of runtime logs while allowing Autopilot to route, summarize, and govern diagnostics.

@@ -125,6 +125,18 @@ rules:
       - protective_supervision_policy
     instruction: "After the learning baseline, prompt and input updates should be batched from weekly eval summaries and repeated failure patterns. Do not make weekly prompt changes from anecdotes without source-linked eval records."
     severity: major
+  - id: MODEL-EVAL-003
+    title: Advisory provider runs need valid output artifacts
+    applies_to:
+      - model_output_evaluation_policy
+      - reasoning_strategy
+      - observability_mesh
+      - protective_supervision_policy
+    instruction: "External advisory runs must record provider run status, runner artifact type, and model-output presence separately. If the provider command fails, the artifact is prompt/log-only, or no model output is present, set blocked or waiting_owner and do not continue into content review."
+    severity: blocker
+    must_not_assume:
+      - Do not treat shell logs, prompt echoes, CLI syntax errors, or provider availability failures as model output.
+      - Do not continue a multi-model brainstorm by silently dropping an unavailable provider.
   - id: PROMPT-LIB-001
     title: Prompts need source authority and evals
     applies_to:
