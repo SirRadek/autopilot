@@ -27,7 +27,7 @@ Out of scope for the first implementation:
 - Automatic responses to opportunities.
 - Scraping behind login, paywalls, anti-bot barriers, or disallowed access patterns.
 - Treating model output as canonical state.
-- Global Autopilot mesh model-routing implementation; only a proposal is included below.
+- Global Autopilot mesh model-routing, usage-limit tracking, or provider policy work.
 
 ## Architecture
 
@@ -325,51 +325,6 @@ Deploy locally first:
 - Add a local fixture-based smoke script before live source runs.
 
 Live source runs remain manual until source terms, failure rates, and retention behavior are verified.
-
-## Global Autopilot Mesh Usage Limits Proposal
-
-This section is proposal-only for the broader Autopilot mesh. It is not part of the opportunity monitor implementation.
-
-Model routing goals:
-
-- Keep routine work cheap.
-- Escalate to stronger models only when quality, risk, or disagreement requires it.
-- Track usage limits and provider availability before routing.
-- Treat all model outputs as advisory unless explicitly accepted into project state by code, tests, or human review.
-
-Proposed weights:
-
-- Codex/GPT: primary workhorse, relative weight `5x`.
-- Claude: high-quality architecture/security/review arbiter, relative weight `1x`.
-- Gemini/other advisors: low-cost second opinion, relative weight `0.5x`.
-
-Quality thresholds:
-
-- Routine accepted output requires at least 90% internal quality score.
-- Critical architecture/security/legal/data decisions require 95-100% confidence from a stronger model or human review.
-- If a cheaper model stays above 90% on a task class, reduce stronger-model calls for that class.
-- If models disagree materially, route to human or stronger-model review.
-
-Usage-limit checks:
-
-- Record provider availability before advisory runs.
-- Record whether the output artifact exists.
-- Treat session/capacity limit as a blocked provider state, not as a failed content review.
-- Do not silently drop an unavailable provider from a multi-model review.
-- Do not add paid API routes without owner approval.
-
-Suggested future mesh state fields:
-
-- `provider`
-- `model`
-- `authMode`
-- `usageLimitStatus`
-- `rateLimitStatus`
-- `estimatedCostClass`
-- `qualityScore`
-- `confidenceScore`
-- `adopted`
-- `rejectedReason`
 
 ## Open Decisions
 
