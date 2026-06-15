@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AutopilotAdvisoryRunRecord",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "runId",
+    "task",
+    "targetProject",
+    "provider",
+    "model",
+    "accessLane",
+    "contextPackRef",
+    "redactionSummary",
+    "providerStatusRef",
+    "startedAt",
+    "runStatus",
+    "modelOutputPresent",
+    "qualityScore",
+    "adoptionStatus",
+    "verifier",
+    "evidenceRefs"
+  ],
+  "properties": {
+    "runId": { "type": "string", "minLength": 1 },
+    "task": { "type": "string", "minLength": 1 },
+    "targetProject": { "type": "string", "minLength": 1 },
+    "provider": { "type": "string", "minLength": 1 },
+    "model": { "type": "string", "minLength": 1 },
+    "accessLane": {
+      "type": "string",
+      "enum": ["local", "subscription_cli", "subscription_interactive", "api_key", "app_connector", "self_hosted"]
+    },
+    "contextPackRef": { "type": "string", "minLength": 1 },
+    "redactionSummary": { "type": "string", "minLength": 1 },
+    "providerStatusRef": { "type": "string", "minLength": 1 },
+    "startedAt": { "type": "string", "format": "date-time" },
+    "finishedAt": { "type": "string", "format": "date-time" },
+    "runStatus": {
+      "type": "string",
+      "enum": ["requested", "running", "blocked", "failed", "succeeded"]
+    },
+    "modelOutputPresent": { "type": "boolean" },
+    "artifactRef": { "type": "string" },
+    "qualityScore": { "type": "integer", "minimum": 0, "maximum": 100 },
+    "adoptionStatus": {
+      "type": "string",
+      "enum": ["not_reviewed", "adoption_proposed", "adopted", "rejected", "human_review_required"]
+    },
+    "adoptionReason": { "type": "string" },
+    "acceptedChanges": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "rejectedReason": { "type": "string" },
+    "verifier": { "type": "string", "minLength": 1 },
+    "evidenceRefs": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 }
+    }
+  }
+}
