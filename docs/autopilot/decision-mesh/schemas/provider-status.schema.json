@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AutopilotProviderStatus",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "provider",
+    "model",
+    "accessLane",
+    "availability",
+    "usageLimitStatus",
+    "rateLimitStatus",
+    "capacityStatus",
+    "costClass",
+    "paidRouteApproved",
+    "lastCheckedAt",
+    "evidenceRef",
+    "routingReason"
+  ],
+  "properties": {
+    "provider": { "type": "string", "minLength": 1 },
+    "model": { "type": "string", "minLength": 1 },
+    "accessLane": {
+      "type": "string",
+      "enum": ["local", "subscription_cli", "subscription_interactive", "api_key", "app_connector", "self_hosted"]
+    },
+    "availability": {
+      "type": "string",
+      "enum": ["unknown", "checking", "available", "degraded", "unavailable"]
+    },
+    "usageLimitStatus": {
+      "type": "string",
+      "enum": ["unknown", "within_limit", "nearing_limit", "session_limited", "quota_exhausted", "billing_required"]
+    },
+    "rateLimitStatus": {
+      "type": "string",
+      "enum": ["unknown", "clear", "throttled", "retry_after", "hard_blocked"]
+    },
+    "capacityStatus": {
+      "type": "string",
+      "enum": ["unknown", "normal", "degraded", "capacity_limited"]
+    },
+    "costClass": {
+      "type": "string",
+      "enum": ["free", "included", "low_paid", "high_paid"]
+    },
+    "paidRouteApproved": { "type": "boolean" },
+    "lastCheckedAt": { "type": "string", "format": "date-time" },
+    "nextEligibleAt": { "type": "string", "format": "date-time" },
+    "evidenceRef": { "type": "string", "minLength": 1 },
+    "routingReason": { "type": "string", "minLength": 1 }
+  }
+}

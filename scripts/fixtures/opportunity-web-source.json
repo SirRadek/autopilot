@@ -1,0 +1,22 @@
+{
+  "sourceKey": "reviewed-web-cz-it",
+  "sourceRunId": "reviewed-web-cz-it:fixture-run-2026-06-14",
+  "idempotencyKey": "reviewed-web-cz-it:fixture-run-2026-06-14",
+  "items": [
+    {
+      "sourceItemId": "web-source-fixture-1",
+      "canonicalUrl": "https://portal.example.cz/tenders/web-source-fixture-1",
+      "title": "Poptavka na webovy portal a CMS",
+      "description": "Firma hleda dodavatele pro webovy portal, CMS, integrace a spravu obsahu.",
+      "rawSnippet": "Kontakt Jana Nova, jana@example.cz, +420 777 222 333",
+      "rowFingerprint": "web-source-fixture-fingerprint-1",
+      "fitScore": 88,
+      "serviceTags": ["web", "cms", "integration"],
+      "requesterName": "Jana Nova",
+      "contactEmail": "jana@example.cz",
+      "contactPhone": "+420 777 222 333",
+      "publishedAt": "2026-06-14T08:00:00.000Z",
+      "discoveredAt": "2026-06-14T09:00:00.000Z"
+    }
+  ]
+}

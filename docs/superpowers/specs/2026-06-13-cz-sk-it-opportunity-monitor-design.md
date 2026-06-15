@@ -1,7 +1,64 @@
 # CZ/SK IT Opportunity Monitor Design
 
 Date: 2026-06-13
-Status: approved-for-implementation-scope
+Status: generic-web-source-live-runner-implemented
+
+## 2026-06-13 Mesh Deployment Decisions
+
+- Deploy through the ClientOps project mesh, not the Autopilot root mesh.
+- Keep the first implementation deterministic-only; model summaries and fit reasons are advisory.
+- Do not require the Autopilot usage-limit control plane before fixture ingest, CMS review, dedupe, and purge work.
+- Do not create leads directly from imported opportunities. Human review converts an opportunity into a lead or linked workflow task.
+- Use `OPPORTUNITY_INGEST_TOKEN` for source-row ingest. Do not reuse `MESH_SERVICE_TOKEN`.
+- Opportunity workflow events must be PII-free and are audit evidence only.
+- `opportunity-items.status`, `personalDataExpiresAt`, and `personalDataPurgedAt` own lifecycle and retention state.
+- Live source runs remain blocked until scrapeflow contract, allowed-host validation, fixture ingest, dedupe, and purge tests pass.
+
+## 2026-06-14 Local Fixture Implementation
+
+- Added Payload collections for `opportunity-sources`, `opportunity-runs`, `opportunity-items`, and `opportunity-reviews`.
+- Added protected `POST /api/opportunities/ingest` using `OPPORTUNITY_INGEST_TOKEN`.
+- Added mesh-authenticated `POST /api/opportunities/purge` using `MESH_SERVICE_TOKEN`.
+- Added fixture JSON and `scripts/smoke-opportunities.ps1`.
+- Added tests for allowed-host validation, fixture import, idempotent replay, duplicate skip, collision block, PII-free events, and idempotent purge.
+- Live source runs remain blocked until a real source is reviewed and fixture smoke is run on the target runtime.
+
+## 2026-06-14 Generic Live Web-Source Implementation
+
+- Added default live source key `reviewed-web-cz-it`.
+- Added mesh-token-gated `POST /api/opportunities/live/web-source`.
+- The runner accepts either pre-normalized `items` or explicit allowlisted `urls`.
+- URL mode checks enabled source, `termsReviewedAt`, `robotsReviewedAt`, allowed hosts, and bounded URL count before fetch.
+- HTML pages are mapped into the existing opportunity ingest contract.
+- Hlidac Statu remains a disabled optional adapter; it is not required for the default live path.
+- Provider/web output is still evidence only; manual review remains required before outreach or lead/project conversion.
+
+## 2026-06-14 Source Date Relevance Update
+
+- `opportunity-items` now stores `sourceStatus`, `sourceUpdatedAt`, and `deadlineAt` separately from `publishedAt`.
+- Generic HTML mapping extracts localized CZ/SK/IT dates from labels such as `Datum zadani`, `overeno dne`, `Termin pro podani nabidek`, `Termin pre podanie ponuk`, and `Lehota na predkladanie ponuk`.
+- Private demand portals should be filtered by `publishedAt` or `sourceUpdatedAt`, with `discoveredAt` retained as the audit time for relative dates.
+- Public procurement portals should be filtered by `deadlineAt`; expired deadlines can be imported only as closed evidence, not actionable opportunities.
+- High-priority generic web-source candidates with public date evidence:
+  - Webtrh `/poptavky/`
+  - ePoptavka `/it-software`
+  - Poptavky.cz `/poptavky/it-software`, `/poptavky/webove-aplikace`, `/poptavky/web`
+  - 123dopyt.sk `/internet-web-design` and `/verejne-dopyty/it-software`
+  - MojeDopyty.sk `/dopyty/pocitace-software`
+  - Poptavej.cz `/poptavky/informacni-technologie`
+  - AAAPoptavka.cz `/poptavky/software` and `/poptavky/pocitace`
+- Secondary generic candidates:
+  - Zakazky-pro-firmy.cz `/it-software/`
+  - TrhPoptavek.cz `/software`
+  - Sluzby.cz web zakazky, but only after strict stale-date filtering because many detail pages are historic.
+- Public procurement candidates need source-specific adapters:
+  - NEN `nen.nipez.cz/verejne-zakazky`
+  - VVZ/NIPEZ `vvz.nipez.cz`
+  - UVO `uvo.gov.sk`
+  - JOSEPHINE `josephine.proebiz.com`
+  - eZakazky.sk
+  - TED `ted.europa.eu`
+  - Italian procurement portals such as Acquisti in Rete PA/MePA and ANAC-linked notices.
 Project: ClientOps CMS
 
 ## Goal

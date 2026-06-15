@@ -1,0 +1,12 @@
+.env
+.env.*
+!.env.example
+.next
+node_modules
+dist
+build
+coverage
+*.log
+*.tsbuildinfo
+payload-types.ts
+backups/
