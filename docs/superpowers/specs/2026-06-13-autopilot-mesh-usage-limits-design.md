@@ -2,6 +2,16 @@
 
 Date: 2026-06-13
 Status: proposal-only
+
+## 2026-06-13 Mesh Deployment Decisions
+
+- Deploy this as Autopilot root control-plane mesh documentation under `docs/autopilot/decision-mesh/`.
+- Do not store provider usage/advisory-run records inside ClientOps CMS workflow state.
+- Unknown provider status, missing model output, provider timeout, or unapproved paid route blocks the advisory workflow.
+- Claude and Gemini outputs remain advisory; GPT/Codex/local repo evidence remains primary for implementation.
+- Broad repository context may be used only after secret/build/vendor artifacts are excluded.
+- Advisory adoption requires local verification, source pointers, tests, official docs, or human acceptance.
+- This control-plane work must not block deterministic ClientOps opportunity ingest/review/purge work.
 Scope: Autopilot mesh control plane
 
 ## Goal
