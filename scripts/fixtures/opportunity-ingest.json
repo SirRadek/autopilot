@@ -1,0 +1,22 @@
+{
+  "sourceKey": "fixture-cz-it",
+  "sourceRunId": "fixture-run-2026-06-13",
+  "idempotencyKey": "fixture-cz-it:fixture-run-2026-06-13",
+  "items": [
+    {
+      "sourceItemId": "fixture-item-1",
+      "canonicalUrl": "https://portal.example.cz/tenders/fixture-item-1",
+      "title": "Poptavka na web a CMS",
+      "description": "Lokalni fixture radek pro overeni importu pred live zdroji.",
+      "rawSnippet": "Kontakt Jan Novak, jan@example.cz, +420 777 111 222",
+      "rowFingerprint": "fixture-fingerprint-1",
+      "fitScore": 86,
+      "serviceTags": ["web", "cms"],
+      "requesterName": "Jan Novak",
+      "contactEmail": "jan@example.cz",
+      "contactPhone": "+420 777 111 222",
+      "publishedAt": "2026-06-13T08:00:00.000Z",
+      "discoveredAt": "2026-06-13T09:00:00.000Z"
+    }
+  ]
+}
