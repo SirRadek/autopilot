@@ -1,6 +1,6 @@
 import type { CollectionConfig } from 'payload'
 
-import { isAuthenticated } from '@/access/isAdmin'
+import { isAdminOrEditor } from '@/access/isAdmin'
 
 export const Clients: CollectionConfig = {
   slug: 'clients',
@@ -10,10 +10,10 @@ export const Clients: CollectionConfig = {
     defaultColumns: ['name', 'status', 'primaryEmail', 'updatedAt']
   },
   access: {
-    create: isAuthenticated,
-    read: isAuthenticated,
-    update: isAuthenticated,
-    delete: isAuthenticated
+    create: isAdminOrEditor,
+    read: isAdminOrEditor,
+    update: isAdminOrEditor,
+    delete: isAdminOrEditor
   },
   fields: [
     {

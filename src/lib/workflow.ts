@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto'
+import { createHash, randomUUID } from 'node:crypto'
 
 import type { Payload } from 'payload'
 
@@ -29,6 +29,36 @@ type LegacyTaskState = 'new' | 'ready' | 'in_progress' | 'dropped'
 type TaskState = MeshTaskState | LegacyTaskState
 type ActorType = 'system' | 'human' | 'mesh' | 'worker'
 const defaultWorkerLockMs = 15 * 60 * 1000
+const leadReviewPayloadIdPrefix = 'sha256:'
+
+type LeadCanonicalField =
+  | 'name'
+  | 'email'
+  | 'company'
+  | 'projectType'
+  | 'audience'
+  | 'deadline'
+  | 'currentUrl'
+  | 'budgetRange'
+  | 'message'
+  | 'sourcePath'
+  | 'referrer'
+  | 'locale'
+
+const leadComparisonFields = [
+  ['name', 'name'],
+  ['email', 'email'],
+  ['company', 'company'],
+  ['projectType', 'project_type'],
+  ['audience', 'audience'],
+  ['deadline', 'deadline'],
+  ['currentUrl', 'current_url'],
+  ['budgetRange', 'budget_range'],
+  ['message', 'message'],
+  ['sourcePath', 'source_path'],
+  ['referrer', 'referrer'],
+  ['locale', 'locale']
+] as const satisfies ReadonlyArray<readonly [LeadCanonicalField, keyof LeadSubmission]>
 
 interface StableTaskIdInput {
   correlationId: string
@@ -99,8 +129,10 @@ export function buildLeadReviewTask(
   leadId: string | number,
   metadata: Pick<CreateTaskInput, 'correlationId' | 'idempotencyKey' | 'projectSlug'> = {}
 ): CreateTaskInput {
+  const priorityReason = lead.budget_range || lead.deadline ? 'lead_has_budget_or_deadline' : 'standard_lead_triage'
+
   return {
-    title: `Review lead: ${lead.project_type} - ${lead.name}`,
+    title: `Review lead: ${lead.project_type} (#${String(leadId)})`,
     taskType: 'lead_review',
     assignedRole: 'orchestrator',
     priority: lead.budget_range || lead.deadline ? 700 : 500,
@@ -114,14 +146,10 @@ export function buildLeadReviewTask(
       source: 'public_lead_api',
       lead_id: String(leadId),
       correlation_id: metadata.correlationId,
-      idempotency_key: metadata.idempotencyKey,
-      name: lead.name,
-      email: lead.email,
-      company: lead.company,
+      idempotency_key: createPayloadFingerprint(metadata.idempotencyKey),
       project_type: lead.project_type,
-      budget_range: lead.budget_range,
+      priority_reason: priorityReason,
       source_path: lead.source_path,
-      referrer: lead.referrer,
       next_action: 'qualify_lead_and_convert_to_project_intake'
     }
   }
@@ -303,10 +331,13 @@ export async function createWorkflowTask(
 }
 
 export async function appendWorkflowEvent(payload: Payload, input: AppendWorkflowEventInput) {
+  const eventId = randomUUID()
+  const correlationId = input.correlationId || createCorrelationId()
+
   return payload.create({
     collection: 'workflow-events',
     data: {
-      eventId: randomUUID(),
+      eventId,
       task: toRelationshipId(input.task),
       lead: toRelationshipId(input.lead),
       opportunitySource: toRelationshipId(input.opportunitySource),
@@ -314,12 +345,12 @@ export async function appendWorkflowEvent(payload: Payload, input: AppendWorkflo
       opportunityItem: toRelationshipId(input.opportunityItem),
       eventType: input.eventType,
       occurredAt: new Date().toISOString(),
-      correlationId: input.correlationId || createCorrelationId(),
-      idempotencyKey: normalizeIdempotencyKey(input.idempotencyKey),
-      projectSlug: input.projectSlug ?? projectSlug,
+      correlationId,
+      idempotencyKey: normalizeIdempotencyKey(input.idempotencyKey) || `event:${eventId}`,
+      projectSlug: input.projectSlug?.trim() || projectSlug,
       workflowRunId: input.workflowRunId,
       actorType: input.actorType ?? 'system',
-      actorId: input.actorId,
+      actorId: input.actorId || 'clientops-cms',
       policyVersion: meshPolicyVersion,
       source: 'clientops-cms',
       role: input.role,
@@ -630,10 +661,12 @@ async function createLeadCollisionTask(
   submittedLead: LeadSubmission,
   leadData: ReturnType<typeof leadToCMSData>
 ) {
+  const mismatchedFields = leadMismatchFields(existingLead, submittedLead)
+
   return createWorkflowTask(
     payload,
     {
-      title: `Review idempotency collision: ${submittedLead.email}`,
+      title: `Review lead idempotency collision (#${String(existingLead.id)})`,
       taskType: 'lead_review',
       assignedRole: 'owner',
       priority: 900,
@@ -649,18 +682,12 @@ async function createLeadCollisionTask(
       projectSlug: leadData.projectSlug,
       subjectId: `collision:${leadData.dedupeKey}`,
       payload: {
+        source: 'public_lead_api',
         collision: true,
         existing_lead_id: String(existingLead.id),
-        submitted: {
-          email: submittedLead.email,
-          project_type: submittedLead.project_type,
-          message: submittedLead.message
-        },
-        current: {
-          email: existingString(existingLead, 'email'),
-          project_type: existingString(existingLead, 'projectType'),
-          message: existingString(existingLead, 'message')
-        },
+        correlation_id: leadData.correlationId,
+        idempotency_key: createPayloadFingerprint(leadData.idempotencyKey),
+        mismatched_fields: mismatchedFields,
         next_action: 'manual_review_idempotency_collision'
       }
     },
@@ -669,11 +696,30 @@ async function createLeadCollisionTask(
 }
 
 function leadMatchesExisting(existingLead: unknown, lead: LeadSubmission): boolean {
-  return (
-    existingString(existingLead, 'email').toLowerCase() === lead.email &&
-    existingString(existingLead, 'projectType').toLowerCase() === lead.project_type.toLowerCase() &&
-    existingString(existingLead, 'message') === lead.message
-  )
+  return leadMismatchFields(existingLead, lead).length === 0
+}
+
+function leadMismatchFields(existingLead: unknown, lead: LeadSubmission): LeadCanonicalField[] {
+  return leadComparisonFields
+    .filter(([existingField, submittedField]) => {
+      const current = normalizeLeadComparableValue(existingField, existingString(existingLead, existingField))
+      const submitted = normalizeLeadComparableValue(existingField, lead[submittedField])
+      return current !== submitted
+    })
+    .map(([field]) => field)
+}
+
+function normalizeLeadComparableValue(field: LeadCanonicalField, value: string): string {
+  const normalized = value.replace(/\s+/g, ' ').trim()
+  return field === 'email' ? normalized.toLowerCase() : normalized
+}
+
+function createPayloadFingerprint(value: string | undefined): string | undefined {
+  if (!value) {
+    return undefined
+  }
+
+  return `${leadReviewPayloadIdPrefix}${createHash('sha256').update(value).digest('hex').slice(0, 16)}`
 }
 
 function taskIdFromRelationship(value: unknown) {

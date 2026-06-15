@@ -19,7 +19,7 @@ For day-to-day planning, component status, and cleanup decisions, use `v0.1-proj
 
 In scope:
 
-- Payload CMS admin and REST/GraphQL routes.
+- Payload CMS admin and REST routes; Payload GraphQL route files are intentionally disabled with `410`.
 - Postgres-backed ClientOps data.
 - Public lead intake API.
 - Internal workflow task API.
@@ -36,7 +36,7 @@ Out of scope for this phase:
 
 ## Runtime Architecture
 
-- Next.js App Router serves the public landing page, Payload admin, Payload API, GraphQL, and custom API routes.
+- Next.js App Router serves the public landing page, Payload admin, Payload REST API, disabled Payload GraphQL routes, and custom API routes.
 - Payload CMS defines `users`, `clients`, `projects`, `sites`, `pages`, `forms`, `leads`, `tasks`, and `workflow-events`.
 - Opportunity monitor collections define `opportunity-sources`, `opportunity-runs`, `opportunity-items`, and `opportunity-reviews`.
 - Docker Compose runs Postgres 16 locally.
@@ -61,7 +61,7 @@ Opportunity fixture flow:
 
 Live opportunity flow:
 
-1. `POST /api/opportunities/live/web-source` requires `MESH_SERVICE_TOKEN`.
+1. `POST /api/opportunities/live/web-source` requires `OPPORTUNITY_LIVE_RUN_TOKEN`.
 2. The route accepts a reviewed `sourceKey` plus either normalized `items` or explicit `urls`.
 3. URL mode checks source enablement, terms review, robots review, allowed hosts, and bounded URL count before fetch.
 4. Fetched HTML pages are normalized into the same opportunity ingest contract used by fixtures.
@@ -96,11 +96,16 @@ Autopilot provider usage limits and advisory-run lifecycle are tracked under `do
 - `npm.cmd run seed` twice without duplicate seed records
 - Smoke POST to `/api/public/leads` creates one lead, one lead-review task, and audit event
 - Authenticated workflow GET returns task/event evidence with `MESH_SERVICE_TOKEN`
+- Authenticated workflow POST/PATCH uses `WORKFLOW_MUTATION_TOKEN`
+- Production public lead intake returns `503` unless edge/proxy rate limiting and body-size limit env are configured
+- Payload GraphQL and GraphQL Playground return `410` until a future owner re-enable decision.
 
 ## Known Risks
 
 - Docker Desktop daemon can be unavailable on Windows.
-- High-concurrency worker claims still need a compare-and-set or transactional claim path before parallel external worker pools.
+- Parallel external worker pools still need target-runtime verification of scoped tokens, atomic claim behavior, and repeated PATCH idempotency.
 - Opportunity monitor collections, ingest endpoint, fixture tests, purge path, and generic live web-source route are implemented.
-- Hlidac Statu remains a disabled optional adapter until token, attribution, and commercial approval are confirmed.
-- Transitive `esbuild` audit finding remains under Payload Postgres tooling.
+- Hlidac Statu remains a disabled optional adapter; its route returns `410`.
+- Payload/GraphQL packages are patched to `3.85.1`; TypeScript is on `6.0.3`; root Sharp is on `0.35.1`; all transitive `esbuild` instances are pinned through `overrides.esbuild = 0.28.1` after install, audit, lint, typecheck, test, build, seed, and runtime health checks passed.
+- ESLint remains on the current compatible 9.x line because current `eslint-plugin-import`, `eslint-plugin-react`, and `eslint-plugin-jsx-a11y` peer ranges do not support ESLint 10 yet.
+- Node types remain on the current 24.x line because the active local/runtime Node version is 24.

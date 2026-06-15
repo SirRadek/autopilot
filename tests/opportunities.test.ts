@@ -172,7 +172,13 @@ test('purges opportunity personal data idempotently without restating purged val
     sourceKey: 'portal-cz',
     sourceRunId: 'run-1',
     idempotencyKey: 'portal-cz:run-1',
-    items: [opportunityRow]
+    items: [
+      {
+        ...opportunityRow,
+        description:
+          'Firma hleda dodavatele pro web a spravu obsahu. Kontaktujte jan@example.cz nebo +420 777 111 222.'
+      }
+    ]
   })
 
   const item = payload.store['opportunity-items'][0]
@@ -197,16 +203,23 @@ test('purges opportunity personal data idempotently without restating purged val
   assert.equal(item.contactEmail, '')
   assert.equal(item.contactPhone, '')
   assert.equal(item.rawSnippet, '')
+  const description = stringValue(item.description)
+  assert.equal(description.includes('jan@example.cz'), false)
+  assert.equal(description.includes('+420 777 111 222'), false)
+  assert.equal(description.includes('Firma hleda dodavatele'), true)
   assert.equal(item.personalDataPurgedAt, '2026-06-13T10:00:00.000Z')
 
   const purgeEvent = payload.store['workflow-events'].find(
     (event) => event.eventType === 'opportunity_personal_data_purged'
   )
   assert.ok(purgeEvent)
-  const serializedPayload = JSON.stringify(purgeEvent?.payload)
-  assert.equal(serializedPayload.includes('jan@example.cz'), false)
-  assert.equal(serializedPayload.includes('+420 777'), false)
-  assert.equal(serializedPayload.includes('Jan Novak'), false)
+  const purgePayload = recordValue(purgeEvent.payload)
+  const fields = Array.isArray(purgePayload.fields) ? purgePayload.fields : []
+  assert.equal(fields.includes('description'), true)
+  const serializedEvent = JSON.stringify(purgeEvent)
+  assert.equal(serializedEvent.includes('jan@example.cz'), false)
+  assert.equal(serializedEvent.includes('+420 777'), false)
+  assert.equal(serializedEvent.includes('Jan Novak'), false)
 })
 
 async function seedSource(payload: ReturnType<typeof createFakePayload>) {
@@ -272,4 +285,12 @@ function createFakePayload() {
   }
 
   return fake as typeof fake & Payload
+}
+
+function recordValue(value: unknown): Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value) ? value as Record<string, unknown> : {}
+}
+
+function stringValue(value: unknown): string {
+  return typeof value === 'string' ? value : ''
 }

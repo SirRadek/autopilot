@@ -1,6 +1,6 @@
 import type { CollectionConfig } from 'payload'
 
-import { isAuthenticated } from '@/access/isAdmin'
+import { denyAccess, isAdminOrEditor } from '@/access/isAdmin'
 import { meshPolicyVersion, projectSlug, workflowEventTypes } from '@/lib/mesh-contracts'
 
 const workflowEventTypeOptions = workflowEventTypes.map((eventType) => ({
@@ -19,10 +19,10 @@ export const WorkflowEvents: CollectionConfig = {
     defaultColumns: ['eventType', 'correlationId', 'task', 'opportunityItem', 'occurredAt']
   },
   access: {
-    create: isAuthenticated,
-    read: isAuthenticated,
-    update: isAuthenticated,
-    delete: isAuthenticated
+    create: denyAccess,
+    read: isAdminOrEditor,
+    update: denyAccess,
+    delete: denyAccess
   },
   fields: [
     { name: 'task', type: 'relationship', relationTo: 'tasks' },
@@ -30,17 +30,17 @@ export const WorkflowEvents: CollectionConfig = {
     { name: 'opportunitySource', type: 'relationship', relationTo: 'opportunity-sources' },
     { name: 'opportunityRun', type: 'relationship', relationTo: 'opportunity-runs' },
     { name: 'opportunityItem', type: 'relationship', relationTo: 'opportunity-items' },
-    { name: 'eventId', type: 'text', unique: true },
+    { name: 'eventId', type: 'text', unique: true, required: true },
     {
       name: 'eventType',
       type: 'select',
       options: workflowEventTypeOptions,
       required: true
     },
-    { name: 'occurredAt', type: 'date' },
-    { name: 'correlationId', type: 'text', index: true },
-    { name: 'idempotencyKey', type: 'text', index: true },
-    { name: 'projectSlug', type: 'text', defaultValue: projectSlug },
+    { name: 'occurredAt', type: 'date', required: true },
+    { name: 'correlationId', type: 'text', index: true, required: true },
+    { name: 'idempotencyKey', type: 'text', index: true, required: true },
+    { name: 'projectSlug', type: 'text', defaultValue: projectSlug, required: true },
     { name: 'workflowRunId', type: 'text' },
     {
       name: 'actorType',
@@ -51,16 +51,17 @@ export const WorkflowEvents: CollectionConfig = {
         { label: 'Mesh', value: 'mesh' },
         { label: 'Worker', value: 'worker' }
       ],
-      defaultValue: 'system'
+      defaultValue: 'system',
+      required: true
     },
-    { name: 'actorId', type: 'text' },
-    { name: 'policyVersion', type: 'text', defaultValue: meshPolicyVersion },
-    { name: 'source', type: 'text', defaultValue: 'clientops-cms' },
+    { name: 'actorId', type: 'text', required: true },
+    { name: 'policyVersion', type: 'text', defaultValue: meshPolicyVersion, required: true },
+    { name: 'source', type: 'text', defaultValue: 'clientops-cms', required: true },
     { name: 'role', type: 'text' },
     { name: 'workerId', type: 'text' },
-    { name: 'payload', type: 'json', defaultValue: {} },
-    { name: 'result', type: 'json', defaultValue: {} },
-    { name: 'error', type: 'json', defaultValue: {} },
+    { name: 'payload', type: 'json', defaultValue: {}, required: true },
+    { name: 'result', type: 'json', defaultValue: {}, required: true },
+    { name: 'error', type: 'json', defaultValue: {}, required: true },
     { name: 'attempt', type: 'number', defaultValue: 0 },
     { name: 'retryable', type: 'checkbox', defaultValue: false }
   ]

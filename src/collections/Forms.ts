@@ -1,6 +1,6 @@
 import type { CollectionConfig } from 'payload'
 
-import { isAuthenticated } from '@/access/isAdmin'
+import { isAdminOrEditor } from '@/access/isAdmin'
 
 export const Forms: CollectionConfig = {
   slug: 'forms',
@@ -10,10 +10,10 @@ export const Forms: CollectionConfig = {
     defaultColumns: ['title', 'site', 'slug', 'status']
   },
   access: {
-    create: isAuthenticated,
-    read: isAuthenticated,
-    update: isAuthenticated,
-    delete: isAuthenticated
+    create: isAdminOrEditor,
+    read: isAdminOrEditor,
+    update: isAdminOrEditor,
+    delete: isAdminOrEditor
   },
   fields: [
     { name: 'title', type: 'text', required: true },

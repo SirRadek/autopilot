@@ -49,6 +49,6 @@ Rules:
 - Events are audit evidence and do not replace current state fields.
 - Terminal-to-active task transitions must emit `manual_override_applied`; worker events alone are not enough.
 - Dedupe collisions must create blocked review evidence instead of overwriting data.
-- Opportunity events must not include contact email, contact phone, requester name, or raw snippets containing contact data.
+- Workflow event payloads for leads, tasks, and opportunities must not include contact email, contact phone, requester name, lead name, company name, free-text private request content, or raw snippets containing contact data unless a future owner-approved exception is documented.
 - `opportunity_personal_data_purged` records purge timestamp and field names cleared, not the purged values.
 - Opportunity events are audit evidence; `opportunity-items.status` and retention fields remain canonical lifecycle state.

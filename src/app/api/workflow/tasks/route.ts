@@ -1,5 +1,5 @@
 import config from '@payload-config'
-import { getPayload } from 'payload'
+import { getPayload, type Payload } from 'payload'
 
 import { getMeshAuthHeader, isAuthorizedMeshRequest } from '@/lib/mesh-auth'
 import { isCanonicalTaskState } from '@/lib/workflow'
@@ -26,6 +26,40 @@ interface WorkflowTaskPatchInput {
   actorId?: unknown
   lockMs?: unknown
   manualOverrideReason?: unknown
+}
+
+interface WorkflowTaskRouteDoc extends Record<string, unknown> {
+  id: string | number
+  state: string
+  attempt?: number
+  maxAttempts?: number
+  lockedBy?: string | null
+  lockedUntil?: string | null
+}
+
+export function resolveWorkflowPatchActor(input: Pick<WorkflowTaskPatchInput, 'actorId' | 'manualOverrideReason'>):
+  | { ok: true; actorId: string; actorType: 'human' | 'worker'; workerId?: string; manualOverrideReason: string }
+  | { ok: false; error: string; status: number } {
+  const actorId = stringValue(input.actorId)
+  const manualOverrideReason = stringValue(input.manualOverrideReason)
+
+  if (manualOverrideReason && !actorId) {
+    return {
+      ok: false,
+      error: 'Human actorId is required when manualOverrideReason is supplied.',
+      status: 400
+    }
+  }
+
+  const resolvedActorId = actorId || 'clientops-worker'
+
+  return {
+    ok: true,
+    actorId: resolvedActorId,
+    actorType: manualOverrideReason ? 'human' : 'worker',
+    workerId: manualOverrideReason ? undefined : resolvedActorId,
+    manualOverrideReason
+  }
 }
 
 export async function GET(request: Request) {
@@ -64,8 +98,8 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   const authHeader = getMeshAuthHeader(request)
-  if (!isAuthorizedMeshRequest(authHeader, process.env.MESH_SERVICE_TOKEN)) {
-    return Response.json({ ok: false, error: 'Unauthorized workflow request.' }, { status: 401 })
+  if (!isAuthorizedMeshRequest(authHeader, process.env.WORKFLOW_MUTATION_TOKEN)) {
+    return Response.json({ ok: false, error: 'Unauthorized workflow mutation request.' }, { status: 401 })
   }
 
   let body: CreateTaskInput
@@ -87,8 +121,8 @@ export async function POST(request: Request) {
 
 export async function PATCH(request: Request) {
   const authHeader = getMeshAuthHeader(request)
-  if (!isAuthorizedMeshRequest(authHeader, process.env.MESH_SERVICE_TOKEN)) {
-    return Response.json({ ok: false, error: 'Unauthorized workflow request.' }, { status: 401 })
+  if (!isAuthorizedMeshRequest(authHeader, process.env.WORKFLOW_MUTATION_TOKEN)) {
+    return Response.json({ ok: false, error: 'Unauthorized workflow mutation request.' }, { status: 401 })
   }
 
   let body: WorkflowTaskPatchInput
@@ -126,12 +160,15 @@ export async function PATCH(request: Request) {
     return Response.json({ ok: false, error: 'Task was not found.' }, { status: 404 })
   }
 
-  const manualOverrideReason = stringValue(body.manualOverrideReason)
-  const actorId = stringValue(body.actorId)
+  const actor = resolveWorkflowPatchActor(body)
+  if (!actor.ok) {
+    return Response.json({ ok: false, error: actor.error }, { status: actor.status })
+  }
+
   const transition = validateTaskTransition({
     currentState: task.state,
     nextState,
-    manualOverrideReason
+    manualOverrideReason: actor.manualOverrideReason
   })
 
   if (!transition.ok) {
@@ -140,15 +177,16 @@ export async function PATCH(request: Request) {
 
   const errorPayload = objectValue(body.error)
   const resultPayload = objectValue(body.result)
+  const now = new Date()
   const lockUpdate = buildLockPatchData({
     nextState,
-    actorId,
+    actorId: actor.actorId,
     lockMs: numberValue(body.lockMs),
     lockedBy: task.lockedBy,
     lockedUntil: task.lockedUntil,
     nextRetryAt: task.nextRetryAt,
-    manualOverrideReason,
-    now: new Date()
+    manualOverrideReason: actor.manualOverrideReason,
+    now
   })
 
   if (!lockUpdate.ok) {
@@ -164,17 +202,33 @@ export async function PATCH(request: Request) {
   })
   const updateData = {
     ...taskPatch.data,
-    ...lockUpdate.data
+    ...lockUpdate.data,
+    updatedAt: now.toISOString()
   }
-  const updatedTask = await payload.update({
-    collection: 'tasks',
-    id: task.id,
-    data: updateData,
-    context: {
-      skipManualOverrideAudit: true
-    },
-    overrideAccess: true
-  })
+  const updatedTask: WorkflowTaskRouteDoc | undefined =
+    nextState === 'claimed' && !actor.manualOverrideReason
+      ? await updateTaskClaimAtomically(payload, {
+          actorId: actor.actorId,
+          currentState: task.state,
+          errorPayload,
+          lockedUntil: stringValue(lockUpdate.data.lockedUntil),
+          resultPayload,
+          taskId: task.id,
+          now
+        })
+      : await payload.update({
+          collection: 'tasks',
+          id: task.id,
+          data: updateData,
+          context: {
+            skipManualOverrideAudit: true
+          },
+          overrideAccess: true
+        }) as unknown as WorkflowTaskRouteDoc
+
+  if (!updatedTask) {
+    return Response.json({ ok: false, error: 'Task claim was not acquired because the task changed.' }, { status: 423 })
+  }
 
   await appendWorkflowEvent(payload, {
     task: task.id,
@@ -190,10 +244,10 @@ export async function PATCH(request: Request) {
     idempotencyKey: task.idempotencyKey ?? undefined,
     projectSlug: task.projectSlug ?? undefined,
     workflowRunId: task.workflowRunId ?? undefined,
-    actorType: manualOverrideReason ? 'human' : 'worker',
-    actorId: actorId || 'clientops-worker',
+    actorType: actor.actorType,
+    actorId: actor.actorId,
     role: task.assignedRole,
-    workerId: manualOverrideReason ? undefined : actorId || 'clientops-worker',
+    workerId: actor.workerId,
     payload: {
       taskId,
       previous_state: task.state,
@@ -201,7 +255,7 @@ export async function PATCH(request: Request) {
       next_state: taskPatch.state,
       locked_by: updatedTask.lockedBy ?? undefined,
       locked_until: updatedTask.lockedUntil ?? undefined,
-      manual_override_reason: manualOverrideReason || undefined
+      manual_override_reason: actor.manualOverrideReason || undefined
     },
     result: resultPayload,
     error: errorPayload,
@@ -210,6 +264,87 @@ export async function PATCH(request: Request) {
   })
 
   return Response.json({ ok: true, task: updatedTask }, { status: 200 })
+}
+
+export function buildAtomicTaskClaimSql(input: {
+  tableName?: string
+  taskId: string | number
+  currentState: string
+  actorId: string
+  lockedUntil: string
+  resultPayload: Record<string, unknown>
+  errorPayload: Record<string, unknown>
+  now: Date
+}): { text: string; values: unknown[] } {
+  const now = input.now.toISOString()
+  const tableName = quotePgIdentifierPath(input.tableName || 'tasks')
+
+  return {
+    text: [
+      `UPDATE ${tableName}`,
+      'SET "state" = $1,',
+      '"locked_by" = $2,',
+      '"locked_until" = $3,',
+      '"result" = $4::jsonb,',
+      '"error" = $5::jsonb,',
+      '"updated_at" = $6',
+      'WHERE "id" = $7',
+      'AND "state" = $8',
+      'AND ("locked_by" IS NULL OR "locked_by" = \'\' OR "locked_by" = $2 OR "locked_until" IS NULL OR "locked_until" <= $6)',
+      'AND ("next_retry_at" IS NULL OR "next_retry_at" <= $6)',
+      'RETURNING "id"'
+    ].join(' '),
+    values: [
+      'claimed',
+      input.actorId,
+      input.lockedUntil,
+      JSON.stringify(input.resultPayload),
+      JSON.stringify(input.errorPayload),
+      now,
+      input.taskId,
+      input.currentState
+    ]
+  }
+}
+
+async function updateTaskClaimAtomically(
+  payload: Payload,
+  input: {
+    actorId: string
+    currentState: string
+    errorPayload: Record<string, unknown>
+    lockedUntil: string
+    resultPayload: Record<string, unknown>
+    taskId: string | number
+    now: Date
+  }
+): Promise<WorkflowTaskRouteDoc | undefined> {
+  const query = buildAtomicTaskClaimSql({
+    ...input,
+    tableName: payload.db.tableNameMap.get('tasks') || 'tasks'
+  })
+  const updated = await payload.db.pool.query<{ id: string | number }>(query.text, query.values)
+  const updatedId = updated.rows[0]?.id
+
+  if (!updatedId) {
+    return undefined
+  }
+
+  const task = await payload.findByID({
+    collection: 'tasks',
+    id: updatedId,
+    overrideAccess: true
+  })
+
+  return task as unknown as WorkflowTaskRouteDoc
+}
+
+function quotePgIdentifierPath(value: string): string {
+  return value
+    .split('.')
+    .filter(Boolean)
+    .map((part) => `"${part.replace(/"/g, '""')}"`)
+    .join('.')
 }
 
 function buildLockPatchData(input: {

@@ -1,6 +1,6 @@
 import type { CollectionConfig } from 'payload'
 
-import { isAuthenticated } from '@/access/isAdmin'
+import { isAdminOrEditor } from '@/access/isAdmin'
 
 const opportunityStatuses = ['new', 'reviewing', 'blocked', 'responded', 'converted', 'ignored', 'purged'] as const
 const sourceStatuses = ['open', 'closed', 'unknown'] as const
@@ -13,10 +13,10 @@ export const OpportunityItems: CollectionConfig = {
     defaultColumns: ['title', 'sourceKey', 'sourceStatus', 'publishedAt', 'deadlineAt', 'fitScore']
   },
   access: {
-    create: isAuthenticated,
-    read: isAuthenticated,
-    update: isAuthenticated,
-    delete: isAuthenticated
+    create: isAdminOrEditor,
+    read: isAdminOrEditor,
+    update: isAdminOrEditor,
+    delete: isAdminOrEditor
   },
   fields: [
     { name: 'source', type: 'relationship', relationTo: 'opportunity-sources' },

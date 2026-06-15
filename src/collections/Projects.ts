@@ -1,6 +1,6 @@
 import type { CollectionConfig } from 'payload'
 
-import { isAuthenticated } from '@/access/isAdmin'
+import { isAdminOrEditor } from '@/access/isAdmin'
 
 export const Projects: CollectionConfig = {
   slug: 'projects',
@@ -10,10 +10,10 @@ export const Projects: CollectionConfig = {
     defaultColumns: ['title', 'client', 'status', 'projectType', 'updatedAt']
   },
   access: {
-    create: isAuthenticated,
-    read: isAuthenticated,
-    update: isAuthenticated,
-    delete: isAuthenticated
+    create: isAdminOrEditor,
+    read: isAdminOrEditor,
+    update: isAdminOrEditor,
+    delete: isAdminOrEditor
   },
   fields: [
     {

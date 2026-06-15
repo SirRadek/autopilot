@@ -25,7 +25,7 @@ Before external worker automation:
 
 - A worker must claim a task through `lockedBy` and `lockedUntil` before performing retryable work.
 - Concurrent workers must not execute the same task unless the previous lock is expired and an audit event explains the takeover.
-- `PATCH /api/workflow/tasks` with `state: "claimed"` creates or renews the lock for the caller `actorId`.
+- `PATCH /api/workflow/tasks` with `state: "claimed"` creates or renews the lock for the caller `actorId` through a DB-level compare-and-set predicate.
 - Worker state changes after claim require the same `actorId` and a non-expired `lockedUntil`; otherwise the API returns a lock failure.
 - Terminal, retry, blocked, waiting-owner, and queued outcomes release the worker lock.
 - Failure handlers must classify errors as retryable infrastructure failures or non-retryable validation, policy, or business failures.
@@ -33,6 +33,7 @@ Before external worker automation:
 - A task in `failed` or `cancelled` cannot move back to active states without `manual_override_applied`.
 - A task in `retrying` must not be claimed before `nextRetryAt`.
 - Expired locks are cleared only when a valid worker claim or terminal state update succeeds; operators should not expect a background lock cleanup loop in this phase.
+- Parallel external workers remain blocked until atomic claim behavior is verified against the target runtime and repeated worker PATCH idempotency is added.
 
 Opportunity monitor failure classes:
 

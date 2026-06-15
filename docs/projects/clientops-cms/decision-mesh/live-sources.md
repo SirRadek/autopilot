@@ -23,7 +23,7 @@ Input modes:
 
 Local gates:
 
-- `MESH_SERVICE_TOKEN` must authorize the local live run endpoint.
+- `OPPORTUNITY_LIVE_RUN_TOKEN` must authorize the local live run endpoint.
 - Source record must exist, be enabled, and have `sourceType=web`.
 - `termsReviewedAt` must be set before any import.
 - `robotsReviewedAt` must be set before CMS fetches URLs.
@@ -50,22 +50,22 @@ Stop conditions:
 
 ## `hlidac-statu-vz-it`
 
-Status: optional parked adapter.
+Status: disabled parked adapter.
 
-This source is kept for later use but is disabled in seed data and is not required for the default live path.
+This source is kept for later use but is disabled in seed data, disabled at the route with `410`, and is not required for the default live path.
 
 Provider constraints recorded on 2026-06-14:
 
 - API docs: `https://www.hlidacstatu.cz/api/v1/doc`
 - Swagger: `https://api.hlidacstatu.cz/swagger/v2/swagger.json`
-- Provider route: `POST /api/opportunities/live/hlidac-statu` internally calls provider `GET /api/v2/verejnezakazky/hledat`.
+- Provider route: `POST /api/opportunities/live/hlidac-statu` currently returns `410` before provider fetch.
 - API token is required.
 - Swagger states a rate limit of 4 requests per second per client.
 - Swagger terms of service point to `https://www.hlidacstatu.cz/texty/provoznipodminky/`.
 - Swagger license is `CC BY 3.0 CZ`.
 - Public procurement search is treated as commercial-approval gated.
 
-Local gates before enabling:
+Future gates before any owner-approved re-enable:
 
 - `HLIDAC_STATU_API_TOKEN` must be configured server-side.
 - `HLIDAC_STATU_COMMERCIAL_APPROVED=true` must be set after account/license confirmation.

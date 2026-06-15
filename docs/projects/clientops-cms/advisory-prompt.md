@@ -5,12 +5,12 @@ Current verified facts:
 - Docker/Postgres is healthy locally; `docker compose up -d --wait` and `pg_isready` pass.
 - Project mesh docs exist at `docs/projects/clientops-cms/decision-mesh/`.
 - Payload/Postgres owns canonical lead/task state; `workflow-events` is append-only audit evidence.
-- Workflow mutation uses `MESH_SERVICE_TOKEN`; unauthenticated `POST/PATCH /api/workflow/tasks` returns 401.
+- Workflow reads use `MESH_SERVICE_TOKEN`; workflow creation and mutation use `WORKFLOW_MUTATION_TOKEN`; unauthenticated `POST/PATCH /api/workflow/tasks` returns 401.
 - Public lead intake writes `correlationId`, normalized `idempotencyKey`, `dedupeKey`, `source`, and `projectSlug`.
 - Public lead replay with the same idempotency key returns the existing lead/task; collision returns 202 with a blocked review task.
 - Tasks now carry correlation, idempotency, retry/error, lock, result, and current error fields.
 - Workflow events now carry eventId, occurredAt, correlationId, idempotencyKey, actor, policy, result, error, attempt, retryable, and project fields.
-- `PATCH /api/workflow/tasks` rejects unknown states, rejects terminal-to-active transitions without `manualOverrideReason`, and appends workflow events.
+- `PATCH /api/workflow/tasks` rejects unknown states, rejects terminal-to-active transitions without `manualOverrideReason`, uses a DB-level compare-and-set predicate for worker claims, and appends workflow events.
 - Admin lead/task state hooks append `manual_override_applied` events and skip only when workflow code passes `skipManualOverrideAudit`.
 - Verification currently passing: `npm.cmd run lint`, `npm.cmd run typecheck`, `npm.cmd test`, `npm.cmd run build`, Docker readiness, seed, smoke, lead replay/collision, PATCH transition checks.
 

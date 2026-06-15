@@ -28,6 +28,21 @@ Processed on 2026-06-14:
 - Add `reviewed-web-cz-it` seed source and `scripts/run-web-source-opportunities.ps1`.
 - Park `hlidac-statu-vz-it` as an optional disabled API adapter.
 
+Processed on 2026-06-15:
+
+- Split workflow task mutation to `WORKFLOW_MUTATION_TOKEN` while keeping workflow reads on `MESH_SERVICE_TOKEN`.
+- Split opportunity purge to `OPPORTUNITY_PURGE_TOKEN`.
+- Split live-source runs to `OPPORTUNITY_LIVE_RUN_TOKEN`.
+- Disable the Hlidac Statu live route with `410` before auth, body parsing, Payload, or provider fetch.
+- Add a production public lead intake guard requiring declared edge/proxy rate limiting and a positive body-size limit.
+- Replace the worker claim `find` + `update` path with a DB-level compare-and-set predicate for `state: "claimed"` mutations.
+- Disable Payload GraphQL and GraphQL Playground with `410` because they are not required for the current ClientOps CMS focus.
+- Keep opportunity purge as PII redaction without changing the business `status`.
+- Patch Payload packages to `3.85.1` and keep top-level `tsx` on `^4.22.4`.
+- Pin transitive `esbuild` to `0.28.1` through npm overrides after verifying install, audit, lint, typecheck, tests, build, seed, and runtime health.
+- Upgrade TypeScript to `6.0.3` with the explicit `ignoreDeprecations: "6.0"` transition marker for the existing `baseUrl` alias setup.
+- Upgrade root Sharp to `0.35.1`.
+
 Queued before live opportunity source runs:
 
 - Add real opportunity hosts to `reviewed-web-cz-it` only after terms and robots review.
@@ -37,8 +52,10 @@ Queued before live opportunity source runs:
 
 Queued before parallel external workers:
 
-- Replace app-level find/update claim flow with a compare-and-set or transactional claim path.
 - Add PATCH idempotency for repeated worker state updates.
-- Add worker-scoped tokens when more than one external worker exists.
+- Verify atomic claim behavior under target-runtime concurrent workers.
+- Add per-worker token rotation or identities when more than one external worker exists.
 - Add operator-facing manual override reason capture in Payload admin.
 - Add a dead-letter queue admin view or saved filter.
+- Revisit ESLint 10 only after `eslint-plugin-import`, `eslint-plugin-react`, and `eslint-plugin-jsx-a11y` publish ESLint 10 peer support.
+- Revisit `@types/node` 25 only after the local/runtime Node version moves from 24 to 25.

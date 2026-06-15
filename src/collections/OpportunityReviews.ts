@@ -1,6 +1,6 @@
 import type { CollectionConfig } from 'payload'
 
-import { isAuthenticated } from '@/access/isAdmin'
+import { isAdminOrEditor } from '@/access/isAdmin'
 
 export const OpportunityReviews: CollectionConfig = {
   slug: 'opportunity-reviews',
@@ -10,10 +10,10 @@ export const OpportunityReviews: CollectionConfig = {
     defaultColumns: ['decision', 'actorId', 'createdAt']
   },
   access: {
-    create: isAuthenticated,
-    read: isAuthenticated,
-    update: isAuthenticated,
-    delete: isAuthenticated
+    create: isAdminOrEditor,
+    read: isAdminOrEditor,
+    update: isAdminOrEditor,
+    delete: isAdminOrEditor
   },
   fields: [
     { name: 'opportunity', type: 'relationship', relationTo: 'opportunity-items', required: true },

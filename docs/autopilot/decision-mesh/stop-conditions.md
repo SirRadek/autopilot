@@ -10,6 +10,7 @@ Autopilot control-plane work must stop or enter `waiting_owner` when:
 - context packet contains secrets, `.env` values, raw private logs, database dumps, or contact data
 - lower-trust advisory output is about to override local evidence
 - project mesh and Autopilot root mesh ownership are conflated
+- the Decision Mesh MCP/router returns `archive/**` or legacy v0.2.0 paths as active `must_read` context
 - remote mutation is needed and owner approval is missing
 - model output would directly change project state without code/test/human acceptance
 - advisory records would store raw customer or opportunity contact data

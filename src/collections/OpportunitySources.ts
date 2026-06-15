@@ -1,6 +1,6 @@
 import type { CollectionConfig } from 'payload'
 
-import { isAuthenticated } from '@/access/isAdmin'
+import { isAdminOrEditor } from '@/access/isAdmin'
 
 export const OpportunitySources: CollectionConfig = {
   slug: 'opportunity-sources',
@@ -10,10 +10,10 @@ export const OpportunitySources: CollectionConfig = {
     defaultColumns: ['name', 'sourceKey', 'enabled', 'termsReviewedAt', 'updatedAt']
   },
   access: {
-    create: isAuthenticated,
-    read: isAuthenticated,
-    update: isAuthenticated,
-    delete: isAuthenticated
+    create: isAdminOrEditor,
+    read: isAdminOrEditor,
+    update: isAdminOrEditor,
+    delete: isAdminOrEditor
   },
   fields: [
     { name: 'sourceKey', type: 'text', required: true, unique: true },

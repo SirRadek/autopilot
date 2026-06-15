@@ -1,6 +1,11 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
+import {
+  isPublicLeadProductionGuardConfigured,
+  readJsonBodyWithLimit,
+  validatePublicLeadRequestGuard
+} from '@/app/api/public/leads/route'
 import { extractUtm, leadToCMSData, validateLeadSubmission } from '@/lib/leads'
 
 const completeLead = {
@@ -95,4 +100,72 @@ test('extracts UTM values from source paths when present', () => {
     utm_medium: 'cpc',
     utm_source: 'google'
   })
+})
+
+test('blocks production public lead intake until edge limits are declared', () => {
+  const env = {
+    NODE_ENV: 'production',
+    PUBLIC_LEAD_EDGE_RATE_LIMIT_ENABLED: 'false',
+    PUBLIC_LEAD_BODY_SIZE_LIMIT_BYTES: '2048'
+  }
+  const request = new Request('http://localhost/api/public/leads', {
+    method: 'POST',
+    headers: { 'content-length': '100' }
+  })
+
+  const result = validatePublicLeadRequestGuard(request, env)
+
+  assert.equal(result.ok, false)
+  if (!result.ok) {
+    assert.equal(result.status, 503)
+  }
+})
+
+test('accepts production public lead intake when edge rate and body limits are declared', () => {
+  const env = {
+    NODE_ENV: 'production',
+    PUBLIC_LEAD_EDGE_RATE_LIMIT_ENABLED: 'true',
+    PUBLIC_LEAD_BODY_SIZE_LIMIT_BYTES: '2048'
+  }
+  const request = new Request('http://localhost/api/public/leads', {
+    method: 'POST',
+    headers: { 'content-length': '100' }
+  })
+
+  assert.equal(isPublicLeadProductionGuardConfigured(env), true)
+  assert.deepEqual(validatePublicLeadRequestGuard(request, env), { ok: true })
+})
+
+test('rejects public lead requests over the configured body size limit', () => {
+  const env = {
+    NODE_ENV: 'development',
+    PUBLIC_LEAD_EDGE_RATE_LIMIT_ENABLED: 'false',
+    PUBLIC_LEAD_BODY_SIZE_LIMIT_BYTES: '10'
+  }
+  const request = new Request('http://localhost/api/public/leads', {
+    method: 'POST',
+    headers: { 'content-length': '11' }
+  })
+
+  const result = validatePublicLeadRequestGuard(request, env)
+
+  assert.equal(result.ok, false)
+  if (!result.ok) {
+    assert.equal(result.status, 413)
+  }
+})
+
+test('rejects public lead bodies over the limit when content-length is absent', async () => {
+  const request = new Request('http://localhost/api/public/leads', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ message: 'this body is too large' })
+  })
+
+  const result = await readJsonBodyWithLimit(request, 10)
+
+  assert.equal(result.ok, false)
+  if (!result.ok) {
+    assert.equal(result.status, 413)
+  }
 })

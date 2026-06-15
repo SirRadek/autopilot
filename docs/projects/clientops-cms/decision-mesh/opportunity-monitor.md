@@ -38,12 +38,12 @@ Current local status:
 
 - `opportunity-sources`, `opportunity-runs`, `opportunity-items`, and `opportunity-reviews` are implemented.
 - `POST /api/opportunities/ingest` is protected by `OPPORTUNITY_INGEST_TOKEN`.
-- `POST /api/opportunities/purge` is protected by `MESH_SERVICE_TOKEN`.
-- `POST /api/opportunities/live/web-source` is protected by `MESH_SERVICE_TOKEN`.
+- `POST /api/opportunities/purge` is protected by `OPPORTUNITY_PURGE_TOKEN`.
+- `POST /api/opportunities/live/web-source` is protected by `OPPORTUNITY_LIVE_RUN_TOKEN`.
 - Live web-source URL mode checks enabled source, allowed hosts, `termsReviewedAt`, `robotsReviewedAt`, and `maxUrlsPerRun`.
 - Fixture ingest, replay, duplicate, collision, and purge behavior is covered by automated tests.
 - `scripts/smoke-opportunities.ps1` posts only the local fixture payload.
-- Default live source is `reviewed-web-cz-it`; Hlidac Statu is optional and disabled by seed.
+- Default live source is `reviewed-web-cz-it`; Hlidac Statu is disabled at the route and returns `410`.
 
 Model usage:
 
@@ -56,6 +56,7 @@ Stop conditions:
 
 - source terms or allowed hosts are unknown
 - ingest endpoint is unauthenticated or uses a broad workflow token
+- purge or live-source endpoints use the broad mesh read token
 - live URL source terms, robots review, or allowed-host evidence is missing
 - event payloads contain contact data
 - retention fields are missing

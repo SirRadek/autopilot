@@ -306,17 +306,28 @@ export async function purgeOpportunityPersonalData(
   }
 
   const purgedAt = (input.now ?? new Date()).toISOString()
+  const description = stringValue(item.description)
+  const redactedDescription = redactDescriptionContactData(description)
+  const descriptionChanged = redactedDescription !== description
+  const purgedFields = ['requesterName', 'contactEmail', 'contactPhone', 'rawSnippet', 'normalizedPayload']
+  const updateData: Record<string, unknown> = {
+    requesterName: '',
+    contactEmail: '',
+    contactPhone: '',
+    rawSnippet: '',
+    normalizedPayload: {},
+    personalDataPurgedAt: purgedAt
+  }
+
+  if (descriptionChanged) {
+    updateData.description = redactedDescription
+    purgedFields.push('description')
+  }
+
   await payload.update({
     collection: 'opportunity-items',
     id: item.id,
-    data: {
-      requesterName: '',
-      contactEmail: '',
-      contactPhone: '',
-      rawSnippet: '',
-      normalizedPayload: {},
-      personalDataPurgedAt: purgedAt
-    },
+    data: updateData,
     overrideAccess: true
   })
 
@@ -334,7 +345,7 @@ export async function purgeOpportunityPersonalData(
       item_id: String(item.id),
       reason: sanitizeString(input.reason, 120),
       purged_at: purgedAt,
-      fields: ['requesterName', 'contactEmail', 'contactPhone', 'rawSnippet', 'normalizedPayload']
+      fields: purgedFields
     }
   })
 
@@ -529,6 +540,15 @@ function normalizeTags(value: unknown): string[] {
   }
 
   return [...new Set(value.map((item) => sanitizeString(item, 60).toLowerCase()).filter(Boolean))].slice(0, 12)
+}
+
+function redactDescriptionContactData(value: string): string {
+  const redactedEmail = value.replace(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi, '[redacted contact]')
+
+  return redactedEmail.replace(/(^|[^\w+])(\+?\d[\d\s().-]{6,}\d)(?=$|[^\w])/g, (match, prefix, phone) => {
+    const digits = String(phone).replace(/\D/g, '')
+    return digits.length >= 9 ? `${prefix}[redacted contact]` : match
+  })
 }
 
 function normalizeSourceStatus(value: unknown): 'open' | 'closed' | 'unknown' {

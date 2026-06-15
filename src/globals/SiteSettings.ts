@@ -1,6 +1,6 @@
 import type { GlobalConfig } from 'payload'
 
-import { isAuthenticated } from '@/access/isAdmin'
+import { isAdminOrEditor } from '@/access/isAdmin'
 
 export const SiteSettings: GlobalConfig = {
   slug: 'site-settings',
@@ -9,8 +9,8 @@ export const SiteSettings: GlobalConfig = {
     group: 'Settings'
   },
   access: {
-    read: isAuthenticated,
-    update: isAuthenticated
+    read: isAdminOrEditor,
+    update: isAdminOrEditor
   },
   fields: [
     { name: 'brandName', type: 'text', defaultValue: 'Radeq.cz' },

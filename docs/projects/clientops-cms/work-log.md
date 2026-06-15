@@ -71,14 +71,14 @@ Verification:
 - `npm.cmd test` passed with 21 tests.
 - `npm.cmd run build` passed and includes `/api/health` and `/api/ready` routes.
 - `docker compose ps` reported `autopilot-postgres-1` as `healthy`.
-- `npm.cmd audit --audit-level=moderate` still reports the known transitive `esbuild` issue under `@payloadcms/db-postgres`/`drizzle-kit`; no clean npm fix is available.
+- `npm.cmd audit --audit-level=moderate` still reported the known transitive `esbuild` issue under `@payloadcms/db-postgres`/`drizzle-kit`; superseded by the 2026-06-15 dependency hygiene slice.
 
 Risks:
 
 - Idempotency for public lead/task creation is still not fully implemented.
 - Retry/dead-letter/manual override helpers are still pending.
 - Collection-level mesh fields are still pending.
-- Transitive `esbuild` audit risk remains accepted for this local tooling slice until upstream dependencies provide a clean upgrade path.
+- Transitive `esbuild` audit risk was accepted for this historical local tooling slice; superseded by the 2026-06-15 dependency hygiene slice.
 
 Follow-up:
 
@@ -129,7 +129,7 @@ Risks:
 
 - Admin Payload edits are audited with a generic `payload_admin_state_change` reason; a richer reason field should be added before non-technical operators use manual override heavily.
 - Worker lock/claim enforcement is documented but not yet implemented as a claim endpoint; do not connect parallel workers yet.
-- Transitive `esbuild` audit risk remains under Payload/Drizzle tooling until upstream dependencies provide a clean fix.
+- Transitive `esbuild` audit risk remained under Payload/Drizzle tooling in this historical slice; superseded by the 2026-06-15 dependency hygiene slice.
 
 Follow-up:
 
@@ -378,3 +378,191 @@ Remaining:
 - Add real hosts to `reviewed-web-cz-it` in Payload after terms and robots review.
 - Run `scripts/run-web-source-opportunities.ps1` on the target runtime.
 - Decide whether manual purge is enough for the first real web-source run or add scheduled purge.
+
+## 2026-06-15 Audit Remediation Safe Fixes Slice
+
+Date: 2026-06-15
+Request or trigger: Remediate high-confidence audit findings that already have clear Decision Mesh rules; leave unresolved policy choices for owner decision.
+Mode: WRITE_ALLOWED
+Scope: Payload access boundaries, workflow event append-only enforcement, PII-free workflow event payloads, lead idempotency collision strength, manual override attribution, opportunity purge redaction, project docs alignment, and remediation plan.
+Files changed: `src/access/isAdmin.ts`, `src/collections/`, `src/globals/SiteSettings.ts`, `src/lib/workflow.ts`, `src/lib/opportunities.ts`, `src/app/api/workflow/tasks/route.ts`, `tests/access.test.ts`, `tests/workflow.test.ts`, `tests/workflow-route.test.ts`, `tests/opportunities.test.ts`, `README.md`, `docs/projects/clientops-cms/v0.1-project-index.md`, `docs/projects/clientops-cms/decision-mesh/README.md`, `docs/projects/clientops-cms/decision-mesh/event-contracts.md`, `docs/superpowers/plans/2026-06-15-audit-remediation-safe-fixes.md`, `docs/projects/clientops-cms/work-log.md`.
+Architecture impact: normal Payload access is now staff-only for operational records, workflow events are append-only through trusted server code, lead/task/opportunity workflow event payloads avoid contact values, and manual override evidence requires an explicit human actor id.
+
+Decisions:
+
+- `workflow-events` create/update/delete is denied through normal Payload access; server helpers still write events with `overrideAccess`.
+- Mesh-required workflow event envelope fields are required at schema level.
+- Lead workflow task titles and event payloads no longer include lead name, email, company, message, budget, referrer, or other private free-text fields.
+- Lead idempotency collisions compare all canonical normalized lead fields instead of only email/project/message.
+- Collision evidence records mismatched field names, not submitted/current contact values.
+- Manual override API calls with `manualOverrideReason` require an explicit `actorId`.
+- Opportunity purge redacts email/phone-like contact data from `description` when present, without changing `status` to `purged`.
+- Baseline cleanup plan is historical; current next work is audit remediation and owner decisions.
+
+Verification:
+
+- `node --import tsx --test tests/access.test.ts tests/mesh-contracts.test.ts` passed with 9 tests in the access worker.
+- `npm.cmd test -- tests/workflow.test.ts` passed in the lead worker; due the package script, the full `tests/*.test.ts` suite also ran and reported 65 passing tests.
+- `npm.cmd test -- tests/opportunities.test.ts` passed in the opportunity worker; due the package script, the full `tests/*.test.ts` suite also ran and reported 58 passing tests at that time.
+- `npm.cmd test -- tests/workflow-route.test.ts` passed during local manual-override work; due the package script, the full suite plus explicit route test reported 58 passing tests at that time.
+- Final `npm.cmd run lint` passed.
+- Final `npm.cmd run typecheck` passed.
+- Final `npm.cmd test` passed with 65 tests.
+- Final `npm.cmd run build` passed and still included `/graphql` and `/graphql-playground`; a later owner follow-up slice disabled those route handlers with `410`.
+
+Deferred owner decisions:
+
+- Refresh or repoint the active Decision Mesh MCP/router so it does not use archived control-plane paths as current root source pointers.
+- Superseded by owner follow-up: Payload GraphQL and GraphQL Playground are disabled with `410`.
+- Superseded by owner follow-up: Payload packages are patched to `3.85.1`; remaining audit findings are isolated to Drizzle/@esbuild-kit `esbuild`.
+- Superseded by owner follow-up: opportunity purge keeps `personalDataPurgedAt` as the canonical purge marker and does not change business `status`.
+- Decide production-grade public lead and live-source rate limiting architecture.
+
+## 2026-06-15 Owner Decision Remediation Slice
+
+Date: 2026-06-15
+Request or trigger: Owner decisions after audit remediation review.
+Mode: WRITE_ALLOWED
+Scope: Active mesh source-root documentation, scoped runtime tokens, production lead-intake guard, atomic worker claims, disabled Hlidac route, scripts/docs alignment.
+Files changed: `.env.example`, `README.md`, `archive/README.md`, `docs/autopilot/decision-mesh/`, `docs/projects/clientops-cms/`, `src/app/api/public/leads/route.ts`, `src/app/api/workflow/tasks/route.ts`, `src/app/api/opportunities/`, `scripts/seed.ts`, `scripts/run-web-source-opportunities.ps1`, `tests/leads.test.ts`, `tests/workflow-route.test.ts`, `tests/opportunity-routes.test.ts`.
+Architecture impact: workflow reads remain separated from workflow mutations, opportunity purge/live runs no longer share the broad mesh token, production public lead intake has a fail-closed guard, worker claim acquisition uses a DB-level compare-and-set predicate, and Hlidac live execution is disabled before auth/body/provider work.
+
+Decisions implemented:
+
+- Document active Decision Mesh source allowlist and archive denylist in active root docs.
+- Keep `client` role out of operational collections through staff-only access helpers.
+- Use `WORKFLOW_MUTATION_TOKEN` for `POST/PATCH /api/workflow/tasks`.
+- Use `OPPORTUNITY_PURGE_TOKEN` for `POST /api/opportunities/purge`.
+- Use `OPPORTUNITY_LIVE_RUN_TOKEN` for `POST /api/opportunities/live/web-source` and its runner script.
+- Block production `POST /api/public/leads` unless edge/proxy rate limiting is declared and `PUBLIC_LEAD_BODY_SIZE_LIMIT_BYTES` is configured.
+- Reject oversized public lead requests when `content-length` exceeds `PUBLIC_LEAD_BODY_SIZE_LIMIT_BYTES`.
+- Use a single Postgres `UPDATE ... WHERE ... RETURNING` statement with task id, current state, lock, and retry-window predicates for worker `state: "claimed"` acquisition.
+- Disable `POST /api/opportunities/live/hlidac-statu` with `410` before auth, body parsing, Payload, or provider fetch.
+- Remove the Hlidac live runner script from active runnable scripts.
+
+Verification:
+
+- `npm.cmd run lint` passed.
+- `npm.cmd run typecheck` passed.
+- `npm.cmd test` passed with 74 tests.
+- `npm.cmd run build` passed.
+- `git diff --check` passed; only CRLF conversion warnings were reported.
+- Secret regex scans found placeholders, historical docs, and test env names only; no active private key/API key pattern was found.
+- `npm.cmd audit --audit-level=moderate` still failed with the known Payload/GraphQL/Drizzle/tsx/esbuild advisory chain in this slice; superseded by the 2026-06-15 dependency hygiene slice.
+- External re-review passed the atomic claim and missing-`Content-Length` body-size findings after fixes.
+
+Remaining:
+
+- Active Decision Mesh MCP/router still needs external regeneration or repointing; this repo now documents the active allowlist, but no active router config exists in the repo to mutate.
+- Payload GraphQL/Playground policy was resolved in the owner follow-up slice: routes return `410`.
+- Dependency remediation was completed in a later dependency hygiene slice: Payload/tsx upgraded and transitive `esbuild` pinned to `0.28.1`.
+- Opportunity purge status was resolved in the owner follow-up slice: keep PII redaction without changing business `status`.
+- Before real parallel external workers: add repeated worker PATCH idempotency and verify scoped tokens plus atomic claim behavior against the target runtime.
+
+## 2026-06-15 Owner Follow-Up Decisions Slice
+
+Date: 2026-06-15
+Request or trigger: Owner follow-up on remaining Decision Mesh router, GraphQL, dependency audit, and purge status decisions.
+Mode: WRITE_ALLOWED
+Scope: Mesh router recommendation, Payload GraphQL disablement, dependency-audit remediation, purge status decision documentation.
+Files changed: `package.json`, `package-lock.json`, `src/app/(payload)/graphql/route.ts`, `src/app/(payload)/graphql-playground/route.ts`, `tests/payload-routes.test.ts`, `README.md`, `docs/autopilot/decision-mesh/README.md`, `docs/projects/clientops-cms/architecture.md`, `docs/projects/clientops-cms/v0.1-project-index.md`, `docs/projects/clientops-cms/decision-mesh/follow-up-fixes.md`, `docs/projects/clientops-cms/work-log.md`.
+Architecture impact: Payload GraphQL is no longer an available v0.1 integration surface; opportunity purge remains a privacy redaction action that does not alter business status.
+
+Decisions implemented:
+
+- Recommend regenerating/repointing the active Decision Mesh MCP/router from an explicit active-source manifest, with a smoke check that fails on archive or legacy v0.2.0 paths.
+- Disable `/graphql` and `/graphql-playground` with `410` because GraphQL is not required for the current lead/workflow/opportunity operating focus.
+- Keep opportunity purge as PII redaction without changing `opportunity-items.status`.
+- Patch Payload packages to `3.85.1` and keep top-level `tsx` on `^4.22.4`.
+- Initially leave the remaining Drizzle/@esbuild-kit `esbuild` audit chain for upstream remediation or a dedicated override compatibility branch; a later dependency hygiene slice accepted the override after full verification.
+
+Verification:
+
+- `npm.cmd run lint` passed.
+- `npm.cmd run typecheck` passed.
+- `npm.cmd test` passed with 76 tests.
+- `npm.cmd run build` passed; `/graphql` and `/graphql-playground` still appear as Next route files but return `410`.
+- `npm.cmd install` passed without `--legacy-peer-deps` after the lockfile was recalculated.
+- `npm.cmd audit --audit-level=moderate` improved from 11 findings to 5 findings after the Payload/tsx patch upgrade; a later dependency hygiene slice reduced this to 0 findings with an `esbuild` override.
+
+Remaining:
+
+- Active Decision Mesh MCP/router still needs external regeneration or repointing because no active router config exists in this repo to mutate.
+- Dependency audit was completed in a later dependency hygiene slice; remaining package work is major-upgrade compatibility review.
+- Before real parallel external workers: add repeated worker PATCH idempotency and verify scoped tokens plus atomic claim behavior against the target runtime.
+
+## 2026-06-15 Dependency Hygiene And Tooling Currency Slice
+
+Date: 2026-06-15
+Request or trigger: Keep dependencies and tooling as current as safely possible, including the remaining Drizzle/@esbuild-kit `esbuild` audit chain.
+Mode: WRITE_ALLOWED
+Scope: npm dependency tree, overrides, audit, static/test/build verification, local Payload/Drizzle seed verification, runtime health checks.
+Files changed: `package.json`, `package-lock.json`, `README.md`, `docs/projects/clientops-cms/architecture.md`, `docs/projects/clientops-cms/v0.1-project-index.md`, `docs/projects/clientops-cms/decision-mesh/follow-up-fixes.md`, `docs/projects/clientops-cms/work-log.md`.
+Architecture impact: all transitive `esbuild` instances are intentionally unified to `0.28.1` through npm overrides after compatibility checks passed.
+
+Decisions implemented:
+
+- Keep Payload packages on `3.85.1` and top-level `tsx` on `^4.22.4`.
+- Add `overrides.esbuild = 0.28.1` to eliminate vulnerable nested `esbuild` versions from Drizzle/@esbuild-kit tooling.
+- Keep direct major upgrades out of this slice; a later compatibility follow-up upgraded TypeScript and Sharp, while keeping ESLint and Node types on compatible lines.
+
+Verification:
+
+- `npm.cmd install` passed without `--force` and without `--legacy-peer-deps`.
+- `npm.cmd audit --audit-level=moderate` passed with 0 vulnerabilities.
+- `npm.cmd ls esbuild @esbuild-kit/core-utils @esbuild-kit/esm-loader drizzle-kit --all` showed all `esbuild` instances resolved to `0.28.1`.
+- `npm.cmd outdated --json` reported only major-upgrade candidates outside current dependency ranges: `@types/node` 25, ESLint 10, Sharp 0.35, and TypeScript 6; a later compatibility follow-up resolved Sharp and TypeScript.
+- `npm.cmd run lint` passed.
+- `npm.cmd run typecheck` passed.
+- `npm.cmd test` passed with 76 tests.
+- `npm.cmd run build` passed.
+- `npm.cmd run seed` passed after a local-only backfill of 3 historical `workflow_events` rows missing mesh envelope fields.
+- Runtime `GET /api/health` and `GET /api/ready` returned `200`.
+- Runtime `POST /graphql` and `GET /graphql-playground` returned `410`.
+- `scripts/smoke-clientops.ps1` passed health, ready, workflow task read, and lead intake checks.
+
+Local data note:
+
+- The local Postgres database had 3 historical `workflow_events` rows from 2026-06-12 with null `event_id`, `occurred_at`, `correlation_id`, `idempotency_key`, and `actor_id`.
+- Those rows were backfilled deterministically as `legacy-event-<id>` / `legacy-correlation-<id>` with `occurred_at = created_at` and `actor_id = clientops-cms`; no payload or business data was deleted.
+
+Remaining:
+
+- `scripts/smoke-opportunities.ps1` was blocked by local `.env` missing `OPPORTUNITY_INGEST_TOKEN`; `.env.example` already documents the required scoped token.
+- Direct major-upgrade candidates were evaluated in a later compatibility follow-up.
+
+## 2026-06-15 Direct Dependency Compatibility Follow-Up Slice
+
+Date: 2026-06-15
+Request or trigger: Resolve the remaining direct dependency/tooling currency items after the dependency hygiene slice.
+Mode: WRITE_ALLOWED
+Scope: TypeScript, Sharp, ESLint compatibility, Node type alignment, production smoke checks with scoped tokens.
+Files changed: `package.json`, `package-lock.json`, `tsconfig.json`, `README.md`, `docs/projects/clientops-cms/architecture.md`, `docs/projects/clientops-cms/v0.1-project-index.md`, `docs/projects/clientops-cms/decision-mesh/follow-up-fixes.md`, `docs/projects/clientops-cms/work-log.md`.
+Architecture impact: TypeScript 6 and Sharp 0.35 are adopted; ESLint remains on the latest compatible 9.x line until the Next ESLint plugin stack supports ESLint 10; Node types remain aligned with the active Node 24 runtime.
+
+Decisions implemented:
+
+- Upgrade TypeScript to `6.0.3`.
+- Add `compilerOptions.ignoreDeprecations = "6.0"` as an explicit transition marker for the existing `baseUrl` alias setup.
+- Upgrade root Sharp to `0.35.1`.
+- Keep `@types/node` on 24.x because the active local/runtime Node is `v24.14.0`; `@types/node` 25 would model APIs ahead of runtime.
+- Attempt ESLint 10, then revert to `9.39.4` after lint failed and `npm ls` showed invalid peer ranges from `eslint-plugin-import`, `eslint-plugin-react`, and `eslint-plugin-jsx-a11y`.
+
+Verification:
+
+- `npm.cmd install` passed.
+- `npm.cmd audit --audit-level=moderate` passed with 0 vulnerabilities.
+- `npm.cmd ls eslint typescript sharp @types/node eslint-config-next next --depth=1` showed a valid tree with ESLint 9.39.4, TypeScript 6.0.3, root Sharp 0.35.1, and Node types 24.13.2.
+- `npm.cmd run lint` passed.
+- `npm.cmd run typecheck` passed.
+- `npm.cmd test` passed with 76 tests.
+- `npm.cmd run build` passed.
+- `npm.cmd run seed` passed.
+- `scripts/smoke-opportunities.ps1` passed against a temporary `next start` server on port 3001 with a process-only local `OPPORTUNITY_INGEST_TOKEN`.
+- `scripts/smoke-clientops.ps1` passed against a temporary `next start` server on port 3001 with production lead guard env values set for the process.
+
+Remaining:
+
+- `npm.cmd outdated --json` now reports only `@types/node` 25 and ESLint 10.
+- Revisit `@types/node` 25 after runtime Node moves to 25.
+- Revisit ESLint 10 after the Next ESLint plugin stack publishes ESLint 10 peer support.

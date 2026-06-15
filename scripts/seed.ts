@@ -122,7 +122,7 @@ async function main() {
     robotsReviewedAt: '2026-06-14T00:00:00.000Z',
     maxUrlsPerRun: 10,
     notes:
-      'Optional parked API source. Not required for the default live flow. Uses Hlidac Statu API /api/v2/verejnezakazky/hledat only after token, attribution, and commercial approval are confirmed.'
+      'Parked disabled API source. Not required for the default live flow. Runtime route is disabled until a future owner re-enable decision.'
   })
 
   console.log('Seed complete.')

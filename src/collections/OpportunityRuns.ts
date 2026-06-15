@@ -1,6 +1,6 @@
 import type { CollectionConfig } from 'payload'
 
-import { isAuthenticated } from '@/access/isAdmin'
+import { isAdminOrEditor } from '@/access/isAdmin'
 
 export const OpportunityRuns: CollectionConfig = {
   slug: 'opportunity-runs',
@@ -10,10 +10,10 @@ export const OpportunityRuns: CollectionConfig = {
     defaultColumns: ['sourceKey', 'sourceRunId', 'state', 'createdCount', 'duplicateCount', 'collisionCount']
   },
   access: {
-    create: isAuthenticated,
-    read: isAuthenticated,
-    update: isAuthenticated,
-    delete: isAuthenticated
+    create: isAdminOrEditor,
+    read: isAdminOrEditor,
+    update: isAdminOrEditor,
+    delete: isAdminOrEditor
   },
   fields: [
     { name: 'source', type: 'relationship', relationTo: 'opportunity-sources' },

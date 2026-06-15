@@ -1,6 +1,6 @@
 import type { CollectionAfterChangeHook, CollectionConfig } from 'payload'
 
-import { isAuthenticated } from '@/access/isAdmin'
+import { isAdminOrEditor } from '@/access/isAdmin'
 import { projectSlug, taskStates } from '@/lib/mesh-contracts'
 import { appendWorkflowEvent } from '@/lib/workflow'
 
@@ -58,10 +58,10 @@ export const Tasks: CollectionConfig = {
     defaultColumns: ['title', 'state', 'assignedRole', 'priority', 'updatedAt']
   },
   access: {
-    create: isAuthenticated,
-    read: isAuthenticated,
-    update: isAuthenticated,
-    delete: isAuthenticated
+    create: isAdminOrEditor,
+    read: isAdminOrEditor,
+    update: isAdminOrEditor,
+    delete: isAdminOrEditor
   },
   hooks: {
     afterChange: [auditTaskStateChange]

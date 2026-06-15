@@ -1,6 +1,6 @@
 import type { CollectionAfterChangeHook, CollectionConfig } from 'payload'
 
-import { isAuthenticated } from '@/access/isAdmin'
+import { isAdminOrEditor } from '@/access/isAdmin'
 import { projectSlug } from '@/lib/mesh-contracts'
 import { appendWorkflowEvent } from '@/lib/workflow'
 
@@ -47,10 +47,10 @@ export const Leads: CollectionConfig = {
     defaultColumns: ['name', 'email', 'projectType', 'status', 'createdAt']
   },
   access: {
-    create: isAuthenticated,
-    read: isAuthenticated,
-    update: isAuthenticated,
-    delete: isAuthenticated
+    create: isAdminOrEditor,
+    read: isAdminOrEditor,
+    update: isAdminOrEditor,
+    delete: isAdminOrEditor
   },
   hooks: {
     afterChange: [auditLeadStatusChange]

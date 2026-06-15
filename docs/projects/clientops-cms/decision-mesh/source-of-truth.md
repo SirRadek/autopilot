@@ -13,3 +13,6 @@
 - Runtime logs remain local runtime evidence; docs store redacted summaries and source pointers only.
 - Claude/Gemini/GPT outputs are advisory. They cannot become canonical workflow state without human acceptance or local verification evidence.
 - Autopilot root provider usage and model-routing policy lives under `docs/autopilot/decision-mesh/`, not in this project mesh.
+- Active ClientOps mesh source lives under `docs/projects/clientops-cms/decision-mesh/`.
+- Archive material under `archive/**` is non-canonical and must not be used as active project mesh context.
+- Legacy control-plane files such as `AGENTS.md`, `GEMINI.md`, `src/data/delivery-system/**`, `src/auth/session.ts`, and `docs/autopilot/delivery-system-model-policy.md` are stale unless migrated into the active mesh.

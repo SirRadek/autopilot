@@ -8,7 +8,7 @@ export const runtime = 'nodejs'
 
 export async function POST(request: Request) {
   const authHeader = getMeshAuthHeader(request)
-  if (!isAuthorizedMeshRequest(authHeader, process.env.MESH_SERVICE_TOKEN)) {
+  if (!isAuthorizedMeshRequest(authHeader, process.env.OPPORTUNITY_LIVE_RUN_TOKEN)) {
     return Response.json({ ok: false, error: 'Unauthorized live opportunity request.' }, { status: 401 })
   }
 

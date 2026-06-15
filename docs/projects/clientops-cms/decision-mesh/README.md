@@ -33,13 +33,15 @@ Supporting capabilities:
 - `observability_mesh`
 - `bot_rag_mesh`
 
-Stop conditions:
+Stop conditions are conditional gates. They describe states that must block automation when present; they are not a claim that every condition is currently true:
 
 - missing project mesh
 - workflow task mutation without auth
 - missing idempotency for retryable inputs
 - opportunity ingest without scoped auth
-- opportunity contact data stored in event payloads
+- workflow mutation, opportunity purge, or live-source run using the broad mesh read token
+- lead, task, or opportunity contact data stored in workflow event payloads
+- production public lead intake exposed without edge/proxy rate limiting and body-size limits
 - opportunity purge path untested
 - model output used as canonical state
 - Docker/Postgres runtime claimed operational without health evidence

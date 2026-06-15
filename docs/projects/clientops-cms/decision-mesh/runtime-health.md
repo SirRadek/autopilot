@@ -39,4 +39,12 @@ Current local evidence from 2026-06-14:
 - Automated tests cover fixture import, replay, duplicate skip, collision block, PII-free events, and idempotent purge.
 - Generic live web-source runner is implemented and mesh-token gated.
 - Live web URL fetch is `precondition_blocked` unless source terms, allowed hosts, and robots review are configured.
-- Hlidac Statu remains optional and disabled unless token, attribution, and commercial approval are confirmed.
+- Hlidac Statu remains disabled; re-enable requires a future owner decision in addition to token, attribution, and commercial approval checks.
+
+Current local evidence from 2026-06-15:
+
+- Workflow task creation and mutation require `WORKFLOW_MUTATION_TOKEN`; read access remains on `MESH_SERVICE_TOKEN`.
+- Opportunity purge requires `OPPORTUNITY_PURGE_TOKEN`.
+- Generic live web-source runs require `OPPORTUNITY_LIVE_RUN_TOKEN`.
+- Hlidac Statu live route is intentionally disabled and returns `410` before auth, body parsing, Payload, or provider fetch.
+- Production public lead intake is blocked unless edge/proxy rate limiting and a positive body-size limit are declared.

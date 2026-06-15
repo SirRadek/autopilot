@@ -15,6 +15,8 @@ Before routing:
 - classify whether the task belongs to Autopilot control-plane or a supervised project
 - load the project mesh when the task changes project state
 - build a bounded, redacted context packet
+- reject archived source pointers before building context packets
+- use only active root/project mesh docs unless a human explicitly requests archive migration
 - record provider status and output expectations
 - decide whether paid routes are approved
 

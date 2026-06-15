@@ -30,6 +30,16 @@ The former `autopilot-control-plane` v0.2.0 repository state is preserved under 
 
 That archive is linked into Git history for recovery and selective migration, but it is not active runtime code. Active v0.1 work happens in the ClientOps CMS root and in `docs/projects/clientops-cms/`.
 
+Active Decision Mesh source roots are allowlisted to:
+
+- `docs/projects/clientops-cms/decision-mesh/`
+- `docs/autopilot/decision-mesh/`
+- `docs/projects/clientops-cms/v0.1-project-index.md`
+- `docs/projects/clientops-cms/work-log.md`
+- active application source under `src/`
+
+The active Decision Mesh MCP/router must not index `archive/**` or return archived paths as current `must_read` entries. Archived `AGENTS.md`, `GEMINI.md`, `src/data/delivery-system/**`, `src/auth/session.ts`, and `docs/autopilot/delivery-system-model-policy.md` are legacy v0.2.0 control-plane material only.
+
 ## Component Status
 
 Use these labels before adding, removing, or changing a component:
@@ -50,13 +60,13 @@ The full inventory is in `docs/projects/clientops-cms/v0.1-project-index.md`.
 
 - Payload admin at `/admin`
 - Payload REST API under `/api`
-- Payload GraphQL routes are available but are not a contracted v0.1 integration surface
+- Disabled Payload GraphQL routes at `/graphql` and `/graphql-playground`, returning `410`
 - Public lead intake at `POST /api/public/leads`
 - Internal workflow task API at `GET/POST/PATCH /api/workflow/tasks`
 - Opportunity ingest at `POST /api/opportunities/ingest`
 - Opportunity purge at `POST /api/opportunities/purge`
 - Generic live web-source runner at `POST /api/opportunities/live/web-source`
-- Optional Hlidac Statu route at `POST /api/opportunities/live/hlidac-statu`, disabled until provider preconditions are met
+- Disabled Hlidac Statu route at `POST /api/opportunities/live/hlidac-statu`, returning `410`
 - Health route at `GET /api/health`
 - Readiness route at `GET /api/ready`
 - Postgres-backed collections for users, clients, projects, sites, pages, forms, leads, tasks, workflow events, and opportunity records
@@ -71,9 +81,9 @@ The full inventory is in `docs/projects/clientops-cms/v0.1-project-index.md`.
 - Login/paywall scraping
 - Runtime usage-limit enforcement
 - Parallel external worker pools
-- Transactional compare-and-set task claims
 - Email/SMS delivery
-- Hlidac Statu live use without token, license, attribution, and approval
+- Hlidac Statu live use; the route is intentionally disabled
+- Payload GraphQL integrations; the routes are intentionally disabled for the current operating scope
 - Model output writing canonical CMS state
 
 ## Local Start
@@ -94,7 +104,7 @@ Open:
 
 ## Verification
 
-Run these before calling the local baseline clean:
+Run these before calling the local baseline or remediation slice clean:
 
 ```powershell
 npm.cmd run lint
@@ -129,15 +139,18 @@ Do not run `docker compose down -v` unless the local database volume is intentio
 
 ## Tokens
 
-Workflow task API and live source routes require `MESH_SERVICE_TOKEN`.
-
 Opportunity ingest requires `OPPORTUNITY_INGEST_TOKEN`.
+Opportunity purge requires `OPPORTUNITY_PURGE_TOKEN`.
+Opportunity live-source runs require `OPPORTUNITY_LIVE_RUN_TOKEN`.
+Workflow task reads require `MESH_SERVICE_TOKEN`; workflow task creation and mutation require `WORKFLOW_MUTATION_TOKEN`.
 
 Do not reuse provider API keys as mesh tokens. Do not commit `.env`.
 
 ## Lead Intake
 
 `POST /api/public/leads`
+
+Production guard: do not enable this route in production unless an edge/proxy rate limit and body-size limit are configured. The route returns `503` in production unless `PUBLIC_LEAD_EDGE_RATE_LIMIT_ENABLED=true` and `PUBLIC_LEAD_BODY_SIZE_LIMIT_BYTES` is a positive integer.
 
 Required fields:
 
@@ -156,7 +169,7 @@ Repeated requests with the same idempotency key return the existing lead/task. R
 
 ## Workflow Tasks
 
-Workflow task reads and mutations use `MESH_SERVICE_TOKEN`.
+Workflow task reads use `MESH_SERVICE_TOKEN`. Workflow task creation and mutation use `WORKFLOW_MUTATION_TOKEN`.
 
 ```powershell
 Invoke-WebRequest http://localhost:3000/api/workflow/tasks `
@@ -174,7 +187,8 @@ The opportunity monitor is for supervised opportunity review, not automatic outr
 Core rules:
 
 - Use `OPPORTUNITY_INGEST_TOKEN` for source-row ingest.
-- Use `MESH_SERVICE_TOKEN` for purge and live run control.
+- Use `OPPORTUNITY_PURGE_TOKEN` for purge.
+- Use `OPPORTUNITY_LIVE_RUN_TOKEN` for live run control.
 - Keep workflow event payloads PII-free.
 - Store and respect `publishedAt`, `sourceUpdatedAt`, `deadlineAt`, and `sourceStatus`.
 - Purge personal/contact data after response/conversion or retention expiry.
@@ -214,9 +228,12 @@ Design specs in `docs/superpowers/specs/` explain how decisions were reached. Th
 
 Only pick work that maps to the project index. Current priority:
 
-1. Baseline cleanup and commit.
-2. Decide how to handle Payload GraphQL in v0.1 docs or config.
-3. Add scheduled/operator purge flow for expired opportunity contact data.
-4. Add reviewed source registry workflow for live portals.
-5. Add transactional or compare-and-set task claims before parallel workers.
-6. Implement runtime usage-limit enforcement only after a concrete provider integration needs it.
+1. Regenerate or repoint the active Decision Mesh MCP/router from the active allowlist only, then run the archive-path smoke check described in `docs/autopilot/decision-mesh/README.md`.
+2. Keep dependency hygiene current: run `npm.cmd outdated`, `npm.cmd audit --audit-level=moderate`, `npm.cmd ls esbuild`, and the full verification gate before each release slice.
+3. Revisit ESLint 10 only after `eslint-plugin-import`, `eslint-plugin-react`, and `eslint-plugin-jsx-a11y` publish ESLint 10 peer support.
+4. Revisit `@types/node` 25 only after the local/runtime Node version moves from 24 to 25.
+5. Add scheduled/operator purge flow for expired opportunity contact data; keep purge as PII redaction without changing business status.
+6. Add reviewed source registry workflow for live portals.
+7. Add repeated worker PATCH idempotency and verify scoped tokens plus atomic task claims against the target runtime before parallel external workers.
+8. Configure actual production edge/proxy rate limiting and body-size limits before public lead intake is exposed outside local use.
+9. Implement runtime usage-limit enforcement only after a concrete provider integration needs it.

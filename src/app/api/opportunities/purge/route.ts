@@ -8,7 +8,7 @@ export const runtime = 'nodejs'
 
 export async function POST(request: Request) {
   const authHeader = getMeshAuthHeader(request)
-  if (!isAuthorizedMeshRequest(authHeader, process.env.MESH_SERVICE_TOKEN)) {
+  if (!isAuthorizedMeshRequest(authHeader, process.env.OPPORTUNITY_PURGE_TOKEN)) {
     return Response.json({ ok: false, error: 'Unauthorized opportunity purge request.' }, { status: 401 })
   }
 
