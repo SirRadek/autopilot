@@ -1,0 +1,1072 @@
+---
+import { capabilityModules } from "../data/delivery-system/capabilities";
+import { governanceGates } from "../data/delivery-system/gates";
+import { requiredDecisionLedgerFields, requiredIssueLedgerFields } from "../data/delivery-system/ledgers";
+import { modelPolicyRules } from "../data/delivery-system/modelPolicy";
+import { projectMeshPolicy } from "../data/delivery-system/projectMesh";
+import { deliveryRoles } from "../data/delivery-system/roles";
+import { workflowStates, workflowTransitions } from "../data/delivery-system/workflows";
+import { buildDecisionMeshGraph, loadDecisionMeshFromRoot } from "../lib/decision-mesh";
+
+const layerCounts = deliveryRoles.reduce<Record<string, number>>((counts, role) => {
+  counts[role.layer] = (counts[role.layer] ?? 0) + 1;
+  return counts;
+}, {});
+
+const rolePreview = deliveryRoles.slice(0, 12);
+const workflowPreview = workflowTransitions.slice(0, 9);
+const deliveryPath = [
+  {
+    phase: "01",
+    title: "Intake and owner intent",
+    lead: "Business Analyst",
+    support: ["Product Strategist", "Scope Guardian"],
+    communicates: ["Owner", "Orchestrator"],
+    mesh: "context_economy_policy",
+    output: "Goal, acceptance criteria, constraints, and explicit unknowns.",
+    gate: "Missing product goal or acceptance criteria blocks planning."
+  },
+  {
+    phase: "02",
+    title: "Mesh routing",
+    lead: "Orchestrator",
+    support: ["Decision Mesh MCP", "Capability routing"],
+    communicates: ["Architect", "Analysis Agent"],
+    mesh: "capability_routing",
+    output: "Selected capabilities, relevant subgraph, and compact agent packet.",
+    gate: "Stop conditions are checked before any implementation plan."
+  },
+  {
+    phase: "03",
+    title: "Architecture contract",
+    lead: "Architect",
+    support: ["System Reviewer", "Integration Planner"],
+    communicates: ["Orchestrator", "QA"],
+    mesh: "project_mesh_lifecycle",
+    output: "Project mesh status, boundaries, edit scope, and verification plan.",
+    gate: "Missing project mesh blocks supervised project implementation."
+  },
+  {
+    phase: "04",
+    title: "Task dispatch",
+    lead: "Orchestrator",
+    support: ["Analysis Agent", "GitHub issue"],
+    communicates: ["Codex Runner", "Qwen Worker"],
+    mesh: "reasoning_strategy",
+    output: "Bounded brief with allowed paths, done-when, and output contract.",
+    gate: "Only micro-patch or component-bundle work can go to Qwen."
+  },
+  {
+    phase: "05",
+    title: "Implementation",
+    lead: "Execution Agent",
+    support: ["Backend", "Frontend", "Docs", "Qwen Worker"],
+    communicates: ["Orchestrator"],
+    mesh: "automation_mesh",
+    output: "Patch, changed files, normalized result envelope, and notes.",
+    gate: "The implementer cannot approve its own work."
+  },
+  {
+    phase: "06",
+    title: "Verification",
+    lead: "Tester",
+    support: ["Regression", "Integration", "E2E"],
+    communicates: ["Execution Agent", "Orchestrator"],
+    mesh: "qa_upload_tests",
+    output: "Test output, screenshots, failed checks, and reproduction notes.",
+    gate: "Failures route to rework before review or delivery."
+  },
+  {
+    phase: "07",
+    title: "Review and governance",
+    lead: "Code Reviewer",
+    support: ["Security", "Architecture", "UX", "Governance Officer"],
+    communicates: ["Orchestrator", "Owner when blocked"],
+    mesh: "reasoning_strategy",
+    output: "Findings, risk acceptance, required repairs, or gate approval.",
+    gate: "Independent evidence is required before delivery approval."
+  },
+  {
+    phase: "08",
+    title: "Delivery and memory",
+    lead: "Autopilot Supervisor",
+    support: ["Memory Curator", "Technical Writer", "GitHub"],
+    communicates: ["Owner", "Project work log"],
+    mesh: "project_mesh_lifecycle",
+    output: "Accepted handoff, architecture impact, work-log update, lessons.",
+    gate: "Closeout is incomplete until architecture and work-log impact are recorded."
+  }
+];
+const communicationChain = [
+  "Owner",
+  "Business Analyst",
+  "Orchestrator",
+  "Decision Mesh",
+  "Architect",
+  "Worker",
+  "Tester",
+  "Reviewers",
+  "Governance",
+  "Memory"
+];
+const handoffRules = [
+  "Orchestrator owns routing, queue discipline, and blocker escalation.",
+  "Decision Mesh supplies context and stop conditions; it does not approve work.",
+  "Qwen receives only bounded implementation briefs and returns a normalized result.",
+  "Tester verifies independently before review and cannot run concurrently with Qwen.",
+  "Reviewers and governance gates decide acceptance from evidence, not from worker claims.",
+  "GitHub mirrors visibility and audit state; Autopilot remains the workflow authority."
+];
+const decisionMesh = loadDecisionMeshFromRoot(process.cwd());
+const decisionMeshGraph = buildDecisionMeshGraph(decisionMesh);
+const graphWidth = 1120;
+const graphHeight = 700;
+const rowGroups = [
+  { y: 92, groups: ["routing_policy", "governance_policy"] },
+  { y: 252, groups: ["capability_module"] },
+  { y: 438, groups: ["control", "dependency", "domain_surface", "risk_detector"] },
+  { y: 596, groups: ["capability_addon", "quality_gate", "workflow_area"] }
+];
+const groupLabels: Record<string, string> = {
+  capability_addon: "Capability add-on",
+  capability_module: "Capability modules",
+  control: "Controls",
+  dependency: "Dependencies",
+  domain_surface: "Domain surfaces",
+  governance_policy: "Governance policy",
+  quality_gate: "Quality gates",
+  risk_detector: "Risk detectors",
+  routing_policy: "Routing policies",
+  workflow_area: "Workflow areas"
+};
+const groupColors: Record<string, string> = {
+  capability_addon: "#8a4b10",
+  capability_module: "#126b52",
+  control: "#1f5f99",
+  dependency: "#6554a8",
+  domain_surface: "#7d5b11",
+  governance_policy: "#2d4f8f",
+  quality_gate: "#4c6f16",
+  risk_detector: "#a33d2c",
+  routing_policy: "#263238",
+  workflow_area: "#7b3f78"
+};
+const graphNodesByRow = rowGroups.map((row) =>
+  decisionMeshGraph.nodes.filter((node) => row.groups.includes(node.group))
+);
+const nodePositions = new Map(
+  graphNodesByRow.flatMap((nodes, rowIndex) => {
+    const y = rowGroups[rowIndex]?.y ?? graphHeight / 2;
+    return nodes.map((node, nodeIndex) => {
+      const x = ((nodeIndex + 1) * graphWidth) / (nodes.length + 1);
+      return [node.id, { x, y }] as const;
+    });
+  })
+);
+const graphLinks = decisionMeshGraph.links
+  .map((link) => ({
+    ...link,
+    sourcePosition: nodePositions.get(link.source),
+    targetPosition: nodePositions.get(link.target)
+  }))
+  .filter((link) => link.sourcePosition && link.targetPosition);
+const strongestLinks = [...decisionMeshGraph.links].sort((left, right) => right.weight - left.weight).slice(0, 6);
+const groupSummary = Object.entries(
+  decisionMeshGraph.nodes.reduce<Record<string, number>>((counts, node) => {
+    counts[node.group] = (counts[node.group] ?? 0) + 1;
+    return counts;
+  }, {})
+).sort(([left], [right]) => left.localeCompare(right));
+
+function edgePath(source: { x: number; y: number }, target: { x: number; y: number }): string {
+  if (Math.abs(source.y - target.y) < 4) {
+    const arc = Math.min(104, Math.max(54, Math.abs(target.x - source.x) * 0.34));
+    return `M ${source.x} ${source.y} C ${source.x} ${source.y - arc}, ${target.x} ${target.y - arc}, ${target.x} ${target.y}`;
+  }
+
+  const sourceHandleY = source.y + (target.y - source.y) * 0.42;
+  const targetHandleY = target.y - (target.y - source.y) * 0.42;
+  return `M ${source.x} ${source.y} C ${source.x} ${sourceHandleY}, ${target.x} ${targetHandleY}, ${target.x} ${target.y}`;
+}
+
+function labelLines(label: string): string[] {
+  const normalized = label
+    .replace("Decision Mesh", "Mesh")
+    .replace("Strategic reasoning layer", "Reasoning layer")
+    .replace("Project mesh lifecycle", "Project lifecycle");
+  const words = normalized.split(" ");
+  const lines: string[] = [];
+
+  for (const word of words) {
+    const current = lines.at(-1);
+
+    if (!current || `${current} ${word}`.length > 18) {
+      lines.push(word);
+    } else {
+      lines[lines.length - 1] = `${current} ${word}`;
+    }
+  }
+
+  return lines.slice(0, 2);
+}
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Autopilot Command Center</title>
+    <style is:global>
+      :root {
+        color-scheme: light;
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: #f6f3ee;
+        color: #17201d;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-width: 320px;
+        background:
+          linear-gradient(180deg, rgba(246, 243, 238, 0.96), rgba(231, 238, 235, 0.96)),
+          repeating-linear-gradient(90deg, rgba(23, 32, 29, 0.05) 0 1px, transparent 1px 112px);
+      }
+
+      main {
+        width: min(1180px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 28px 0 44px;
+      }
+
+      .topbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 12px 0 24px;
+        border-bottom: 1px solid rgba(23, 32, 29, 0.18);
+      }
+
+      .brand {
+        display: grid;
+        gap: 4px;
+      }
+
+      .brand strong {
+        font-size: 1.05rem;
+      }
+
+      .brand span,
+      .status span,
+      .meta {
+        color: #5a655f;
+        font-size: 0.9rem;
+      }
+
+      .status {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .pill {
+        border: 1px solid rgba(23, 32, 29, 0.18);
+        border-radius: 999px;
+        padding: 6px 10px;
+        background: #fffaf0;
+        white-space: nowrap;
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1.1fr) minmax(280px, 0.9fr);
+        gap: 28px;
+        padding: 34px 0 26px;
+        align-items: start;
+      }
+
+      h1 {
+        margin: 0;
+        max-width: 760px;
+        font-size: clamp(2rem, 7vw, 4.9rem);
+        line-height: 0.98;
+        letter-spacing: 0;
+      }
+
+      h2 {
+        margin: 0 0 14px;
+        font-size: 1rem;
+        letter-spacing: 0;
+      }
+
+      p {
+        margin: 0;
+      }
+
+      .summary {
+        display: grid;
+        gap: 12px;
+      }
+
+      .summary p {
+        max-width: 680px;
+        color: #3e4943;
+        font-size: 1.02rem;
+        line-height: 1.55;
+      }
+
+      .read-only {
+        display: grid;
+        gap: 12px;
+        padding: 18px;
+        border: 1px solid rgba(23, 32, 29, 0.16);
+        background: #dfeee8;
+      }
+
+      .read-only strong {
+        font-size: 1.1rem;
+      }
+
+      .metric-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+        margin: 10px 0 28px;
+      }
+
+      .metric {
+        min-height: 96px;
+        padding: 14px;
+        border: 1px solid rgba(23, 32, 29, 0.14);
+        background: #fffaf0;
+      }
+
+      .metric b {
+        display: block;
+        margin-bottom: 10px;
+        font-size: 1.7rem;
+      }
+
+      .section {
+        padding: 28px 0;
+        border-top: 1px solid rgba(23, 32, 29, 0.16);
+      }
+
+      .grid-two {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 18px;
+      }
+
+      .panel {
+        padding: 18px;
+        border: 1px solid rgba(23, 32, 29, 0.16);
+        background: rgba(255, 250, 240, 0.82);
+      }
+
+      .list {
+        display: grid;
+        gap: 8px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .list li {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        min-height: 36px;
+        border-bottom: 1px solid rgba(23, 32, 29, 0.1);
+        color: #293630;
+      }
+
+      .list code {
+        color: #705124;
+      }
+
+      .workflow {
+        display: grid;
+        gap: 8px;
+      }
+
+      .delivery-flow {
+        display: grid;
+        gap: 12px;
+      }
+
+      .agent-chain {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+        padding: 14px;
+        border: 1px solid rgba(23, 32, 29, 0.16);
+        background: #eef4f2;
+      }
+
+      .agent-chip {
+        display: inline-flex;
+        align-items: center;
+        min-height: 34px;
+        padding: 7px 10px;
+        border: 1px solid rgba(23, 32, 29, 0.16);
+        background: #fffaf0;
+        font-size: 0.84rem;
+        font-weight: 700;
+      }
+
+      .chain-arrow {
+        color: #8f5f24;
+        font-size: 0.8rem;
+        font-weight: 800;
+      }
+
+      .delivery-steps {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .delivery-card {
+        display: grid;
+        align-content: start;
+        gap: 10px;
+        min-height: 272px;
+        padding: 14px;
+        border: 1px solid rgba(23, 32, 29, 0.14);
+        background: #ffffff;
+      }
+
+      .delivery-card header {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        gap: 10px;
+        align-items: center;
+      }
+
+      .phase {
+        display: inline-grid;
+        place-items: center;
+        width: 34px;
+        height: 34px;
+        border-radius: 999px;
+        background: #17201d;
+        color: #fffaf0;
+        font-size: 0.78rem;
+        font-weight: 800;
+      }
+
+      .delivery-card h3 {
+        margin: 0;
+        font-size: 0.95rem;
+        letter-spacing: 0;
+      }
+
+      .delivery-card dl {
+        display: grid;
+        gap: 7px;
+        margin: 0;
+      }
+
+      .delivery-card div {
+        display: grid;
+        gap: 2px;
+      }
+
+      .delivery-card dt {
+        color: #5a655f;
+        font-size: 0.7rem;
+        font-weight: 800;
+        letter-spacing: 0;
+        text-transform: uppercase;
+      }
+
+      .delivery-card dd {
+        margin: 0;
+        color: #27332d;
+        font-size: 0.82rem;
+        line-height: 1.35;
+      }
+
+      .handoff-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(260px, 0.46fr);
+        gap: 14px;
+      }
+
+      .handoff-list {
+        display: grid;
+        gap: 9px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .handoff-list li {
+        padding-bottom: 9px;
+        border-bottom: 1px solid rgba(23, 32, 29, 0.1);
+        color: #303c36;
+        font-size: 0.9rem;
+        line-height: 1.4;
+      }
+
+      .flow-step {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        border: 1px solid rgba(23, 32, 29, 0.14);
+        background: #eef4f2;
+      }
+
+      .arrow {
+        color: #8f5f24;
+        font-weight: 700;
+      }
+
+      .roles {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .role-card {
+        min-height: 112px;
+        padding: 13px;
+        border: 1px solid rgba(23, 32, 29, 0.14);
+        background: #ffffff;
+      }
+
+      .role-card strong {
+        display: block;
+        margin-bottom: 6px;
+      }
+
+      .role-card span {
+        color: #5a655f;
+        font-size: 0.86rem;
+      }
+
+      .footer-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .section-heading {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: end;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 14px;
+      }
+
+      .section-heading p {
+        max-width: 620px;
+        color: #4b5751;
+        line-height: 1.5;
+      }
+
+      .mesh-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(220px, 0.28fr);
+        gap: 16px;
+        align-items: start;
+      }
+
+      .mesh-canvas {
+        min-width: 0;
+        border: 1px solid rgba(23, 32, 29, 0.16);
+        background: #fdfbf5;
+      }
+
+      .mesh-canvas svg {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+
+      .mesh-row-label {
+        fill: #5d675f;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0;
+        text-transform: uppercase;
+      }
+
+      .mesh-link {
+        fill: none;
+        stroke: rgba(52, 67, 61, 0.34);
+      }
+
+      .mesh-node circle {
+        stroke: #fffaf0;
+        stroke-width: 3;
+      }
+
+      .mesh-node text {
+        fill: #17201d;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0;
+        text-anchor: middle;
+      }
+
+      .mesh-node .node-id {
+        fill: #5a655f;
+        font-size: 0.62rem;
+        font-weight: 600;
+      }
+
+      .mesh-sidebar {
+        display: grid;
+        gap: 12px;
+      }
+
+      .legend-list {
+        display: grid;
+        gap: 8px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .legend-list li {
+        display: grid;
+        grid-template-columns: 12px minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 8px;
+        color: #303c36;
+        font-size: 0.86rem;
+      }
+
+      .swatch {
+        width: 12px;
+        height: 12px;
+        border-radius: 999px;
+        background: var(--swatch);
+      }
+
+      .edge-list {
+        display: grid;
+        gap: 8px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .edge-list li {
+        display: grid;
+        gap: 3px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid rgba(23, 32, 29, 0.1);
+      }
+
+      .edge-list strong {
+        font-size: 0.86rem;
+      }
+
+      .edge-list span {
+        color: #5a655f;
+        font-size: 0.78rem;
+      }
+
+      @media (max-width: 860px) {
+        main {
+          width: min(100% - 22px, 680px);
+        }
+
+        .hero,
+        .grid-two,
+        .footer-grid,
+        .mesh-layout,
+        .handoff-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .metric-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .roles {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .delivery-steps {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 520px) {
+        main {
+          width: min(100% - 18px, 430px);
+        }
+
+        .metric-grid,
+        .roles,
+        .delivery-steps {
+          grid-template-columns: 1fr;
+        }
+
+        .flow-step {
+          grid-template-columns: 1fr;
+        }
+
+        .arrow {
+          display: none;
+        }
+
+        .mesh-node .node-id {
+          display: none;
+        }
+
+        .chain-arrow {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header class="topbar">
+        <div class="brand">
+          <strong>Autopilot Control Plane</strong>
+          <span>Multi-Agent Autonomous Delivery System</span>
+        </div>
+        <div class="status" data-testid="read-only-status">
+          <span class="pill">Read-only</span>
+          <span class="pill">Non-executing</span>
+          <span class="pill">No connector calls</span>
+        </div>
+      </header>
+
+      <section class="hero">
+        <div class="summary">
+          <p class="meta">Phase 2 command center</p>
+          <h1>Autopilot Command Center</h1>
+          <p>
+            Static governance view over typed contracts, ledgers, workflow rules, and current
+            architecture evidence. This surface reports state only.
+          </p>
+        </div>
+        <aside class="read-only">
+          <strong>Execution remains locked</strong>
+          <p>
+            No deployments, workflow runs, connector mutation, credentials, or product runtime
+            actions are exposed from this page.
+          </p>
+          <p class="meta">Next architecture review: 2026-05-20</p>
+        </aside>
+      </section>
+
+      <section class="metric-grid" aria-label="Delivery system metrics">
+        <div class="metric">
+          <b>{Object.keys(layerCounts).length}</b>
+          <span>governance layers</span>
+        </div>
+        <div class="metric">
+          <b>{deliveryRoles.length}</b>
+          <span>typed roles</span>
+        </div>
+        <div class="metric">
+          <b>{governanceGates.length}</b>
+          <span>governance gates</span>
+        </div>
+        <div class="metric">
+          <b>{workflowStates.length}</b>
+          <span>workflow states</span>
+        </div>
+      </section>
+
+      <section class="section" data-testid="decision-mesh-graph">
+        <div class="section-heading">
+          <div>
+            <h2>Decision Mesh Graph</h2>
+            <p>
+              Visual map of the local mesh: routing policies, capability modules, risk detectors,
+              controls, and quality gates. The graph is read from the same source used by the MCP
+              server.
+            </p>
+          </div>
+          <span class="pill">{decisionMeshGraph.nodes.length} nodes / {decisionMeshGraph.links.length} links</span>
+        </div>
+
+        <div class="mesh-layout">
+          <div class="mesh-canvas">
+            <svg
+              data-testid="mesh-svg"
+              role="img"
+              aria-labelledby="mesh-title mesh-desc"
+              viewBox={`0 0 ${graphWidth} ${graphHeight}`}
+            >
+              <title id="mesh-title">Autopilot Decision Mesh graph</title>
+              <desc id="mesh-desc">
+                Directed network of Autopilot routing policies, capability modules, risk detectors,
+                controls, and supporting gates.
+              </desc>
+              <defs>
+                <marker
+                  id="mesh-arrow"
+                  viewBox="0 0 10 10"
+                  refX="8"
+                  refY="5"
+                  markerWidth="5"
+                  markerHeight="5"
+                  orient="auto-start-reverse"
+                >
+                  <path d="M 0 0 L 10 5 L 0 10 z" fill="rgba(52, 67, 61, 0.46)"></path>
+                </marker>
+              </defs>
+
+              {rowGroups.map((row) => <text class="mesh-row-label" x="22" y={row.y - 40}>{row.groups.map((group) => groupLabels[group]).join(" / ")}</text>)}
+
+              <g>
+                {
+                  graphLinks.map((link) => (
+                    <path
+                      class="mesh-link"
+                      d={edgePath(link.sourcePosition!, link.targetPosition!)}
+                      stroke-width={1 + link.weight * 2.4}
+                      marker-end="url(#mesh-arrow)"
+                    >
+                      <title>{`${link.source} -> ${link.target}: ${link.relation} (${link.weight})`}</title>
+                    </path>
+                  ))
+                }
+              </g>
+
+              <g>
+                {
+                  decisionMeshGraph.nodes.map((node) => {
+                    const position = nodePositions.get(node.id);
+                    const radius = 13 + node.risk * 8;
+                    const lines = labelLines(node.label);
+
+                    if (!position) return null;
+
+                    return (
+                      <g class="mesh-node" transform={`translate(${position.x} ${position.y})`}>
+                        <circle r={radius} fill={groupColors[node.group] ?? "#3f4a45"}>
+                          <title>{`${node.label} (${groupLabels[node.group] ?? node.group})`}</title>
+                        </circle>
+                        <text y={radius + 18}>
+                          {lines.map((line, index) => <tspan x="0" dy={index === 0 ? 0 : 13}>{line}</tspan>)}
+                        </text>
+                        <text class="node-id" y={radius + 49}>{node.id}</text>
+                      </g>
+                    );
+                  })
+                }
+              </g>
+            </svg>
+          </div>
+
+          <aside class="mesh-sidebar">
+            <div class="panel">
+              <h2>Node Types</h2>
+              <ul class="legend-list">
+                {
+                  groupSummary.map(([group, count]) => (
+                    <li>
+                      <span class="swatch" style={`--swatch: ${groupColors[group] ?? "#3f4a45"}`}></span>
+                      <span>{groupLabels[group] ?? group.replaceAll("_", " ")}</span>
+                      <code>{count}</code>
+                    </li>
+                  ))
+                }
+              </ul>
+            </div>
+            <div class="panel">
+              <h2>Strongest Links</h2>
+              <ul class="edge-list">
+                {
+                  strongestLinks.map((link) => (
+                    <li>
+                      <strong>{link.source} to {link.target}</strong>
+                      <span>{link.relation} / weight {link.weight.toFixed(2)}</span>
+                    </li>
+                  ))
+                }
+              </ul>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="section" data-testid="project-delivery-workflow">
+        <div class="section-heading">
+          <div>
+            <h2>Project Delivery Workflow</h2>
+            <p>
+              Operational path from owner request to accepted closeout. Each step names the lead
+              agent, communication handoff, mesh checkpoint, output, and gate.
+            </p>
+          </div>
+          <span class="pill">{deliveryPath.length} ordered phases</span>
+        </div>
+
+        <div class="delivery-flow">
+          <div class="agent-chain" aria-label="Agent communication order">
+            {
+              communicationChain.map((agent, index) => (
+                <>
+                  <span class="agent-chip">{agent}</span>
+                  {index < communicationChain.length - 1 ? <span class="chain-arrow">to</span> : null}
+                </>
+              ))
+            }
+          </div>
+
+          <div class="delivery-steps">
+            {
+              deliveryPath.map((step) => (
+                <article class="delivery-card">
+                  <header>
+                    <span class="phase">{step.phase}</span>
+                    <h3>{step.title}</h3>
+                  </header>
+                  <dl>
+                    <div>
+                      <dt>Lead</dt>
+                      <dd>{step.lead}</dd>
+                    </div>
+                    <div>
+                      <dt>Support</dt>
+                      <dd>{step.support.join(", ")}</dd>
+                    </div>
+                    <div>
+                      <dt>Talks to</dt>
+                      <dd>{step.communicates.join(", ")}</dd>
+                    </div>
+                    <div>
+                      <dt>Mesh checkpoint</dt>
+                      <dd><code>{step.mesh}</code></dd>
+                    </div>
+                    <div>
+                      <dt>Output</dt>
+                      <dd>{step.output}</dd>
+                    </div>
+                    <div>
+                      <dt>Gate</dt>
+                      <dd>{step.gate}</dd>
+                    </div>
+                  </dl>
+                </article>
+              ))
+            }
+          </div>
+
+          <div class="handoff-grid">
+            <div class="panel">
+              <h2>Handoff Rules</h2>
+              <ul class="handoff-list">
+                {handoffRules.map((rule) => <li>{rule}</li>)}
+              </ul>
+            </div>
+            <div class="panel">
+              <h2>Concurrency Boundary</h2>
+              <ul class="list">
+                <li><span>Codex lane</span><code>supervisor</code></li>
+                <li><span>Qwen worker</span><code>bounded only</code></li>
+                <li><span>Tester lane</span><code>separate from Qwen</code></li>
+                <li><span>GitHub</span><code>mirror only</code></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section grid-two" data-testid="decision-mesh-coverage">
+        <div class="panel">
+          <h2>Decision Mesh Coverage</h2>
+          <ul class="list">
+            <li><span>capability routing</span><code>{capabilityModules.length}</code></li>
+            <li><span>context packet tool</span><code>build_agent_packet</code></li>
+            <li><span>capability selector</span><code>select_capabilities</code></li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h2>Project Mesh Lifecycle</h2>
+          <ul class="list">
+            <li><span>project meshes</span><code>{projectMeshPolicy.projectMeshRequired ? "required" : "optional"}</code></li>
+            <li><span>path pattern</span><code>{projectMeshPolicy.projectMeshPathPattern}</code></li>
+            <li><span>update triggers</span><code>{projectMeshPolicy.updateTriggers.length}</code></li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="section grid-two" data-testid="governance-gates">
+        <div class="panel">
+          <h2>Governance Gates</h2>
+          <ul class="list">
+            {governanceGates.map((gate) => <li><span>{gate.replaceAll("_", " ")}</span><code>required</code></li>)}
+          </ul>
+        </div>
+        <div class="panel" data-testid="ledger-summary">
+          <h2>Ledger Summary</h2>
+          <ul class="list">
+            <li><span>Decision fields</span><code>{requiredDecisionLedgerFields.length}</code></li>
+            <li><span>Issue fields</span><code>{requiredIssueLedgerFields.length}</code></li>
+            <li><span>Architecture record</span><code>current</code></li>
+            <li><span>Work log</span><code>current</code></li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="section" data-testid="workflow-map">
+        <h2>Workflow Map</h2>
+        <div class="workflow">
+          {
+            workflowPreview.map((transition) => (
+              <div class="flow-step">
+                <span>{transition.from.replaceAll("_", " ")}</span>
+                <span class="arrow">to</span>
+                <span>{transition.to.replaceAll("_", " ")}</span>
+              </div>
+            ))
+          }
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>Role Catalog</h2>
+        <div class="roles">
+          {
+            rolePreview.map((role) => (
+              <article class="role-card">
+                <strong>{role.title}</strong>
+                <span>{role.layer}</span>
+              </article>
+            ))
+          }
+        </div>
+      </section>
+
+      <section class="section footer-grid">
+        <div class="panel">
+          <h2>Architecture Record</h2>
+          <p class="meta">docs/projects/multi-agent-autonomous-delivery-system/architecture.md</p>
+        </div>
+        <div class="panel">
+          <h2>Work Log</h2>
+          <p class="meta">docs/projects/multi-agent-autonomous-delivery-system/work-log.md</p>
+        </div>
+        <div class="panel">
+          <h2>Model Policy</h2>
+          <p class="meta">{modelPolicyRules.length} model policy rows mirrored locally</p>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

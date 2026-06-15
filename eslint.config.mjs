@@ -5,6 +5,7 @@ const config = [
   {
     ignores: [
       '.next/**',
+      'archive/**',
       'build/**',
       'coverage/**',
       'dist/**',

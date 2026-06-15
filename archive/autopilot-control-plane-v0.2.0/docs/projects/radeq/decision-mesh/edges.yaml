@@ -1,0 +1,41 @@
+edges:
+  - from: static_public_site
+    to: seo_performance_surface
+    relation: requires
+    weight: 0.88
+    why: "The public site must remain SEO-friendly and fast."
+  - from: lead_capture_pipeline
+    to: static_public_site
+    relation: extends
+    weight: 0.78
+    why: "Lead capture is part of the public conversion flow."
+  - from: runtime_observability_boundary
+    to: static_public_site
+    relation: diagnoses
+    weight: 0.84
+    why: "Radeq public-site symptoms must be diagnosed in the Radeq project context."
+  - from: runtime_observability_boundary
+    to: lead_capture_pipeline
+    relation: diagnoses
+    weight: 0.82
+    why: "Lead API and D1 symptoms require project-owned runtime evidence and privacy-safe summaries."
+  - from: runtime_observability_boundary
+    to: seo_performance_surface
+    relation: informs
+    weight: 0.86
+    why: "Performance and SEO bottlenecks need baseline metrics and project-owned evidence."
+  - from: three_d_mascot_addon
+    to: static_public_site
+    relation: enhances
+    weight: 0.64
+    why: "3D is an optional enhancement, not the content carrier."
+  - from: three_d_mascot_addon
+    to: seo_performance_surface
+    relation: constrained_by
+    weight: 0.82
+    why: "3D must not damage performance, mobile usability, or SEO content."
+  - from: runtime_observability_boundary
+    to: three_d_mascot_addon
+    relation: diagnoses_optional_layer
+    weight: 0.7
+    why: "WebGL and 3D issues must remain optional-layer diagnostics and cannot block core content."

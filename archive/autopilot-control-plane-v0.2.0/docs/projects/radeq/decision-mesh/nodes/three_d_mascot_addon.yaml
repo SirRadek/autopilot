@@ -1,0 +1,33 @@
+id: three_d_mascot_addon
+type: capability_addon
+name: 3D mascot add-on
+question: "Does this change affect the optional Three.js mascot, asset loading, animation, or fallback behavior?"
+why: "Radeq uses 3D as an optional enhancement; core content and conversion must work without WebGL and with reduced motion."
+signals:
+  - 3d
+  - webgl
+  - three
+  - mascot
+  - gltf
+  - fallback
+  - reduced motion
+related_agents:
+  - design_ux
+  - frontend
+  - seo_performance
+  - qa
+related_files:
+  - docs/projects/radeq/architecture.md
+  - docs/autopilot/cat-mascot-asset-provenance.md
+required_checks:
+  - reduced_motion_support
+  - webgl_failure_fallback
+  - mobile_check
+  - canvas_nonblank_check
+  - cleanup_check
+stop_conditions:
+  - core_content_requires_webgl
+  - no_reduced_motion_fallback
+  - unverified_asset_license
+objective:
+  - Keep 3D visual value optional, performant, and accessible.

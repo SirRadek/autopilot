@@ -1,0 +1,45 @@
+{
+  "name": "autopilot-control-plane",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "description": "Typed governance contracts for the Autopilot control plane.",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "pdos:validate": "tsx product-design-os/scripts/validate-product-design-os.ts",
+    "pdos:route": "tsx product-design-os/scripts/route-product-design-os.ts",
+    "pdos:report": "tsx product-design-os/scripts/route-product-design-os.ts --format markdown",
+    "pdos:score": "tsx product-design-os/scripts/score-product-design-os.ts",
+    "pdos:visual-qa": "tsx product-design-os/scripts/visual-qa-product-design-os.ts",
+    "pdos:reader:capture": "tsx product-design-os/scripts/capture-design-reader.ts",
+    "pdos:reader:document": "tsx product-design-os/reader/document-reader-adapter.ts",
+    "pdos:library:projects": "tsx product-design-os/scripts/update-project-library.ts",
+    "prompt:validate": "tsx scripts/validate-prompt-library.ts",
+    "model-output:validate": "tsx scripts/validate-model-output-evals.ts",
+    "contracts:validate": "tsx scripts/validate-contracts.ts",
+    "mesh:generate": "tsx scripts/generate-decision-mesh.ts",
+    "mesh:check": "tsx scripts/generate-decision-mesh.ts --check",
+    "mcp:mesh": "tsx mcp/server.ts",
+    "audit:deps": "npm audit --audit-level=high",
+    "diff:check": "git diff --check",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "verify": "npm run mesh:check && npm run prompt:validate && npm run model-output:validate && npm run pdos:validate && npm run contracts:validate && npm run diff:check && npm run typecheck && npm run test && npm run build && npm run test:e2e"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.60.0",
+    "@types/node": "25.9.3",
+    "astro": "6.4.6",
+    "tsx": "^4.22.4",
+    "typescript": "6.0.3",
+    "vitest": "4.1.8"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "yaml": "^2.9.0",
+    "zod": "^4.4.3"
+  }
+}

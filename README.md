@@ -24,6 +24,12 @@ Payload/Postgres is the canonical source of truth. The Decision Mesh is not the 
 
 Model output from Claude, Gemini, GPT, or any local model is advisory only unless local code, tests, source evidence, or a human decision adopts it.
 
+## Repository Integration
+
+The former `autopilot-control-plane` v0.2.0 repository state is preserved under `archive/autopilot-control-plane-v0.2.0/`.
+
+That archive is linked into Git history for recovery and selective migration, but it is not active runtime code. Active v0.1 work happens in the ClientOps CMS root and in `docs/projects/clientops-cms/`.
+
 ## Component Status
 
 Use these labels before adding, removing, or changing a component:

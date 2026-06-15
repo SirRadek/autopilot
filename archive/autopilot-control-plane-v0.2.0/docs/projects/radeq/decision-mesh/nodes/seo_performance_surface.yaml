@@ -1,0 +1,28 @@
+id: seo_performance_surface
+type: quality_gate
+name: SEO and performance surface
+question: "Does this change affect metadata, indexability, performance budget, page weight, or Core Web Vitals?"
+why: "Radeq's commercial promise depends on speed, SEO structure, conversion clarity, and lightweight enhancement."
+signals:
+  - seo
+  - performance
+  - metadata
+  - indexability
+  - core web vitals
+  - lighthouse
+related_agents:
+  - seo_performance
+  - frontend
+  - qa
+related_files:
+  - docs/projects/radeq/architecture.md
+required_checks:
+  - metadata_check
+  - indexability_check
+  - performance_check
+  - mobile_check
+stop_conditions:
+  - seo_metadata_removed
+  - performance_budget_regression_unmeasured
+objective:
+  - Protect Radeq's speed and search visibility.

@@ -1,0 +1,40 @@
+name: Review request
+description: Ask for Codex review of a completed task, patch, or PR.
+title: "[Review]: "
+labels:
+  - autopilot
+  - needs-review
+body:
+  - type: input
+    id: target
+    attributes:
+      label: Review target
+      placeholder: "PR #123, commit SHA, branch, or task id"
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Review scope
+      description: What should be reviewed, and what should be ignored?
+    validations:
+      required: true
+  - type: textarea
+    id: verification
+    attributes:
+      label: Verification already run
+      placeholder: |
+        - npm run verify
+        - ...
+  - type: textarea
+    id: risk
+    attributes:
+      label: Known risks or concerns
+      description: Include failed checks, uncertain assumptions, or stop conditions.
+  - type: checkboxes
+    id: review_mode
+    attributes:
+      label: Review mode
+      options:
+        - label: Review should prioritize defects, regressions, missing tests, and policy violations.
+          required: true
