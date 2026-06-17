@@ -30,6 +30,20 @@ export interface TokenEfficiencyRouteResult {
   readonly stopConditions: readonly string[];
 }
 
+export interface ContextWidthSpec {
+  readonly budgetClass: TokenBudgetClass;
+  readonly maxFilesInPacket: number;
+  readonly maxContextLines: number;
+  readonly requiredSections: readonly string[];
+  readonly optionalSections: readonly string[];
+  readonly excludedSections: readonly string[];
+  readonly preferredProviderForWidth:
+    | "any_local"
+    | "openai_gpt"
+    | "gemini_cli"
+    | "anthropic_claude_subscription";
+}
+
 export const tokenEfficiencyProfiles = [
   {
     id: "caveman",
@@ -184,6 +198,83 @@ export const tokenEfficiencyProfiles = [
   }
 ] as const satisfies readonly TokenEfficiencyProfile[];
 
+export const contextWidthSpecs: Record<TokenBudgetClass, ContextWidthSpec> = {
+  tiny: {
+    budgetClass: "tiny",
+    maxFilesInPacket: 3,
+    maxContextLines: 200,
+    requiredSections: ["goal", "allowed_files", "forbidden_actions", "expected_output"],
+    optionalSections: ["verified_facts", "stop_conditions"],
+    excludedSections: [
+      "full_mesh_packet",
+      "architecture_records",
+      "work_log",
+      "dependency_records",
+      "skill_registry"
+    ],
+    preferredProviderForWidth: "any_local"
+  },
+  small: {
+    budgetClass: "small",
+    maxFilesInPacket: 8,
+    maxContextLines: 600,
+    requiredSections: [
+      "goal",
+      "scope",
+      "allowed_files",
+      "forbidden_actions",
+      "verified_facts",
+      "expected_output",
+      "required_checks"
+    ],
+    optionalSections: ["risks", "reuse_check", "open_questions"],
+    excludedSections: ["full_mesh_packet", "full_work_log"],
+    preferredProviderForWidth: "openai_gpt"
+  },
+  medium: {
+    budgetClass: "medium",
+    maxFilesInPacket: 20,
+    maxContextLines: 2000,
+    requiredSections: [
+      "goal",
+      "scope",
+      "allowed_files",
+      "forbidden_actions",
+      "verified_facts",
+      "assumptions",
+      "risks",
+      "expected_output",
+      "required_checks",
+      "stop_conditions",
+      "reuse_check",
+      "context_budget"
+    ],
+    optionalSections: ["architecture_records", "dependency_records", "learning_signal", "skill_registry_relevant"],
+    excludedSections: [],
+    preferredProviderForWidth: "openai_gpt"
+  },
+  large: {
+    budgetClass: "large",
+    maxFilesInPacket: 60,
+    maxContextLines: 8000,
+    requiredSections: [
+      "goal",
+      "scope",
+      "allowed_files",
+      "forbidden_actions",
+      "full_mesh_packet",
+      "verified_facts",
+      "architecture_records",
+      "risks",
+      "expected_output",
+      "required_checks"
+    ],
+    optionalSections: ["full_work_log", "dependency_records"],
+    excludedSections: [],
+    preferredProviderForWidth: "gemini_cli"
+  }
+};
+
 export function selectTokenEfficiencyRoute(input: TokenEfficiencyRouteInput): TokenEfficiencyRouteResult {
   const normalizedTask = normalize(input.task);
   const profile = selectProfile(normalizedTask);
@@ -198,6 +289,31 @@ export function selectTokenEfficiencyRoute(input: TokenEfficiencyRouteInput): To
     escalationRules: profile.escalationRules,
     stopConditions: profile.stopConditions
   };
+}
+
+export function selectContextWidth(
+  profile: TokenEfficiencyProfileId,
+  taskComplexitySignals: readonly string[]
+): ContextWidthSpec {
+  const normalizedSignals = normalize(taskComplexitySignals.join(" "));
+
+  if (hasAny(normalizedSignals, ["large", "long context", "full mesh", "full work log", "many files"])) {
+    return contextWidthSpecs.large;
+  }
+
+  if (profile === "caveman") {
+    return contextWidthSpecs.tiny;
+  }
+
+  if (hasAny(normalizedSignals, ["cross module", "multi file", "integration", "medium", "governance"])) {
+    return contextWidthSpecs.medium;
+  }
+
+  if (profile === "review_compact" || profile === "research_compact") {
+    return contextWidthSpecs.medium;
+  }
+
+  return contextWidthSpecs.small;
 }
 
 function selectProfile(normalizedTask: string): TokenEfficiencyProfile {

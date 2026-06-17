@@ -2,6 +2,9 @@ import { describe, expect, it } from "vitest";
 
 import { contextUsagePolicy } from "../../src/data/delivery-system/contextEconomy";
 import {
+  type TokenBudgetClass,
+  contextWidthSpecs,
+  selectContextWidth,
   selectTokenEfficiencyRoute,
   tokenEfficiencyProfiles
 } from "../../src/data/delivery-system/tokenEfficiency";
@@ -56,5 +59,21 @@ describe("token efficiency routing policy", () => {
     expect(route.profile).toBe("research_compact");
     expect(route.preferredWorkerOrder).toContain("external_advisory_review");
     expect(route.outputRules).toContain("separate_recommendation_from_adoption");
+  });
+
+  it("keeps TokenBudgetClass at the four known width classes", () => {
+    const classes: TokenBudgetClass[] = ["tiny", "small", "medium", "large"];
+
+    expect(classes).toHaveLength(4);
+  });
+
+  it("maps context widths to bounded file counts and preferred providers", () => {
+    expect(contextWidthSpecs.tiny.maxFilesInPacket).toBe(3);
+    expect(contextWidthSpecs.large.preferredProviderForWidth).toBe("gemini_cli");
+  });
+
+  it("selects large context only for explicit large-context signals", () => {
+    expect(selectContextWidth("standard_compact", ["bounded coding"]).budgetClass).toBe("small");
+    expect(selectContextWidth("research_compact", ["long context synthesis"]).budgetClass).toBe("large");
   });
 });

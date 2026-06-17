@@ -133,6 +133,12 @@
       "label": "Recovery Mesh"
     },
     {
+      "id": "reuse_gate",
+      "group": "governance_policy",
+      "risk": 0.7,
+      "label": "Reuse gate"
+    },
+    {
       "id": "security_upload",
       "group": "risk_detector",
       "risk": 0.9,
@@ -145,10 +151,28 @@
       "label": "SEO Mesh"
     },
     {
+      "id": "skill_registry_policy",
+      "group": "governance_policy",
+      "risk": 0.7,
+      "label": "Skill registry policy"
+    },
+    {
       "id": "storage_provider",
       "group": "dependency",
       "risk": 0.7,
       "label": "Storage provider"
+    },
+    {
+      "id": "subscription_worker_boundary",
+      "group": "governance_policy",
+      "risk": 0.7,
+      "label": "Subscription worker boundary"
+    },
+    {
+      "id": "supervisor_execution_loop",
+      "group": "governance_policy",
+      "risk": 0.7,
+      "label": "Supervisor execution loop"
     },
     {
       "id": "three_d_experience_addon",
@@ -571,6 +595,30 @@
       "target": "project_mesh_lifecycle",
       "relation": "checks_boundary",
       "weight": 0.8
+    },
+    {
+      "source": "supervisor_execution_loop",
+      "target": "subscription_worker_boundary",
+      "relation": "requires",
+      "weight": 0.95
+    },
+    {
+      "source": "supervisor_execution_loop",
+      "target": "reuse_gate",
+      "relation": "requires",
+      "weight": 0.88
+    },
+    {
+      "source": "supervisor_execution_loop",
+      "target": "skill_registry_policy",
+      "relation": "informs",
+      "weight": 0.75
+    },
+    {
+      "source": "subscription_worker_boundary",
+      "target": "model_spend_policy",
+      "relation": "depends_on",
+      "weight": 0.9
     }
   ]
 }

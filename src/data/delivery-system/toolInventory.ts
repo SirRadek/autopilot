@@ -4,6 +4,43 @@ export type ToolInventoryStatus =
   | "local_skill"
   | "provider_policy_only";
 
+export type SkillSource = "platform_plugin" | "platform_skill" | "custom_local_skill";
+
+export interface SkillCapabilitySpec {
+  readonly taskCategories: readonly string[];
+  readonly tokenCostClass: "high" | "medium" | "low" | "free";
+  readonly requiresExternalAccess: boolean;
+  readonly projectAware: boolean;
+  readonly customizable: boolean;
+}
+
+export interface SkillUsageRecord {
+  readonly skillId: string;
+  readonly lastUsedAt: string;
+  readonly sessionUseCount: number;
+  readonly evalScoreAverage: number | undefined;
+  readonly commonFailureLabels: readonly string[];
+}
+
+export interface SkillReplacementCandidate {
+  readonly existingSkillId: string;
+  readonly candidateId: string;
+  readonly candidateSource: "custom_local_skill";
+  readonly candidatePromptPath: string | undefined;
+  readonly expectedBenefits: readonly string[];
+  readonly evaluationCriteria: readonly string[];
+  readonly status: "proposed" | "in_development" | "evaluating" | "adopted" | "rejected";
+  readonly statusReason: string | undefined;
+}
+
+export interface SkillRegistrySnapshot {
+  readonly lastUpdatedAt: string;
+  readonly schemaVersion: "v1";
+  readonly skills: readonly SkillCapabilitySpec[];
+  readonly usageRecords: readonly SkillUsageRecord[];
+  readonly replacementCandidates: readonly SkillReplacementCandidate[];
+}
+
 export interface ToolInventoryItem {
   readonly id: string;
   readonly title: string;

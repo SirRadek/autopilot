@@ -127,6 +127,109 @@ describe("model-output eval validation", () => {
       ])
     );
   });
+
+  it("validates agent output contract examples without counting them as eval records", () => {
+    const tempRoot = createModelOutputEvalFixture(() => {});
+
+    const report = validateModelOutputEvals(tempRoot);
+
+    expect(report.ok).toBe(true);
+    expect(report.checkedFiles).toContain("model-output-evals/worker-output.schema.json");
+    expect(report.checkedFiles).toContain("model-output-evals/examples/valid-worker-output.json");
+    expect(report.checkedRecords).toBe(1);
+  });
+
+  it("rejects worker output examples with invalid handoff ids", () => {
+    const tempRoot = createModelOutputEvalFixture(() => {});
+    const examplePath = join(tempRoot, "model-output-evals", "examples", "valid-worker-output.json");
+    const example = JSON.parse(readFileSync(examplePath, "utf8")) as Record<string, unknown>;
+    example.handoff_id = "plain-slug";
+    writeFileSync(examplePath, `${JSON.stringify(example, null, 2)}\n`, "utf8");
+
+    const report = validateModelOutputEvals(tempRoot);
+
+    expect(report.ok).toBe(false);
+    expect(report.errors.map((error) => error.message)).toContain(
+      "Positive contract example $.handoff_id: must match pattern ^hp-[0-9]{8}-[a-z0-9][a-z0-9-]*$"
+    );
+  });
+
+  it("rejects worker output examples with invalid date-time values", () => {
+    const tempRoot = createModelOutputEvalFixture(() => {});
+    const examplePath = join(tempRoot, "model-output-evals", "examples", "valid-worker-output.json");
+    const example = JSON.parse(readFileSync(examplePath, "utf8")) as Record<string, unknown>;
+    example.created = "2026-06-17";
+    writeFileSync(examplePath, `${JSON.stringify(example, null, 2)}\n`, "utf8");
+
+    const report = validateModelOutputEvals(tempRoot);
+
+    expect(report.ok).toBe(false);
+    expect(report.errors.map((error) => error.message)).toContain(
+      "Positive contract example $.created: must be a valid RFC3339 date-time"
+    );
+
+    example.created = "2026-02-31T12:00:00.000Z";
+    writeFileSync(examplePath, `${JSON.stringify(example, null, 2)}\n`, "utf8");
+
+    const impossibleDateReport = validateModelOutputEvals(tempRoot);
+
+    expect(impossibleDateReport.ok).toBe(false);
+    expect(impossibleDateReport.errors.map((error) => error.message)).toContain(
+      "Positive contract example $.created: must be a valid RFC3339 date-time"
+    );
+  });
+
+  it("requires a skip reason only when worker verification is skipped", () => {
+    const tempRoot = createModelOutputEvalFixture(() => {});
+    const examplePath = join(tempRoot, "model-output-evals", "examples", "valid-worker-output.json");
+    const example = JSON.parse(readFileSync(examplePath, "utf8")) as Record<string, unknown>;
+    example.verify_result = "skipped";
+    delete example.verify_skip_reason;
+    writeFileSync(examplePath, `${JSON.stringify(example, null, 2)}\n`, "utf8");
+
+    const skippedWithoutReasonReport = validateModelOutputEvals(tempRoot);
+
+    expect(skippedWithoutReasonReport.ok).toBe(false);
+    expect(skippedWithoutReasonReport.errors.map((error) => error.message)).toContain(
+      "Positive contract example $.verify_skip_reason: is required"
+    );
+
+    example.verify_skip_reason = "";
+    writeFileSync(examplePath, `${JSON.stringify(example, null, 2)}\n`, "utf8");
+
+    const skippedWithEmptyReasonReport = validateModelOutputEvals(tempRoot);
+
+    expect(skippedWithEmptyReasonReport.ok).toBe(false);
+    expect(skippedWithEmptyReasonReport.errors.map((error) => error.message)).toContain(
+      "Positive contract example $.verify_skip_reason: must have at least 1 characters"
+    );
+
+    example.verify_result = "pass";
+    example.verify_skip_reason = "Should not be present for passed verification.";
+    writeFileSync(examplePath, `${JSON.stringify(example, null, 2)}\n`, "utf8");
+
+    const passWithSkipReasonReport = validateModelOutputEvals(tempRoot);
+
+    expect(passWithSkipReasonReport.ok).toBe(false);
+    expect(passWithSkipReasonReport.errors.map((error) => error.message)).toContain(
+      "Positive contract example $: must not match the disallowed schema"
+    );
+  });
+
+  it("rejects sensitive values inside agent output contract examples", () => {
+    const tempRoot = createModelOutputEvalFixture(() => {});
+    const examplePath = join(tempRoot, "model-output-evals", "examples", "valid-worker-output.json");
+    const example = JSON.parse(readFileSync(examplePath, "utf8")) as Record<string, unknown>;
+    example.blocked_items = [`sk-proj-${"a".repeat(32)}`];
+    writeFileSync(examplePath, `${JSON.stringify(example, null, 2)}\n`, "utf8");
+
+    const report = validateModelOutputEvals(tempRoot);
+
+    expect(report.ok).toBe(false);
+    expect(report.errors.map((error) => error.message)).toContain(
+      "$.blocked_items[0]: value looks like a secret or credential."
+    );
+  });
 });
 
 function createModelOutputEvalFixture(mutator: (record: Record<string, unknown>) => void): string {
@@ -150,6 +253,11 @@ function createModelOutputEvalFixture(mutator: (record: Record<string, unknown>)
     readFileSync(join(process.cwd(), "prompt-library", "source-catalog.json"), "utf8"),
     "utf8"
   );
+  copyRepositoryFile(tempRoot, "model-output-evals/worker-output.schema.json");
+  copyRepositoryFile(tempRoot, "model-output-evals/reviewer-output.schema.json");
+  copyRepositoryFile(tempRoot, "model-output-evals/examples/valid-worker-output.json");
+  copyRepositoryFile(tempRoot, "model-output-evals/examples/invalid-worker-output.json");
+  copyRepositoryFile(tempRoot, "model-output-evals/examples/valid-reviewer-output.json");
 
   const record = createValidEvalRecord();
   mutator(record);
@@ -243,4 +351,8 @@ function createValidEvalRecord(): Record<string, unknown> {
       reviewer: "fixture"
     }
   };
+}
+
+function copyRepositoryFile(tempRoot: string, repoPath: string): void {
+  writeFileSync(join(tempRoot, repoPath), readFileSync(join(process.cwd(), repoPath), "utf8"), "utf8");
 }

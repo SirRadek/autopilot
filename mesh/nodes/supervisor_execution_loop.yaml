@@ -1,0 +1,49 @@
+id: supervisor_execution_loop
+type: governance_policy
+name: Supervisor execution loop
+question: "Is the supervisor delegating, reviewing, correcting, and recording worker output through the approved loop?"
+why: "Supervisor work must normalize handoffs, route providers, respect correction limits, score outputs, and stop when evidence or owner decisions are missing."
+signals:
+  - supervisor
+  - orchestrator
+  - delegate
+  - handoff
+  - worker output
+  - correction
+  - eval
+  - routing decision
+related_agents:
+  - architect
+  - qa
+  - security
+related_files:
+  - src/data/delivery-system/modelPolicy.ts
+  - src/data/delivery-system/modelOutputEvaluation.ts
+  - model-output-evals/
+  - docs/autopilot/agent-handoff-packet-template.md
+required_checks:
+  - handoff_packet_normalized
+  - worker_output_validated_against_schema
+  - model_output_scored_before_acceptance
+  - correction_loop_limit_checked
+  - supervisor_routing_decision_recorded
+  - eval_record_noted_after_output
+stop_conditions:
+  - raw_agent_output_chained_as_prompt
+  - correction_loop_exceeded_without_escalation
+  - worker_output_not_normalized_before_next_step
+  - gemini_used_without_budget_check
+  - eval_record_not_written_after_output
+must_not_assume:
+  - Do not pass raw agent output directly into the next prompt.
+  - Do not continue correction loops after the maximum iteration count.
+  - Do not let a worker approve its own implementation or delivery.
+objective:
+  - Keep delegation bounded by handoff packets.
+  - Score and normalize worker output before reuse.
+  - Route retries, provider fallback, and owner decisions through explicit states.
+failure_modes:
+  - correction_loop_exceeded_without_escalation
+  - worker_output_not_normalized_before_next_step
+  - gemini_used_without_budget_check
+  - eval_record_not_written_after_output

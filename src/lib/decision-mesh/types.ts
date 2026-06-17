@@ -11,6 +11,7 @@ export interface DecisionMeshNode {
   readonly stop_conditions?: readonly string[];
   readonly must_not_assume?: readonly string[];
   readonly objective?: readonly string[];
+  readonly failure_modes?: readonly string[];
 }
 
 export interface DecisionMeshEdge {

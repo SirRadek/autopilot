@@ -1,9 +1,16 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  type CorrectionLoopEntry,
+  type EvalRecordSummary,
+  type WorkerOutputNormalization,
+  EVAL_RECORDS_PATH,
+  deriveLearningSignal,
   modelOutputEvaluationPolicy,
+  selectWorkerOutputNextAction,
   selectModelOutputEvaluationRoute
 } from "../../src/data/delivery-system/modelOutputEvaluation";
+import { makeHandoffId } from "../../src/data/delivery-system/checkCompletionMatrix";
 
 describe("model output evaluation policy", () => {
   it("requires scoring and source-grounded prompt tuning before accepting model output", () => {
@@ -113,5 +120,93 @@ describe("model output evaluation policy", () => {
         "set_progress_blocked_or_waiting_owner"
       ])
     );
+  });
+
+  it("derives no-data learning signals from empty eval summaries", () => {
+    const signal = deriveLearningSignal("bounded_coding", "openai", []);
+
+    expect(EVAL_RECORDS_PATH).toBe("model-output-evals/records/");
+    expect(signal.confidenceSource).toBe("no_data");
+    expect(signal.recentFailureCount).toBe(0);
+    expect(signal.recommendedDelta).toBe("no_change");
+  });
+
+  it("derives single-observation confidence from one matching eval record", () => {
+    const records: EvalRecordSummary[] = [
+      { taskType: "bounded_coding", provider: "openai", state: "accepted", scoreAverage: 90, failureLabels: [], rerunCount: 0 }
+    ];
+    const signal = deriveLearningSignal("bounded_coding", "openai", records);
+
+    expect(signal.confidenceSource).toBe("single_observation");
+    expect(signal.recentFailureCount).toBe(0);
+  });
+
+  it("derives eval-records confidence and counts failures from multiple matching records", () => {
+    const records: EvalRecordSummary[] = [
+      { taskType: "bounded_coding", provider: "openai", state: "accepted", scoreAverage: 88, failureLabels: [], rerunCount: 0 },
+      { taskType: "bounded_coding", provider: "openai", state: "retry_with_prompt_or_input_tuning", scoreAverage: 52, failureLabels: ["format_contract"], rerunCount: 1 },
+      { taskType: "bounded_coding", provider: "openai", state: "blocked", scoreAverage: 30, failureLabels: ["private_context", "scope_exceeded"], rerunCount: 2 }
+    ];
+    const signal = deriveLearningSignal("bounded_coding", "openai", records);
+
+    expect(signal.confidenceSource).toBe("eval_records");
+    expect(signal.recentFailureCount).toBe(2);
+    expect(signal.lastFailureLabels).toEqual(["private_context", "scope_exceeded"]);
+  });
+
+  it("ignores records for different task types or providers", () => {
+    const records: EvalRecordSummary[] = [
+      { taskType: "architecture_review", provider: "openai", state: "blocked", scoreAverage: 20, failureLabels: ["wrong_task_type"], rerunCount: 1 },
+      { taskType: "bounded_coding", provider: "anthropic", state: "blocked", scoreAverage: 20, failureLabels: ["wrong_provider"], rerunCount: 1 }
+    ];
+    const signal = deriveLearningSignal("bounded_coding", "openai", records);
+
+    expect(signal.confidenceSource).toBe("no_data");
+    expect(signal.recentFailureCount).toBe(0);
+  });
+
+  it("requires handoff ids in correction loops and escalates at max iterations", () => {
+    const handoffId = makeHandoffId("hp-20260617-test");
+    const loop: CorrectionLoopEntry = {
+      taskId: "t1",
+      handoffId,
+      provider: "openai",
+      iterationCount: 3,
+      maxIterations: 3,
+      lastScore: 55,
+      failureLabels: ["format_contract"],
+      correctionApplied: "added output schema reference",
+      state: "retry_with_prompt_or_input_tuning"
+    };
+    const normalization: WorkerOutputNormalization = {
+      handoffId,
+      verifiedFacts: [],
+      assumptions: [],
+      risks: [],
+      openQuestions: [],
+      evaluationScore: 55,
+      qualityState: "retry_with_prompt_or_input_tuning",
+      correctionLoopState: loop,
+      nextAction: selectWorkerOutputNextAction(loop, "retry_with_prompt_or_input_tuning")
+    };
+
+    expect(normalization.handoffId).toBe(handoffId);
+    expect(normalization.nextAction).toBe("escalate_model_route");
+  });
+
+  it("blocks normalized worker output regardless of correction iteration count", () => {
+    const loop: CorrectionLoopEntry = {
+      taskId: "t1",
+      handoffId: makeHandoffId("hp-20260617-blocked"),
+      provider: "google",
+      iterationCount: 1,
+      maxIterations: 3,
+      lastScore: undefined,
+      failureLabels: ["private_context"],
+      correctionApplied: "blocked before retry",
+      state: "blocked"
+    };
+
+    expect(selectWorkerOutputNextAction(loop, "blocked")).toBe("blocked");
   });
 });

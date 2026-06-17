@@ -1,12 +1,18 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  type SupervisorRoutingDecision,
+  buildSupervisorRoutingDecision,
   credentialedAdvisoryProviderPolicies,
+  layerProviderMapping,
   reasoningProviderPolicies,
   reasoningTaskLanePolicies,
   reasoningEscalationPolicy,
+  selectModelForLayer,
   selectReasoningModelRoute
 } from "../../src/data/delivery-system/modelPolicy";
+import { contextWidthSpecs } from "../../src/data/delivery-system/tokenEfficiency";
+import { geminiKnownTiers } from "../../src/data/delivery-system/subscriptionBudget";
 
 describe("delivery system model policy", () => {
   it("keeps routine worker workloads local by default", () => {
@@ -189,6 +195,24 @@ describe("delivery system model policy", () => {
     expect(deepseekWeb?.stopConditions).toContain("mode_switch_unverified");
   });
 
+  it("configures openai_gpt as subscription_interactive, not API credit based", () => {
+    const gpt = reasoningProviderPolicies.find((provider) => provider.id === "openai_gpt");
+
+    expect(gpt?.accessMode).toBe("subscription_interactive");
+    expect(gpt?.costGuard).toBe("uses_owner_subscription_entitlement_not_api_credit");
+    expect(gpt?.requiredChecks).toContain("subscription_entitlement_confirmed_for_subscription_tools");
+    expect(gpt?.requiredChecks).toContain("serial_task_delegation_required");
+    expect(gpt?.stopConditions).toContain("parallel_subscription_calls_attempted");
+  });
+
+  it("prefers OpenAI for bounded coding and Claude for agent validation", () => {
+    const boundedCoding = reasoningTaskLanePolicies.find((lane) => lane.id === "bounded_coding_worker");
+    const agentValidation = reasoningTaskLanePolicies.find((lane) => lane.id === "agent_validation");
+
+    expect(boundedCoding?.preferredProviders[0]).toBe("openai_gpt");
+    expect(agentValidation?.preferredProviders[0]).toBe("anthropic_claude_subscription");
+  });
+
   it("orders advisory trust by owner preference while keeping outputs advisory", () => {
     const claude = reasoningProviderPolicies.find((provider) => provider.id === "anthropic_claude_subscription");
     const gemini = reasoningProviderPolicies.find((provider) => provider.id === "gemini_cli");
@@ -258,5 +282,79 @@ describe("delivery system model policy", () => {
     expect(claude?.stopConditions).toContain("api_credit_path_requested_without_owner_decision");
     expect(claude?.stopConditions).not.toContain("paid_model_or_credit_required_without_owner_decision");
     expect(claude?.stopConditions).toContain("model_output_used_as_source_of_truth");
+  });
+
+  it("maps all model policy layers to subscription-aware providers", () => {
+    expect(Object.keys(layerProviderMapping)).toHaveLength(8);
+    expect(layerProviderMapping.orchestrator).toBe("anthropic_claude_subscription");
+    expect(layerProviderMapping.bounded_coding).toBe("openai_gpt");
+    expect(layerProviderMapping.memory_summarizer).toBe("gemini_cli");
+  });
+
+  it("models SupervisorRoutingDecision with tier, context width, and learning signal fields", () => {
+    const decision: SupervisorRoutingDecision = {
+      taskId: "t1",
+      layer: "bounded_coding",
+      tokenEfficiencyProfile: "standard_compact",
+      contextWidthSpec: contextWidthSpecs.small,
+      taskLane: "bounded_coding_worker",
+      assignedProvider: "openai_gpt",
+      assignedTierId: undefined,
+      subscriptionBudgetState: "available",
+      fallbackProvider: "qwen_local",
+      learningSignal: undefined,
+      decisionReasoning: "test"
+    };
+
+    expect(decision.assignedTierId).toBeUndefined();
+    expect(decision.contextWidthSpec.budgetClass).toBe("small");
+  });
+
+  it("registers codex_gpt_worker as a subscription-interactive worker", () => {
+    const worker = credentialedAdvisoryProviderPolicies.find((provider) => provider.id === "codex_gpt_worker");
+
+    expect(worker?.accessMode).toBe("subscription_interactive");
+    expect(worker?.forbiddenUse).toContain("architecture decisions");
+    expect(worker?.requiredChecks).toContain("handoff_packet_received_before_start");
+  });
+
+  it("builds supervisor routing decisions from provided budgets and eval summaries", () => {
+    const decision = buildSupervisorRoutingDecision({
+      taskId: "task-1",
+      taskDescription: "bounded implementation with focused bugfix",
+      layer: "bounded_coding",
+      budgets: [
+        {
+          provider: "openai_gpt",
+          activeTierId: undefined,
+          activeTierRateLimitState: "available",
+          rateLimitHitAt: undefined,
+          lastAttemptedAt: undefined,
+          availableTiers: [],
+          exhaustedTierIds: [],
+          sessionTaskCount: 0,
+          lastSuccessfulTaskAt: undefined,
+          notes: undefined
+        },
+        {
+          provider: "gemini_cli",
+          activeTierId: "gemini_auto",
+          activeTierRateLimitState: "available",
+          rateLimitHitAt: undefined,
+          lastAttemptedAt: undefined,
+          availableTiers: geminiKnownTiers,
+          exhaustedTierIds: [],
+          sessionTaskCount: 0,
+          lastSuccessfulTaskAt: undefined,
+          notes: undefined
+        }
+      ],
+      evalRecords: []
+    });
+
+    expect(decision.assignedProvider).toBe("openai_gpt");
+    expect(decision.taskLane).toBe("bounded_coding_worker");
+    expect(decision.learningSignal?.confidenceSource).toBe("no_data");
+    expect(selectModelForLayer("memory_summarizer", { gemini_cli: "rate_limited" })).toBe("gemini_cli");
   });
 });

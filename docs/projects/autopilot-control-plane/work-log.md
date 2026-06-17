@@ -1,5 +1,84 @@
 # Autopilot Control Plane Work Log
 
+## 2026-06-17 Supervisor Execution Wave 4
+
+Date: 2026-06-17
+Request or trigger: owner approved continuing from the Core POC into Wave 4 and
+asked to proceed further after review fixes R1-R6 and a live Codex worker spike.
+Mode: WRITE_ALLOWED for local governance contracts, deterministic tests, mesh
+metadata, prompt/eval/adoption records, and documentation only. No connector
+mutation, deployment, remote mutation, API key creation, provider gateway, or
+autonomous execution queue was added.
+
+Scope:
+
+- Add subscription session budget and Gemini tier records for subscription CLI
+  routing, with unverified Flash/Pro tiers left without `cliAccessPath`.
+- Add provider fallback chains that keep Gemini inside Gemini tiers or blocked,
+  and route Claude unavailability to owner decision.
+- Update model policy so Codex/OpenAI worker use is subscription-interactive,
+  serial, and handoff-bound.
+- Add supervisor routing decisions, learning signals, correction-loop types,
+  context-width specs, skill registry types, dependency freshness, and reuse
+  gate contracts.
+- Add mesh nodes for subscription worker boundary, skill registry policy, reuse
+  gate, and supervisor execution loop, including `failure_modes`.
+- Finalize the Claude Opus orchestrator adoption record.
+
+Files changed:
+
+- `.codex/hooks/autopilot-hook.mjs`
+- `src/data/delivery-system/subscriptionBudget.ts`
+- `src/data/delivery-system/fallbackChains.ts`
+- `src/data/delivery-system/modelPolicy.ts`
+- `src/data/delivery-system/modelOutputEvaluation.ts`
+- `src/data/delivery-system/tokenEfficiency.ts`
+- `src/data/delivery-system/toolInventory.ts`
+- `src/data/delivery-system/dependencyFreshness.ts`
+- `src/lib/decision-mesh/load.ts`
+- `src/lib/decision-mesh/types.ts`
+- `mesh/schemas/node.schema.json`
+- `mesh/nodes/subscription_worker_boundary.yaml`
+- `mesh/nodes/skill_registry_policy.yaml`
+- `mesh/nodes/reuse_gate.yaml`
+- `mesh/nodes/supervisor_execution_loop.yaml`
+- `mesh/edges.yaml`
+- `mesh/generated/decision-mesh.json`
+- `docs/autopilot/adoption-record.schema.json`
+- `docs/autopilot/adoption-records/2026-0617-claude-opus-orchestrator.md`
+- related deterministic tests under `tests/`
+
+Architecture impact:
+
+- Autopilot now has typed contracts for subscription worker budgets, fallback
+  behavior, supervisor routing decisions, context width, skill replacement
+  registry data, dependency freshness, and reuse decisions.
+- OpenAI/Codex worker routing is modeled as subscription-interactive and serial,
+  not API-credit based.
+- Gemini CLI remains advisory and tier-bound; when Gemini tiers are exhausted it
+  becomes blocked instead of silently falling back to GPT.
+- Decision Mesh node schema and loader now support `failure_modes[]`, allowing
+  supervisor loop failures to be explicit local governance metadata.
+- The static command-center mesh graph now reflects 33 nodes and 70 links.
+
+Verification:
+
+- `gemini.cmd --help` confirmed the local CLI wrapper and `-m/--model`; concrete
+  Flash/Pro model IDs were not confirmed, so they remain `verifiedLocally: false`.
+- Set A targeted tests passed: 6 files, 45 tests.
+- Set B targeted tests passed: 2 files, 22 tests.
+- `npm.cmd run mesh:generate` and `npm.cmd run mesh:check` passed after adding
+  four new mesh nodes and edges.
+- Adoption record parsed into the schema shape and validated against
+  `docs/autopilot/adoption-record.schema.json`.
+- `npm.cmd run test:e2e` passed: 4 Chromium tests after updating the mesh graph
+  count baseline to `33 nodes / 70 links`.
+- `npm.cmd run verify` passed after Wave 4 closeout: mesh check, prompt validation
+  (`37` files), model-output validation (`15` files, `8` records), PDOS
+  validation (`64` files), contract validation (`5` files), diff check,
+  typecheck, `38` Vitest files with `251` tests, Astro build, and `4`
+  Playwright Chromium tests.
+
 ## 2026-06-12 Advisory Provider Run Artifact Gate
 
 Date: 2026-06-12

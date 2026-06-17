@@ -1,6 +1,9 @@
+import { readFileSync } from "node:fs";
+
 import { describe, expect, it } from "vitest";
 
 import {
+  type SkillReplacementCandidate,
   selectToolInventoryForTask,
   toolInventorySnapshot
 } from "../../src/data/delivery-system/toolInventory";
@@ -91,5 +94,36 @@ describe("tool inventory routing policy", () => {
     expect(route.notes).toContain(
       "DeepSeek web chat is a manual browser-login advisory path, not a CLI, API runtime, or stable headless automation contract."
     );
+  });
+
+  it("keeps the committed skill registry in v1 shape", () => {
+    const registry = JSON.parse(readFileSync("docs/autopilot/skill-registry.json", "utf8")) as {
+      lastUpdatedAt: string;
+      schemaVersion: string;
+      skills: unknown[];
+      usageRecords: unknown[];
+      replacementCandidates: unknown[];
+    };
+
+    expect(registry.schemaVersion).toBe("v1");
+    expect(typeof registry.lastUpdatedAt).toBe("string");
+    expect(Array.isArray(registry.skills)).toBe(true);
+    expect(Array.isArray(registry.usageRecords)).toBe(true);
+    expect(Array.isArray(registry.replacementCandidates)).toBe(true);
+  });
+
+  it("models skill replacement candidates as a one-way adoption workflow", () => {
+    const candidate: SkillReplacementCandidate = {
+      existingSkillId: "platform-skill",
+      candidateId: "custom-local-skill",
+      candidateSource: "custom_local_skill",
+      candidatePromptPath: "prompt-library/example.md",
+      expectedBenefits: ["lower token use"],
+      evaluationCriteria: ["passes local eval"],
+      status: "evaluating",
+      statusReason: undefined
+    };
+
+    expect(candidate.status).toBe("evaluating");
   });
 });

@@ -1,3 +1,5 @@
+import type { HandoffId } from "./checkCompletionMatrix";
+
 export type ModelOutputEvaluationPhase = "learning_immediate_loop" | "weekly_batch_tuning";
 
 export type ModelOutputQualityState =
@@ -23,6 +25,50 @@ export type ModelProviderFamily = "openai" | "anthropic" | "google" | "qwen" | "
 export type ModelProviderRunStatus = "not_run" | "succeeded" | "failed" | "unknown";
 
 export type ModelOutputArtifactKind = "model_output" | "runner_log" | "prompt_only" | "mixed_log" | "unknown";
+
+export const EVAL_RECORDS_PATH = "model-output-evals/records/";
+
+export interface EvalRecordSummary {
+  readonly taskType: string;
+  readonly provider: ModelProviderFamily;
+  readonly state: ModelOutputQualityState;
+  readonly scoreAverage: number;
+  readonly failureLabels: readonly string[];
+  readonly rerunCount: number;
+}
+
+export interface SupervisorLearningSignal {
+  readonly taskType: string;
+  readonly provider: ModelProviderFamily;
+  readonly recentFailureCount: number;
+  readonly lastFailureLabels: readonly string[];
+  readonly recommendedDelta: "tighten_allowed_files" | "decompose_task" | "switch_to_qwen" | "no_change";
+  readonly confidenceSource: "eval_records" | "single_observation" | "no_data";
+}
+
+export interface CorrectionLoopEntry {
+  readonly taskId: string;
+  readonly handoffId: HandoffId;
+  readonly provider: ModelProviderFamily;
+  readonly iterationCount: number;
+  readonly maxIterations: 3;
+  readonly lastScore: number | undefined;
+  readonly failureLabels: readonly string[];
+  readonly correctionApplied: string;
+  readonly state: ModelOutputQualityState;
+}
+
+export interface WorkerOutputNormalization {
+  readonly handoffId: HandoffId;
+  readonly verifiedFacts: readonly string[];
+  readonly assumptions: readonly string[];
+  readonly risks: readonly string[];
+  readonly openQuestions: readonly string[];
+  readonly evaluationScore: number;
+  readonly qualityState: ModelOutputQualityState;
+  readonly correctionLoopState: CorrectionLoopEntry;
+  readonly nextAction: "accept" | "retry_with_correction" | "escalate_model_route" | "owner_decision" | "blocked";
+}
 
 export interface ModelOutputEvaluationPolicy {
   readonly sourceOfTruth: "local_eval_records_and_verified_outputs";
@@ -183,6 +229,49 @@ export function selectModelOutputEvaluationRoute(
   };
 }
 
+export function deriveLearningSignal(
+  taskType: string,
+  provider: ModelProviderFamily,
+  records: readonly EvalRecordSummary[]
+): SupervisorLearningSignal {
+  const matchingRecords = records.filter((record) => record.taskType === taskType && record.provider === provider);
+  const failureRecords = matchingRecords.filter((record) => record.state !== "accepted");
+  const lastFailureLabels = failureRecords.at(-1)?.failureLabels ?? [];
+
+  return {
+    taskType,
+    provider,
+    recentFailureCount: failureRecords.length,
+    lastFailureLabels,
+    recommendedDelta: recommendDelta(provider, failureRecords, lastFailureLabels),
+    confidenceSource:
+      matchingRecords.length === 0
+        ? "no_data"
+        : matchingRecords.length === 1
+          ? "single_observation"
+          : "eval_records"
+  };
+}
+
+export function selectWorkerOutputNextAction(
+  loop: CorrectionLoopEntry,
+  qualityState: ModelOutputQualityState
+): WorkerOutputNormalization["nextAction"] {
+  if (qualityState === "blocked") {
+    return "blocked";
+  }
+
+  if (qualityState === "accepted") {
+    return "accept";
+  }
+
+  if (loop.iterationCount >= loop.maxIterations) {
+    return "escalate_model_route";
+  }
+
+  return "retry_with_correction";
+}
+
 function selectPhase(normalizedTask: string, explicitPhase?: ModelOutputEvaluationPhase): ModelOutputEvaluationPhase {
   if (explicitPhase) {
     return explicitPhase;
@@ -193,6 +282,26 @@ function selectPhase(normalizedTask: string, explicitPhase?: ModelOutputEvaluati
   }
 
   return modelOutputEvaluationPolicy.defaultPhase;
+}
+
+function recommendDelta(
+  provider: ModelProviderFamily,
+  failureRecords: readonly EvalRecordSummary[],
+  lastFailureLabels: readonly string[]
+): SupervisorLearningSignal["recommendedDelta"] {
+  if (failureRecords.length === 0) {
+    return "no_change";
+  }
+
+  if (lastFailureLabels.some((label) => ["privacy_safety", "format_contract", "allowed_files"].includes(label))) {
+    return "tighten_allowed_files";
+  }
+
+  if (failureRecords.length >= modelOutputEvaluationPolicy.repeatedFailureLimit) {
+    return provider === "openai" ? "switch_to_qwen" : "decompose_task";
+  }
+
+  return "no_change";
 }
 
 function selectQualityState(

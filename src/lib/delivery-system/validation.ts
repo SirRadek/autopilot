@@ -44,6 +44,33 @@ export function validateJsonSchema(value: unknown, schema: unknown, path = "$"):
   }
 
   const errors: JsonSchemaValidationIssue[] = [];
+
+  if ("const" in schema && !Object.is(value, schema.const)) {
+    errors.push({ path, message: `must equal ${JSON.stringify(schema.const)}` });
+  }
+
+  if (Array.isArray(schema.allOf)) {
+    for (const childSchema of schema.allOf) {
+      errors.push(...validateJsonSchema(value, childSchema, path));
+    }
+  }
+
+  if (isRecord(schema.if)) {
+    const conditionMatches = validateJsonSchema(value, schema.if, path).length === 0;
+
+    if (conditionMatches && isRecord(schema.then)) {
+      errors.push(...validateJsonSchema(value, schema.then, path));
+    }
+
+    if (!conditionMatches && isRecord(schema.else)) {
+      errors.push(...validateJsonSchema(value, schema.else, path));
+    }
+  }
+
+  if (isRecord(schema.not) && validateJsonSchema(value, schema.not, path).length === 0) {
+    errors.push({ path, message: "must not match the disallowed schema" });
+  }
+
   const type = schema.type;
 
   if (typeof type === "string") {
@@ -106,6 +133,10 @@ function validateString(
 
   if (schema.format === "date" && !isValidDateOnly(value)) {
     errors.push({ path, message: "must be a valid YYYY-MM-DD date" });
+  }
+
+  if (schema.format === "date-time" && !isValidDateTime(value)) {
+    errors.push({ path, message: "must be a valid RFC3339 date-time" });
   }
 }
 
@@ -185,4 +216,48 @@ function isValidDateOnly(value: string): boolean {
   }
 
   return new Date(timestamp).toISOString().startsWith(value);
+}
+
+function isValidDateTime(value: string): boolean {
+  const match =
+    /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d+)?(Z|[+-]\d{2}:\d{2})$/.exec(value);
+
+  if (!match) {
+    return false;
+  }
+
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const hour = Number(match[4]);
+  const minute = Number(match[5]);
+  const second = Number(match[6]);
+  const timeZone = match[7] ?? "";
+
+  if (month < 1 || month > 12) {
+    return false;
+  }
+
+  if (day < 1 || day > daysInMonth(year, month)) {
+    return false;
+  }
+
+  if (hour < 0 || hour > 23 || minute < 0 || minute > 59 || second < 0 || second > 59) {
+    return false;
+  }
+
+  if (timeZone !== "Z") {
+    const offsetHour = Number(timeZone.slice(1, 3));
+    const offsetMinute = Number(timeZone.slice(4, 6));
+
+    if (offsetHour > 23 || offsetMinute > 59) {
+      return false;
+    }
+  }
+
+  return !Number.isNaN(Date.parse(value));
+}
+
+function daysInMonth(year: number, month: number): number {
+  return new Date(Date.UTC(year, month, 0)).getUTCDate();
 }

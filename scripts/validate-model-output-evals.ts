@@ -56,10 +56,51 @@ interface SourceCatalogEntry {
   readonly id: string;
 }
 
+interface OutputContract {
+  readonly schemaFile: string;
+  readonly positiveExamples: readonly string[];
+  readonly negativeExamples: readonly OutputContractNegativeExample[];
+}
+
+interface OutputContractNegativeExample {
+  readonly file: string;
+  readonly expectedIssue: {
+    readonly path: string;
+    readonly message: string;
+  };
+}
+
 const MODEL_OUTPUT_EVAL_ROOT = "model-output-evals";
 const RECORDS_DIRECTORY = "records";
 const EXAMPLES_DIRECTORY = "examples";
 const SOURCE_CATALOG_PATH = join("prompt-library", "source-catalog.json");
+const HANDOFF_ID_PATTERN = "^hp-[0-9]{8}-[a-z0-9][a-z0-9-]*$";
+const OUTPUT_CONTRACTS: readonly OutputContract[] = [
+  {
+    schemaFile: "worker-output.schema.json",
+    positiveExamples: ["valid-worker-output.json"],
+    negativeExamples: [
+      {
+        file: "invalid-worker-output.json",
+        expectedIssue: {
+          path: "$.handoff_id",
+          message: "is required"
+        }
+      }
+    ]
+  },
+  {
+    schemaFile: "reviewer-output.schema.json",
+    positiveExamples: ["valid-reviewer-output.json"],
+    negativeExamples: []
+  }
+];
+const NON_EVAL_EXAMPLE_FILES = new Set(
+  OUTPUT_CONTRACTS.flatMap((contract) => [
+    ...contract.positiveExamples,
+    ...contract.negativeExamples.map((example) => example.file)
+  ]).map((file) => `${MODEL_OUTPUT_EVAL_ROOT}/${EXAMPLES_DIRECTORY}/${file}`)
+);
 
 const FORBIDDEN_KEYS = new Set([
   "raw_output",
@@ -196,9 +237,13 @@ export function validateModelOutputEvals(repoRoot = process.cwd()): ModelOutputE
     validateMissingRequiredFields(schema, schemaPath, repoRoot, errors);
   }
 
+  validateOutputContracts(evalRoot, repoRoot, checkedFiles, errors);
+
   const recordFiles = [
     ...listJsonFiles(join(evalRoot, RECORDS_DIRECTORY)),
-    ...listJsonFiles(join(evalRoot, EXAMPLES_DIRECTORY))
+    ...listJsonFiles(join(evalRoot, EXAMPLES_DIRECTORY)).filter(
+      (file) => !NON_EVAL_EXAMPLE_FILES.has(toRepoPath(repoRoot, file))
+    )
   ];
 
   for (const file of recordFiles) {
@@ -289,6 +334,94 @@ function validateSchemaShape(
     if (!scoreProperties || !isRecord(scoreProperties[dimension])) {
       errors.push({ file: toRepoPath(repoRoot, file), message: `Schema must define score dimension ${dimension}.` });
     }
+  }
+}
+
+function validateOutputContracts(
+  evalRoot: string,
+  repoRoot: string,
+  checkedFiles: string[],
+  errors: ModelOutputEvalValidationIssue[]
+): void {
+  for (const contract of OUTPUT_CONTRACTS) {
+    const schemaPath = join(evalRoot, contract.schemaFile);
+    checkedFiles.push(toRepoPath(repoRoot, schemaPath));
+    const schema = readJsonFile(schemaPath, repoRoot, errors);
+
+    if (!isRecord(schema)) {
+      continue;
+    }
+
+    validateOutputContractSchemaShape(schema, schemaPath, repoRoot, errors);
+
+    for (const exampleFile of contract.positiveExamples) {
+      const examplePath = join(evalRoot, EXAMPLES_DIRECTORY, exampleFile);
+      checkedFiles.push(toRepoPath(repoRoot, examplePath));
+      const example = readJsonFile(examplePath, repoRoot, errors);
+
+      for (const issue of validateJsonSchema(example, schema)) {
+        errors.push({
+          file: toRepoPath(repoRoot, examplePath),
+          message: `Positive contract example ${issue.path}: ${issue.message}`
+        });
+      }
+      validateNoForbiddenContent(example, "$", examplePath, repoRoot, errors);
+    }
+
+    for (const example of contract.negativeExamples) {
+      const examplePath = join(evalRoot, EXAMPLES_DIRECTORY, example.file);
+      checkedFiles.push(toRepoPath(repoRoot, examplePath));
+      const data = readJsonFile(examplePath, repoRoot, errors);
+      const issues = validateJsonSchema(data, schema);
+      const rejectedAsExpected = issues.some(
+        (issue) => issue.path === example.expectedIssue.path && issue.message === example.expectedIssue.message
+      );
+
+      if (!rejectedAsExpected) {
+        errors.push({
+          file: toRepoPath(repoRoot, examplePath),
+          message: `Negative contract example did not fail as expected at ${example.expectedIssue.path}.`
+        });
+      }
+      validateNoForbiddenContent(data, "$", examplePath, repoRoot, errors);
+    }
+  }
+}
+
+function validateOutputContractSchemaShape(
+  schema: Record<string, unknown>,
+  file: string,
+  repoRoot: string,
+  errors: ModelOutputEvalValidationIssue[]
+): void {
+  if (schema.$schema !== "https://json-schema.org/draft/2020-12/schema") {
+    errors.push({ file: toRepoPath(repoRoot, file), message: "Output contract schema must declare draft 2020-12." });
+  }
+
+  if (typeof schema.$id !== "string" || !schema.$id.startsWith("https://autopilot.local/")) {
+    errors.push({ file: toRepoPath(repoRoot, file), message: "Output contract schema must declare an autopilot $id." });
+  }
+
+  if (schema.type !== "object") {
+    errors.push({ file: toRepoPath(repoRoot, file), message: "Output contract schema root type must be object." });
+  }
+
+  if (schema.additionalProperties !== false) {
+    errors.push({ file: toRepoPath(repoRoot, file), message: "Output contract schema must disallow additional properties." });
+  }
+
+  const required = getStringArray(schema.required);
+  if (!required.includes("handoff_id")) {
+    errors.push({ file: toRepoPath(repoRoot, file), message: "Output contract schema must require handoff_id." });
+  }
+
+  const properties = getRecord(schema, "properties");
+  const handoffIdSchema = properties ? getRecord(properties, "handoff_id") : undefined;
+  if (handoffIdSchema?.pattern !== HANDOFF_ID_PATTERN) {
+    errors.push({
+      file: toRepoPath(repoRoot, file),
+      message: `handoff_id must use pattern ${HANDOFF_ID_PATTERN}.`
+    });
   }
 }
 

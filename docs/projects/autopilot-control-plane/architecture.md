@@ -1,7 +1,7 @@
 # Autopilot Control Plane Architecture
 
-Last updated: 2026-06-12
-Next review: 2026-06-11
+Last updated: 2026-06-17
+Next review: 2026-06-24
 Status: active process layer
 Release: `v0.2.0`
 Slug: `autopilot-control-plane`
@@ -151,8 +151,10 @@ Current data is Markdown-first with a minimal typed governance mirror:
 - typed Model Output Evaluation policy under `src/data/delivery-system/modelOutputEvaluation.ts`
 - model-output eval record contract and validator under `model-output-evals/` and `scripts/validate-model-output-evals.ts`
 - typed Plugin/Skill Tool Inventory policy under `src/data/delivery-system/toolInventory.ts`
+- typed supervisor execution-loop contracts under `src/data/delivery-system/subscriptionBudget.ts`, `src/data/delivery-system/fallbackChains.ts`, and `src/data/delivery-system/dependencyFreshness.ts`
 - pure delivery-system validators under `src/lib/delivery-system/`
 - Decision Mesh YAML nodes, edges, rules, schemas, and generated JSON artifact under `mesh/`
+- Decision Mesh node records may include `failure_modes[]` for explicit supervision failure patterns.
 - pure Decision Mesh query helpers under `src/lib/decision-mesh/`
 - local stdio MCP tool server under `mcp/server.ts`
 - capability routing, context economy, and model spend policy data under `src/data/delivery-system/`

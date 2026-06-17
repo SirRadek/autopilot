@@ -51,6 +51,7 @@ function parseNodeFile(path: string): DecisionMeshNode {
   const stopConditions = optionalStringArray(record.stop_conditions, `${path}.stop_conditions`);
   const mustNotAssume = optionalStringArray(record.must_not_assume, `${path}.must_not_assume`);
   const objective = optionalStringArray(record.objective, `${path}.objective`);
+  const failureModes = optionalStringArray(record.failure_modes, `${path}.failure_modes`);
 
   const node: DecisionMeshNode = {
     id: asString(record.id, `${path}.id`),
@@ -76,6 +77,10 @@ function parseNodeFile(path: string): DecisionMeshNode {
 
   if (objective) {
     optional.objective = objective;
+  }
+
+  if (failureModes) {
+    optional.failure_modes = failureModes;
   }
 
   return withOptionalArrays(node, optional);
@@ -208,6 +213,7 @@ interface OptionalArrays {
   stop_conditions?: readonly string[];
   must_not_assume?: readonly string[];
   objective?: readonly string[];
+  failure_modes?: readonly string[];
 }
 
 function withOptionalArrays<T extends object>(base: T, optional: OptionalArrays): T {

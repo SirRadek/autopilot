@@ -9,7 +9,7 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: "list",
   use: {
-    baseURL: "http://127.0.0.1:4321",
+    baseURL: "http://127.0.0.1:4323",
     trace: "on-first-retry"
   },
   projects: [
@@ -19,8 +19,8 @@ export default defineConfig({
     }
   ],
   webServer: {
-    command: "npm run dev -- --host 127.0.0.1 --port 4321",
-    url: "http://127.0.0.1:4321/autopilot",
+    command: "npm run dev -- --host 127.0.0.1 --port 4323",
+    url: "http://127.0.0.1:4323/autopilot",
     reuseExistingServer: !process.env.CI,
     timeout: 120_000
   }

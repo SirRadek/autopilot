@@ -3,6 +3,7 @@ import {
   appendFileSync,
   existsSync,
   mkdirSync,
+  promises as fsPromises,
   readFileSync,
   renameSync,
   statSync,
@@ -21,6 +22,25 @@ const STATE_DIRECTORY =
 const LEDGER_PATH = join(STATE_DIRECTORY, "events.jsonl");
 const CONTINUITY_PATH = join(STATE_DIRECTORY, "continuity.json");
 const INVESTIGATION_QUEUE_PATH = join(STATE_DIRECTORY, "investigation-queue.jsonl");
+const SESSION_STATE_DIRECTORY =
+  process.env.AUTOPILOT_SESSION_STATE_DIR ||
+  join(REPOSITORY_ROOT, "docs", "autopilot", "session-state");
+const SESSION_STATE_PATH = join(SESSION_STATE_DIRECTORY, "session.json");
+const SESSION_HISTORY_PATH = join(SESSION_STATE_DIRECTORY, "history.jsonl");
+const SESSION_LOCK_PATH = join(SESSION_STATE_DIRECTORY, "worker.lock");
+const HISTORY_MAX_ENTRIES = 50;
+const SESSION_WRITE_TIMEOUT_MS = 200;
+const WORKER_LOCK_STALE_MS = 2 * 60 * 60 * 1000;
+const GEMINI_RATE_LIMIT_PHRASES = [
+  "You have exhausted your capacity on this model.",
+  "quota",
+  "rate limit",
+  "resource_exhausted",
+  "RESOURCE_EXHAUSTED",
+  "quota retry",
+  "retry",
+  "429"
+];
 
 const REQUIRED_CONTROL_PLANE_PATHS = [
   "AGENTS.md",
@@ -39,6 +59,32 @@ const SECRET_PATTERNS = [
   /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/,
   /\b(?:api[_-]?key|access[_-]?token|client[_-]?secret)\s*[:=]\s*["']?[a-z0-9_./+=-]{16,}/i
 ];
+
+const SUPERVISOR_ALERT_SEVERITY = {
+  provider_rate_limited: "warning",
+  provider_tier_switched: "info",
+  provider_unavailable: "blocker",
+  correction_loop_exceeded: "blocker",
+  stuck_workflow_state: "warning",
+  eval_score_below_threshold: "warning",
+  missing_owner_decision: "blocker",
+  gemini_session_exhausted: "warning",
+  reuse_check_skipped: "info",
+  skill_replacement_available: "info"
+};
+
+const SUPERVISOR_ALERT_RECOMMENDED_ACTION = {
+  provider_rate_limited: "Record the capacity event and wait or choose an approved fallback tier.",
+  provider_tier_switched: "Record the provider tier change in the session state.",
+  provider_unavailable: "Stop dependent work and mark the provider path as blocked or waiting_owner.",
+  correction_loop_exceeded: "Stop correction attempts and request supervisor review.",
+  stuck_workflow_state: "Review the workflow state and define the next explicit transition.",
+  eval_score_below_threshold: "Route the output through review before reuse.",
+  missing_owner_decision: "Wait for the required owner decision before continuing.",
+  gemini_session_exhausted: "Record the exhausted Gemini session and consider an approved Gemini fallback tier.",
+  reuse_check_skipped: "Run the reuse check before assigning bounded implementation.",
+  skill_replacement_available: "Review the replacement candidate before continuing with the older skill."
+};
 
 const RISK_PATTERNS = {
   destructive_command: [
@@ -260,7 +306,7 @@ function trimJsonlIfNeeded(path) {
     .split(/\r?\n/)
     .filter(Boolean)
     .slice(-MAX_LEDGER_ENTRIES);
-  const temporaryPath = `${path}.tmp`;
+  const temporaryPath = `${path}.${process.pid}.${Date.now()}.${hash(Math.random())}.tmp`;
   writeFileSync(temporaryPath, `${lines.join("\n")}\n`, "utf8");
   renameSync(temporaryPath, path);
 }
@@ -334,12 +380,265 @@ function writeContinuity(input) {
         "local verification evidence"
       ]
     };
-    const temporaryPath = `${CONTINUITY_PATH}.tmp`;
+    const temporaryPath = `${CONTINUITY_PATH}.${process.pid}.${Date.now()}.${hash(Math.random())}.tmp`;
     writeFileSync(temporaryPath, `${JSON.stringify(payload, null, 2)}\n`, "utf8");
     renameSync(temporaryPath, CONTINUITY_PATH);
     return true;
   } catch {
     return false;
+  }
+}
+
+function detectGeminiCapacityPhrase(toolName, resultText) {
+  if (typeof toolName !== "string" || !toolName.toLowerCase().includes("gemini")) {
+    return false;
+  }
+
+  const lower = String(resultText || "").toLowerCase();
+  return GEMINI_RATE_LIMIT_PHRASES.some((phrase) => lower.includes(phrase.toLowerCase()));
+}
+
+function getHandoffId(input) {
+  if (typeof input.handoff_id === "string") {
+    return input.handoff_id;
+  }
+
+  if (typeof input.handoffId === "string") {
+    return input.handoffId;
+  }
+
+  return undefined;
+}
+
+function createSessionHistoryEntry(event, detail, handoffId = null) {
+  return {
+    timestamp: new Date().toISOString(),
+    event,
+    handoffId: handoffId ?? null,
+    detail
+  };
+}
+
+function createInitialSessionManifest() {
+  const now = new Date().toISOString();
+  return {
+    schemaVersion: "v1",
+    claudeSessionStartedAt: now,
+    lastUpdatedAt: now,
+    activeHandoffId: null,
+    workflowState: "planning",
+    pendingAlerts: [],
+    activeCorrectionLoopCount: 0,
+    providerStatus: {},
+    hookEventCount: 0,
+    investigationQueueDepth: 0
+  };
+}
+
+function normalizeSessionManifest(value) {
+  const base = createInitialSessionManifest();
+
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return base;
+  }
+
+  return {
+    ...base,
+    ...value,
+    schemaVersion: "v1",
+    activeHandoffId: typeof value.activeHandoffId === "string" ? value.activeHandoffId : null,
+    pendingAlerts: Array.isArray(value.pendingAlerts) ? value.pendingAlerts : [],
+    providerStatus:
+      value.providerStatus && typeof value.providerStatus === "object" && !Array.isArray(value.providerStatus)
+        ? value.providerStatus
+        : {},
+    workflowState: typeof value.workflowState === "string" ? value.workflowState : base.workflowState
+  };
+}
+
+function createSupervisorAlert(trigger, context, provider = null) {
+  return {
+    id: `alert-${trigger.replaceAll("_", "-")}-${Date.now()}-${hash(context)}`,
+    trigger,
+    severity: SUPERVISOR_ALERT_SEVERITY[trigger] || "warning",
+    provider,
+    context,
+    recommendedAction:
+      SUPERVISOR_ALERT_RECOMMENDED_ACTION[trigger] ||
+      "Review this supervisor alert before continuing.",
+    createdAt: new Date().toISOString(),
+    resolved: false,
+    resolvedAt: null
+  };
+}
+
+function countJsonlLines(path) {
+  try {
+    if (!existsSync(path)) {
+      return 0;
+    }
+
+    return readFileSync(path, "utf8").split(/\r?\n/).filter(Boolean).length;
+  } catch {
+    return 0;
+  }
+}
+
+async function ensureSessionStateDirectory() {
+  await fsPromises.mkdir(SESSION_STATE_DIRECTORY, { recursive: true });
+}
+
+async function trimAndAppendHistory(entry) {
+  try {
+    await ensureSessionStateDirectory();
+    let lines = [];
+
+    try {
+      lines = (await fsPromises.readFile(SESSION_HISTORY_PATH, "utf8")).split(/\r?\n/).filter(Boolean);
+    } catch {
+      lines = [];
+    }
+
+    lines = lines.slice(-(HISTORY_MAX_ENTRIES - 1));
+    lines.push(JSON.stringify(entry));
+    await fsPromises.writeFile(SESSION_HISTORY_PATH, `${lines.join("\n")}\n`, "utf8");
+  } catch {
+    // Session-state writes are advisory and must never block Codex hooks.
+  }
+}
+
+async function doSessionWrite(updateFn, signal) {
+  await ensureSessionStateDirectory();
+  let current = createInitialSessionManifest();
+
+  try {
+    current = normalizeSessionManifest(JSON.parse(await fsPromises.readFile(SESSION_STATE_PATH, { encoding: "utf8", signal })));
+  } catch {
+    current = createInitialSessionManifest();
+  }
+
+  const next = normalizeSessionManifest(updateFn(current) || current);
+  const temporaryPath = `${SESSION_STATE_PATH}.${process.pid}.${Date.now()}.${hash(Math.random())}.tmp`;
+
+  try {
+    signal?.throwIfAborted?.();
+    await fsPromises.writeFile(temporaryPath, `${JSON.stringify(next, null, 2)}\n`, { encoding: "utf8", signal });
+    signal?.throwIfAborted?.();
+    await fsPromises.rename(temporaryPath, SESSION_STATE_PATH);
+  } catch (error) {
+    try {
+      await fsPromises.unlink(temporaryPath);
+    } catch {
+      // Ignore cleanup failure for advisory session-state writes.
+    }
+    throw error;
+  }
+}
+
+async function writeSessionJsonSafe(updateFn) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), SESSION_WRITE_TIMEOUT_MS);
+
+  try {
+    await doSessionWrite(updateFn, controller.signal);
+    return true;
+  } catch {
+    return false;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
+function getWorkerLockTimestamp(lock, stats) {
+  if (lock && typeof lock === "object" && typeof lock.lockedAt === "string") {
+    const lockedAt = Date.parse(lock.lockedAt);
+    if (Number.isFinite(lockedAt)) {
+      return lockedAt;
+    }
+  }
+
+  return stats.mtimeMs;
+}
+
+async function removeStaleWorkerLock() {
+  try {
+    const stats = await fsPromises.stat(SESSION_LOCK_PATH);
+    let lock = null;
+
+    try {
+      lock = JSON.parse(await fsPromises.readFile(SESSION_LOCK_PATH, "utf8"));
+    } catch {
+      lock = null;
+    }
+
+    const lockTimestamp = getWorkerLockTimestamp(lock, stats);
+    if (Date.now() - lockTimestamp <= WORKER_LOCK_STALE_MS) {
+      return false;
+    }
+
+    await fsPromises.unlink(SESSION_LOCK_PATH);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function createWorkerLock(input, allowStaleReplacement = true) {
+  try {
+    const handoffId = getHandoffId(input);
+    if (!handoffId) {
+      return "missing_handoff";
+    }
+
+    await ensureSessionStateDirectory();
+    let fileHandle;
+
+    try {
+      fileHandle = await fsPromises.open(SESSION_LOCK_PATH, "wx");
+      await fileHandle.writeFile(
+        `${JSON.stringify({ lockedBy: handoffId, lockedAt: new Date().toISOString() })}\n`,
+        "utf8"
+      );
+      return "acquired";
+    } catch (error) {
+      if (error && typeof error === "object" && "code" in error && error.code === "EEXIST") {
+        if (allowStaleReplacement && (await removeStaleWorkerLock())) {
+          const retryStatus = await createWorkerLock(input, false);
+          return retryStatus === "acquired" ? "stale_replaced" : retryStatus;
+        }
+
+        return "already_locked";
+      }
+
+      return "failed";
+    } finally {
+      if (fileHandle) {
+        try {
+          await fileHandle.close();
+        } catch {
+          // Ignore close failure for advisory lock writes.
+        }
+      }
+    }
+  } catch {
+    // Lock writes are advisory and must never block hook execution.
+    return "failed";
+  }
+}
+
+async function releaseWorkerLock(input) {
+  try {
+    const handoffId = getHandoffId(input);
+    if (!handoffId) {
+      return;
+    }
+
+    const lock = JSON.parse(await fsPromises.readFile(SESSION_LOCK_PATH, "utf8"));
+    if (lock?.lockedBy === handoffId) {
+      await fsPromises.unlink(SESSION_LOCK_PATH);
+    }
+  } catch {
+    // Lock release is advisory and must never block hook execution.
   }
 }
 
@@ -431,13 +730,23 @@ function handleSessionStart(input) {
   );
 }
 
-function handleSubagentStart(input) {
+async function handleSubagentStart(input) {
   const messages = [
     "Treat subagent output as a bounded draft.",
     "Do not approve architecture, security, business scope, remote mutation, or delivery.",
     "Return verification evidence, risks, and source pointers for orchestrator review."
   ];
   record(input);
+  const lockStatus = await createWorkerLock(input);
+  if (lockStatus === "already_locked") {
+    messages.push("worker.lock already present; previous worker session may still be active.");
+  } else if (lockStatus === "stale_replaced") {
+    messages.push("stale worker.lock was replaced for this handoff; record the previous worker as abandoned before relying on serial enforcement.");
+  } else if (lockStatus === "missing_handoff") {
+    messages.push("worker.lock was not created because handoff_id is missing; do not claim serial worker enforcement.");
+  } else if (lockStatus === "failed") {
+    messages.push("worker.lock could not be created; do not claim serial worker enforcement.");
+  }
   return additionalContext("SubagentStart", messages);
 }
 
@@ -493,12 +802,37 @@ function handlePreToolUse(input) {
     : null;
 }
 
-function handlePostToolUse(input) {
+async function handlePostToolUse(input) {
   const flags = collectFlags(getToolText(input));
   const failed = responseLooksFailed(input.tool_response);
+  const geminiCapacityDetected = detectGeminiCapacityPhrase(
+    input.tool_name,
+    `${toJsonText(input.result, 8_000)} ${toJsonText(input.tool_response, 8_000)}`
+  );
 
   if (failed) {
     flags.push("tool_result_failed");
+  }
+
+  if (geminiCapacityDetected) {
+    flags.push("gemini_session_exhausted");
+    await trimAndAppendHistory(
+      createSessionHistoryEntry("provider_status_changed", "gemini_rate_limit_phrase_detected", getHandoffId(input))
+    );
+    await writeSessionJsonSafe((state) => ({
+      ...state,
+      lastUpdatedAt: new Date().toISOString(),
+      providerStatus: {
+        ...state.providerStatus,
+        gemini_cli: "rate_limited"
+      },
+      pendingAlerts: [
+        ...state.pendingAlerts,
+        createSupervisorAlert("gemini_session_exhausted", "gemini_rate_limit_phrase_detected", "gemini_cli")
+      ],
+      hookEventCount: countJsonlLines(LEDGER_PATH),
+      investigationQueueDepth: countJsonlLines(INVESTIGATION_QUEUE_PATH)
+    }));
   }
 
   const messages = [];
@@ -564,12 +898,13 @@ function handlePostCompact(input) {
   };
 }
 
-function handleSubagentStop(input) {
+async function handleSubagentStop(input) {
   record(input, [], "subagent_completed");
+  await releaseWorkerLock(input);
   return { continue: true };
 }
 
-function handleStop(input) {
+async function handleStop(input) {
   const recentEvents = readRecentTurnEvents(input);
   const flags = [...new Set(recentEvents.flatMap((entry) => entry.flags || []))].sort();
   const failures = recentEvents.filter((entry) => entry.result === "failed").length;
@@ -591,7 +926,29 @@ function handleStop(input) {
     messages.push("Confirm that no sensitive material was persisted or disclosed.");
   }
 
-  record(input, flags, messages.length > 0 ? "completion_review_needed" : "completion_observed");
+  const completionResult = messages.length > 0 ? "completion_review_needed" : "completion_observed";
+  record(input, flags, completionResult);
+
+  await writeSessionJsonSafe((state) => {
+    const pendingAlerts = [...state.pendingAlerts];
+
+    if (flags.includes("governance_surface") && completionResult !== "completion_observed") {
+      pendingAlerts.push(
+        createSupervisorAlert(
+          "missing_owner_decision",
+          "governance_surface_completion_needs_owner_decision"
+        )
+      );
+    }
+
+    return {
+      ...state,
+      lastUpdatedAt: new Date().toISOString(),
+      pendingAlerts,
+      hookEventCount: countJsonlLines(LEDGER_PATH),
+      investigationQueueDepth: countJsonlLines(INVESTIGATION_QUEUE_PATH)
+    };
+  });
 
   return messages.length > 0
     ? {
@@ -601,7 +958,7 @@ function handleStop(input) {
     : { continue: true };
 }
 
-export function handleHook(input) {
+export async function handleHook(input) {
   switch (input.hook_event_name) {
     case "SessionStart":
       return handleSessionStart(input);
@@ -627,11 +984,15 @@ export function handleHook(input) {
   }
 }
 
+export const hookTestInternals = {
+  createSupervisorAlert
+};
+
 function readStdin() {
   return readFileSync(0, "utf8");
 }
 
-function run() {
+async function run() {
   let input;
 
   try {
@@ -646,12 +1007,19 @@ function run() {
     return;
   }
 
-  const response = handleHook(input);
+  const response = await handleHook(input);
   if (response) {
     process.stdout.write(JSON.stringify(response));
   }
 }
 
 if (resolve(process.argv[1] || "") === SCRIPT_PATH) {
-  run();
+  run().catch(() => {
+    process.stdout.write(
+      JSON.stringify({
+        continue: true,
+        systemMessage: "Autopilot hook failed internally; hook evidence is unavailable."
+      })
+    );
+  });
 }

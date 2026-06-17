@@ -489,4 +489,19 @@ describe("Decision Mesh queries", () => {
     );
     expect(packet.stop_conditions).toContain("runtime_activation_claim_without_evidence");
   });
+
+  it("loads supervisor execution mesh nodes with explicit failure modes", () => {
+    const nodeIds = [
+      "subscription_worker_boundary",
+      "skill_registry_policy",
+      "reuse_gate",
+      "supervisor_execution_loop"
+    ];
+
+    for (const nodeId of nodeIds) {
+      const node = mesh.nodes.find((candidate) => candidate.id === nodeId);
+
+      expect(node?.failure_modes?.length).toBeGreaterThanOrEqual(3);
+    }
+  });
 });

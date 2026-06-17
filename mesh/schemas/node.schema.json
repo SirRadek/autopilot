@@ -26,7 +26,8 @@
     "required_checks": { "type": "array", "items": { "type": "string" } },
     "stop_conditions": { "type": "array", "items": { "type": "string" } },
     "must_not_assume": { "type": "array", "items": { "type": "string" } },
-    "objective": { "type": "array", "items": { "type": "string" } }
+    "objective": { "type": "array", "items": { "type": "string" } },
+    "failure_modes": { "type": "array", "items": { "type": "string" } }
   },
   "additionalProperties": false
 }

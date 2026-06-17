@@ -66,7 +66,7 @@ describe("Product & Design OS document reader adapter", () => {
     ]);
     expect(run.artifacts.every((artifact) => artifact.exists)).toBe(true);
     await expect(readFile(join(outputDir, "document.clean.md"), "utf8")).resolves.toContain("Converted sample.csv");
-  });
+  }, 5000);
 });
 
 async function createFakePdfSupervisor(parent: string): Promise<string> {

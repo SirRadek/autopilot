@@ -1,3 +1,18 @@
+import {
+  type EvalRecordSummary,
+  type ModelProviderFamily,
+  type SupervisorLearningSignal,
+  deriveLearningSignal
+} from "./modelOutputEvaluation";
+import type { SubscriptionRateLimitState, SubscriptionSessionBudget } from "./subscriptionBudget";
+import {
+  type ContextWidthSpec,
+  type TokenEfficiencyProfileId,
+  selectContextWidth,
+  selectTokenEfficiencyRoute
+} from "./tokenEfficiency";
+import { resolveFallback } from "./fallbackChains";
+
 export type ModelPolicyLayer =
   | "orchestrator"
   | "architect"
@@ -67,6 +82,7 @@ export interface ReasoningProviderPolicy {
   readonly id: ReasoningProviderId;
   readonly provider: string;
   readonly accessMode: ReasoningAccessMode;
+  readonly costGuard?: string;
   readonly advisoryTrustTier: AdvisoryTrustTier;
   readonly advisoryWeight: number;
   readonly contextScope: string;
@@ -83,6 +99,20 @@ export interface ReasoningTaskLanePolicy {
   readonly preferredProviders: readonly ReasoningProviderId[];
   readonly requiredChecks: readonly string[];
   readonly stopConditions: readonly string[];
+}
+
+export interface SupervisorRoutingDecision {
+  readonly taskId: string;
+  readonly layer: ModelPolicyLayer;
+  readonly tokenEfficiencyProfile: TokenEfficiencyProfileId;
+  readonly contextWidthSpec: ContextWidthSpec;
+  readonly taskLane: ReasoningTaskLaneId;
+  readonly assignedProvider: ReasoningProviderId;
+  readonly assignedTierId: string | undefined;
+  readonly subscriptionBudgetState: SubscriptionRateLimitState;
+  readonly fallbackProvider: ReasoningProviderId | "owner_decision" | "blocked";
+  readonly learningSignal: SupervisorLearningSignal | undefined;
+  readonly decisionReasoning: string;
 }
 
 export interface CredentialedAdvisoryProviderPolicy {
@@ -168,6 +198,17 @@ export const modelPolicyRules = [
     forbiddenUse: "scope or architecture approval"
   }
 ] as const satisfies readonly ModelPolicyRule[];
+
+export const layerProviderMapping = {
+  orchestrator: "anthropic_claude_subscription",
+  architect: "anthropic_claude_subscription",
+  reviewer: "anthropic_claude_subscription",
+  tester: "openai_gpt",
+  micro_worker: "openai_gpt",
+  bounded_coding: "openai_gpt",
+  memory_summarizer: "gemini_cli",
+  copywriter: "openai_gpt"
+} as const satisfies Record<ModelPolicyLayer, ReasoningProviderId>;
 
 export const reasoningEscalationPolicy = {
   defaultWorkerLayer: "local_swarm",
@@ -283,21 +324,27 @@ export const reasoningProviderPolicies = [
   {
     id: "openai_gpt",
     provider: "openai",
-    accessMode: "api_or_self_hosted",
+    accessMode: "subscription_interactive",
+    costGuard: "uses_owner_subscription_entitlement_not_api_credit",
     advisoryTrustTier: "high_trust_advisory",
     advisoryWeight: 85,
-    contextScope: "redacted strategic or structured reasoning context after cost, entitlement, and official-doc checks",
+    contextScope: "redacted strategic, structured, or bounded worker context after subscription entitlement and official-doc checks",
     bestFor: ["structured outputs", "tool orchestration", "deep reasoning review", "Codex coding supervision"],
     avoidFor: ["unredacted private context without approval", "routine boilerplate loops", "unchecked pricing assumptions"],
     requiredChecks: [
       "provider_availability_verified",
       "cost_or_entitlement_confirmed",
+      "subscription_entitlement_confirmed_for_subscription_tools",
+      "serial_task_delegation_required",
       "redacted_context_only",
       "official_provider_docs_verified",
       "local_verification_required"
     ],
     stopConditions: [
       "provider_availability_unverified",
+      "subscription_entitlement_unverified",
+      "parallel_subscription_calls_attempted",
+      "mid_task_rate_limit_without_checkpoint",
       "paid_model_or_credit_required_without_owner_decision",
       "private_data_not_redacted",
       "model_output_used_as_source_of_truth"
@@ -353,12 +400,16 @@ export const reasoningProviderPolicies = [
       "source-of-truth claims",
       "unredacted private context",
       "Gemini API key or paid API path without owner decision",
-      "free-tier assumption for owner subscription usage"
+      "free-tier assumption for owner subscription usage",
+      "primary implementation worker",
+      "default fallback when GPT unavailable"
     ],
     requiredChecks: [
       "provider_availability_verified",
       "google_ai_subscription_entitlement_confirmed_for_gemini_cli",
       "authentication_state_verified_without_token_disclosure",
+      "gemini_session_budget_tracked",
+      "gemini_not_primary_worker",
       "redacted_context_only",
       "gemini_brainstorm_claims_labeled_and_verified",
       "context7_or_official_docs_verified",
@@ -367,6 +418,8 @@ export const reasoningProviderPolicies = [
     stopConditions: [
       "provider_availability_unverified",
       "google_ai_subscription_entitlement_unverified",
+      "gemini_rate_limit_exhausted_without_pause",
+      "gemini_used_as_default_worker",
       "gemini_api_key_or_paid_api_path_requested_without_owner_decision",
       "private_data_not_redacted",
       "gemini_claim_adopted_without_verification"
@@ -467,7 +520,7 @@ export const reasoningTaskLanePolicies = [
   {
     id: "bounded_coding_worker",
     taskSignals: ["bounded implementation", "focused bugfix", "refactor", "test generation"],
-    preferredProviders: ["qwen_local", "deterministic_tools"],
+    preferredProviders: ["openai_gpt", "qwen_local", "deterministic_tools"],
     requiredChecks: ["bounded_file_scope", "test_evidence", "supervisor_reviews_diff_or_claims"],
     stopConditions: ["broad_ambiguous_scope", "model_output_used_as_source_of_truth"]
   },
@@ -508,7 +561,7 @@ export const reasoningTaskLanePolicies = [
   {
     id: "agent_validation",
     taskSignals: ["agent validation", "supervisor", "handoff", "routing", "orchestration"],
-    preferredProviders: ["openai_gpt", "anthropic_claude_subscription", "gemini_cli", "qwen_local"],
+    preferredProviders: ["anthropic_claude_subscription", "openai_gpt", "gemini_cli", "qwen_local"],
     requiredChecks: ["handoff_packet_normalized", "forbidden_actions_declared", "local_verification_required"],
     stopConditions: ["raw_agent_output_chained_as_prompt", "model_output_used_as_source_of_truth"]
   },
@@ -577,6 +630,48 @@ export const credentialedAdvisoryProviderPolicies = [
       "https://code.claude.com/docs/en/iam",
       "https://code.claude.com/docs/en/memory"
     ]
+  },
+  {
+    id: "codex_gpt_worker",
+    provider: "openai",
+    tool: "codex",
+    accessMode: "subscription_interactive",
+    registration: "optional",
+    costGuard: "uses_owner_subscription_entitlement_not_api_credit",
+    advisoryTrustTier: "high_trust_advisory",
+    advisoryWeight: 85,
+    contextScope:
+      "bounded implementation after a normalized handoff packet, with declared allowed files and forbidden actions",
+    allowedUse: [
+      "bounded implementation with handoff packet",
+      "test generation",
+      "security implementation",
+      "business logic",
+      "focused bugfix",
+      "refactor within declared scope"
+    ],
+    forbiddenUse: [
+      "architecture decisions",
+      "governance approval",
+      "orchestration planning",
+      "self-approval",
+      "scope expansion without supervisor handoff"
+    ],
+    requiredChecks: [
+      "handoff_packet_received_before_start",
+      "subscription_entitlement_confirmed_for_subscription_tools",
+      "serial_task_delegation_required",
+      "allowed_files_declared",
+      "forbidden_actions_declared"
+    ],
+    stopConditions: [
+      "handoff_packet_missing_before_session_open",
+      "parallel_subscription_calls_attempted",
+      "allowed_files_missing",
+      "forbidden_actions_missing",
+      "scope_expansion_without_supervisor_handoff"
+    ],
+    sourceDocs: ["prompt-library/01-gpt/codex-bounded-worker.md", "AGENTS.md"]
   }
 ] as const satisfies readonly CredentialedAdvisoryProviderPolicy[];
 
@@ -656,6 +751,67 @@ export function selectReasoningModelRoute(input: ReasoningModelRouteInput): Reas
       "model_output_used_as_source_of_truth"
     ]
   };
+}
+
+export function buildSupervisorRoutingDecision(input: {
+  readonly taskId: string;
+  readonly taskDescription: string;
+  readonly layer: ModelPolicyLayer;
+  readonly budgets: readonly SubscriptionSessionBudget[];
+  readonly evalRecords: readonly EvalRecordSummary[];
+}): SupervisorRoutingDecision {
+  const tokenEfficiencyRoute = selectTokenEfficiencyRoute({ task: input.taskDescription });
+  const contextWidthSpec = selectContextWidth(tokenEfficiencyRoute.profile, [
+    input.layer,
+    input.taskDescription
+  ]);
+  const taskLane = selectTaskLanes(normalize(input.taskDescription))[0] ?? "bounded_coding_worker";
+  const providerStatuses = Object.fromEntries(
+    input.budgets.map((budget) => [budget.provider, budget.activeTierRateLimitState])
+  ) as Readonly<Record<string, SubscriptionRateLimitState>>;
+  const assignedProvider = selectModelForLayer(input.layer, providerStatuses);
+  const assignedBudget = input.budgets.find((budget) => budget.provider === assignedProvider);
+  const subscriptionBudgetState = assignedBudget?.activeTierRateLimitState ?? "unknown";
+  const fallback = assignedBudget
+    ? resolveFallback(
+        subscriptionBudgetState === "rate_limited" ? "rate_limited" : "provider_unavailable",
+        assignedProvider,
+        assignedBudget
+      )
+    : undefined;
+  const providerFamily = providerFamilyForReasoningProvider(assignedProvider);
+
+  return {
+    taskId: input.taskId,
+    layer: input.layer,
+    tokenEfficiencyProfile: tokenEfficiencyRoute.profile,
+    contextWidthSpec,
+    taskLane,
+    assignedProvider,
+    assignedTierId: assignedBudget?.activeTierId,
+    subscriptionBudgetState,
+    fallbackProvider: fallback?.toProvider ?? assignedProvider,
+    learningSignal: deriveLearningSignal(input.layer, providerFamily, input.evalRecords),
+    decisionReasoning: `Layer ${input.layer} maps to ${assignedProvider}; context width ${contextWidthSpec.budgetClass}; task lane ${taskLane}.`
+  };
+}
+
+export function selectModelForLayer(
+  layer: ModelPolicyLayer,
+  providerStatuses: Readonly<Record<string, SubscriptionRateLimitState>>
+): ReasoningProviderId {
+  const provider = layerProviderMapping[layer];
+  const state = providerStatuses[provider];
+
+  if (provider === "gemini_cli" && (state === "rate_limited" || state === "exhausted")) {
+    return "gemini_cli";
+  }
+
+  if (provider === "anthropic_claude_subscription" && (state === "rate_limited" || state === "exhausted")) {
+    return "anthropic_claude_subscription";
+  }
+
+  return provider;
 }
 
 function selectTaskLanes(normalizedTask: string): ReasoningTaskLaneId[] {
@@ -741,6 +897,24 @@ function stopConditionsForTaskLanes(taskLaneIds: readonly ReasoningTaskLaneId[])
     const lane = reasoningTaskLanePolicies.find((candidate) => candidate.id === laneId);
     return lane ? [...lane.stopConditions] : [];
   });
+}
+
+function providerFamilyForReasoningProvider(provider: ReasoningProviderId): ModelProviderFamily {
+  switch (provider) {
+    case "openai_gpt":
+      return "openai";
+    case "anthropic_claude_subscription":
+      return "anthropic";
+    case "gemini_cli":
+      return "google";
+    case "qwen_local":
+      return "qwen";
+    case "deepseek_api_or_self_hosted":
+    case "deepseek_web_chat_manual":
+      return "deepseek";
+    case "deterministic_tools":
+      return "local";
+  }
 }
 
 function unique<T>(values: readonly T[]): T[] {

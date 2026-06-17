@@ -329,3 +329,23 @@ edges:
     relation: checks_boundary
     weight: 0.8
     why: "Lifecycle warnings can remind the orchestrator to load the supervised project's own mesh before implementation."
+  - from: supervisor_execution_loop
+    to: subscription_worker_boundary
+    relation: requires
+    weight: 0.95
+    why: "Every supervisor delegation must go through subscription worker boundary checks."
+  - from: supervisor_execution_loop
+    to: reuse_gate
+    relation: requires
+    weight: 0.88
+    why: "Reuse check is mandatory before any bounded_coding task delegation."
+  - from: supervisor_execution_loop
+    to: skill_registry_policy
+    relation: informs
+    weight: 0.75
+    why: "Supervisor checks skill registry before activating platform plugins."
+  - from: subscription_worker_boundary
+    to: model_spend_policy
+    relation: depends_on
+    weight: 0.9
+    why: "Subscription worker boundary inherits all model spend guardrails."
