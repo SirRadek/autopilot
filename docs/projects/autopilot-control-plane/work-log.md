@@ -1,5 +1,54 @@
 # Autopilot Control Plane Work Log
 
+## 2026-06-17 S1 Hook Verification Instruction Follow-Up
+
+Date: 2026-06-17
+Request or trigger: owner identified three follow-ups from the S1/R1 hook
+verification: the ledger path in the plan was wrong, the PowerShell pipeline
+smoke command produced invalid JSON, and the actual runner/lifecycle for
+`.codex/hooks.json` needed clarification before the live B test can be treated
+as evidence.
+Mode: WRITE_ALLOWED for documentation and verification instructions only. No
+production hook code, schemas, remote state, connector, deployment, or runtime
+mutation changed.
+
+Files changed:
+
+- `output/s1-hook-verification-plan-for-gpt.md`
+- `output/live-hook-test-instructions.md`
+- `docs/autopilot/codex-hooks-operating-model.md`
+- `docs/projects/autopilot-control-plane/work-log.md`
+
+Findings:
+
+- The active hook ledger path is `.codex/state/events.jsonl`. The older
+  `.codex/hooks/state/ledger.jsonl` path in the S1/R1 plan was corrected.
+- Manual PowerShell pipeline input (`$payload | node ...`) is not reliable for
+  the hook JSON stdin smoke test on this Windows setup. The instructions now use
+  an explicit UTF-8 Node `spawnSync` stdin wrapper.
+- `.codex/hooks.json` is a Codex CLI/App lifecycle configuration loaded from
+  active config layers after trust review. It is not inherently a Claude Code
+  hook runner, and the available `multi_agent_v1.spawn_agent` tool did not
+  produce parent-workspace Codex hook lifecycle evidence.
+- Local inspection found `codex.cmd` works for CLI inspection while the
+  PowerShell `codex.ps1` shim is blocked by execution policy. `codex.cmd
+  --version` reported `codex-cli 0.106.0`.
+- Official Codex hook docs list `SubagentStart` fields including `turn_id`,
+  `agent_id`, `agent_type`, and `permission_mode`; `handoff_id` is not a native
+  documented field. The live B test must therefore prove custom top-level
+  metadata propagation, or the design must switch to a reviewed fallback such as
+  native `agent_id` or approved text parsing.
+
+Verification:
+
+- `codex.cmd --version`, `codex.cmd --help`, `codex.cmd exec --help`, and
+  `codex.cmd features list` completed for local inspection.
+- `npm.cmd run verify` passed after the documentation update: mesh check,
+  prompt validation (`37` files), model-output validation (`15` files, `8`
+  records), PDOS validation (`64` files), contract validation (`5` files), diff
+  check, typecheck, `38` Vitest files with `254` tests, Astro build, and `4`
+  Playwright Chromium tests.
+
 ## 2026-06-17 Supervisor Execution Wave 4
 
 Date: 2026-06-17

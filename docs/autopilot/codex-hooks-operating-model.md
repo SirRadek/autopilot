@@ -106,6 +106,45 @@ Hooks must not:
 Project-local hooks run only after the project `.codex` layer and the exact hook
 definition are trusted. Changed command hooks require review again.
 
+## Runner Findings 2026-06-17
+
+The repo-local `.codex/hooks.json` is a Codex lifecycle configuration. It is
+loaded by the Codex CLI/App runtime from active config layers after the project
+`.codex` layer and exact hook definitions are trusted. It is not a Claude Code
+hook configuration by itself, and the in-chat `multi_agent_v1.spawn_agent` tool
+has not been observed to trigger this repo-local Codex hook lifecycle in the
+parent workspace.
+
+On this Windows machine, `codex` resolves first to the npm PowerShell shim
+`C:\Users\sirok\AppData\Roaming\npm\codex.ps1`, which is blocked by the local
+PowerShell execution policy. Use `codex.cmd` for CLI inspection and tests. The
+installed CLI reported `codex-cli 0.106.0`; the Codex desktop config exposed app
+version `26.611.61753` and trusted hashes for this repo's hook definitions.
+The observed `codex.cmd --help` and `codex.cmd exec --help` output did not show
+a `--metadata` option, so prompt stdin must not be treated as structured hook
+payload metadata.
+
+The current `.codex/hooks.json` Windows runner is `commandWindows`:
+
+```text
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$root=(git rev-parse --show-toplevel); & node (Join-Path $root '.codex/hooks/autopilot-hook.mjs')"
+```
+
+Codex supplies one JSON object on stdin to that process. Manual PowerShell
+pipeline tests such as `$payload | node .codex/hooks/autopilot-hook.mjs` can
+produce invalid JSON in this environment; mechanical smoke tests should use an
+explicit UTF-8 stdin writer such as Node `spawnSync(..., { input:
+JSON.stringify(payload), encoding: "utf8" })`.
+
+Official Codex hook schemas document `SubagentStart` fields such as `turn_id`,
+`agent_id`, `agent_type`, and `permission_mode`; `handoff_id` is not documented
+as a native field. Therefore serial worker enforcement through
+`getHandoffId(input)` is proven only for synthetic top-level `handoff_id`
+payloads until a real Codex lifecycle subagent run shows that the runner can
+pass custom top-level metadata. If that cannot be made true through the runner,
+the next reviewed design choice is either to bind the lock to Codex's native
+`agent_id` or to add an explicitly approved text fallback for `handoff_id`.
+
 After adding or changing hooks:
 
 1. Restart or refresh the Codex session.

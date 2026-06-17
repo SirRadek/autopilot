@@ -28,6 +28,7 @@ const SESSION_STATE_DIRECTORY =
 const SESSION_STATE_PATH = join(SESSION_STATE_DIRECTORY, "session.json");
 const SESSION_HISTORY_PATH = join(SESSION_STATE_DIRECTORY, "history.jsonl");
 const SESSION_LOCK_PATH = join(SESSION_STATE_DIRECTORY, "worker.lock");
+const AGENT_REGISTRY_PATH = join(SESSION_STATE_DIRECTORY, "agent-registry.jsonl");
 const HISTORY_MAX_ENTRIES = 50;
 const SESSION_WRITE_TIMEOUT_MS = 200;
 const WORKER_LOCK_STALE_MS = 2 * 60 * 60 * 1000;
@@ -410,6 +411,30 @@ function getHandoffId(input) {
   return undefined;
 }
 
+function getAgentId(input) {
+  if (typeof input.agent_id === "string") {
+    return input.agent_id;
+  }
+
+  if (typeof input.agentId === "string") {
+    return input.agentId;
+  }
+
+  return undefined;
+}
+
+function getAgentType(input) {
+  if (typeof input.agent_type === "string") {
+    return input.agent_type;
+  }
+
+  if (typeof input.agentType === "string") {
+    return input.agentType;
+  }
+
+  return null;
+}
+
 function createSessionHistoryEntry(event, detail, handoffId = null) {
   return {
     timestamp: new Date().toISOString(),
@@ -431,7 +456,8 @@ function createInitialSessionManifest() {
     activeCorrectionLoopCount: 0,
     providerStatus: {},
     hookEventCount: 0,
-    investigationQueueDepth: 0
+    investigationQueueDepth: 0,
+    supervisorSessionHash: null
   };
 }
 
@@ -452,7 +478,9 @@ function normalizeSessionManifest(value) {
       value.providerStatus && typeof value.providerStatus === "object" && !Array.isArray(value.providerStatus)
         ? value.providerStatus
         : {},
-    workflowState: typeof value.workflowState === "string" ? value.workflowState : base.workflowState
+    workflowState: typeof value.workflowState === "string" ? value.workflowState : base.workflowState,
+    supervisorSessionHash:
+      typeof value.supervisorSessionHash === "string" ? value.supervisorSessionHash : null
   };
 }
 
@@ -486,6 +514,51 @@ function countJsonlLines(path) {
 
 async function ensureSessionStateDirectory() {
   await fsPromises.mkdir(SESSION_STATE_DIRECTORY, { recursive: true });
+}
+
+function readSupervisorSessionHash() {
+  try {
+    if (!existsSync(SESSION_STATE_PATH)) {
+      return null;
+    }
+
+    const session = normalizeSessionManifest(JSON.parse(readFileSync(SESSION_STATE_PATH, "utf8")));
+    return typeof session.supervisorSessionHash === "string" ? session.supervisorSessionHash : null;
+  } catch {
+    return null;
+  }
+}
+
+function appendAgentRegistryEntry(entry) {
+  try {
+    mkdirSync(SESSION_STATE_DIRECTORY, { recursive: true });
+    appendFileSync(AGENT_REGISTRY_PATH, `${JSON.stringify(entry)}\n`, "utf8");
+    trimJsonlIfNeeded(AGENT_REGISTRY_PATH);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function recordSubagentStart(input) {
+  return appendAgentRegistryEntry({
+    schema_version: "v1",
+    event: "subagent_start",
+    agent_id: getAgentId(input) ?? null,
+    agent_type: getAgentType(input),
+    parent_session_hash: readSupervisorSessionHash(),
+    parent_turn_hash: hash(input.turn_id ?? ""),
+    started_at: new Date().toISOString()
+  });
+}
+
+function recordSubagentStop(input) {
+  return appendAgentRegistryEntry({
+    schema_version: "v1",
+    event: "subagent_stop",
+    agent_id: getAgentId(input) ?? null,
+    stopped_at: new Date().toISOString()
+  });
 }
 
 async function trimAndAppendHistory(entry) {
@@ -585,9 +658,9 @@ async function removeStaleWorkerLock() {
 
 async function createWorkerLock(input, allowStaleReplacement = true) {
   try {
-    const handoffId = getHandoffId(input);
-    if (!handoffId) {
-      return "missing_handoff";
+    const agentId = getAgentId(input);
+    if (!agentId) {
+      return "missing_agent_id";
     }
 
     await ensureSessionStateDirectory();
@@ -596,7 +669,7 @@ async function createWorkerLock(input, allowStaleReplacement = true) {
     try {
       fileHandle = await fsPromises.open(SESSION_LOCK_PATH, "wx");
       await fileHandle.writeFile(
-        `${JSON.stringify({ lockedBy: handoffId, lockedAt: new Date().toISOString() })}\n`,
+        `${JSON.stringify({ lockedBy: agentId, lockedAt: new Date().toISOString() })}\n`,
         "utf8"
       );
       return "acquired";
@@ -628,13 +701,13 @@ async function createWorkerLock(input, allowStaleReplacement = true) {
 
 async function releaseWorkerLock(input) {
   try {
-    const handoffId = getHandoffId(input);
-    if (!handoffId) {
+    const agentId = getAgentId(input);
+    if (!agentId) {
       return;
     }
 
     const lock = JSON.parse(await fsPromises.readFile(SESSION_LOCK_PATH, "utf8"));
-    if (lock?.lockedBy === handoffId) {
+    if (lock?.lockedBy === agentId) {
       await fsPromises.unlink(SESSION_LOCK_PATH);
     }
   } catch {
@@ -705,7 +778,7 @@ function riskMessages(flags, scope) {
   return messages;
 }
 
-function handleSessionStart(input) {
+async function handleSessionStart(input) {
   const missing = REQUIRED_CONTROL_PLANE_PATHS.filter(
     (path) => !existsSync(join(REPOSITORY_ROOT, path))
   );
@@ -723,6 +796,14 @@ function handleSessionStart(input) {
     messages.push("The local redacted hook ledger is unavailable; do not claim hook evidence.");
   }
 
+  await writeSessionJsonSafe((state) => ({
+    ...state,
+    lastUpdatedAt: new Date().toISOString(),
+    supervisorSessionHash: state.supervisorSessionHash ?? hash(input.session_id ?? ""),
+    hookEventCount: countJsonlLines(LEDGER_PATH),
+    investigationQueueDepth: countJsonlLines(INVESTIGATION_QUEUE_PATH)
+  }));
+
   return additionalContext(
     "SessionStart",
     messages,
@@ -738,12 +819,13 @@ async function handleSubagentStart(input) {
   ];
   record(input);
   const lockStatus = await createWorkerLock(input);
+  recordSubagentStart(input);
   if (lockStatus === "already_locked") {
     messages.push("worker.lock already present; previous worker session may still be active.");
   } else if (lockStatus === "stale_replaced") {
-    messages.push("stale worker.lock was replaced for this handoff; record the previous worker as abandoned before relying on serial enforcement.");
-  } else if (lockStatus === "missing_handoff") {
-    messages.push("worker.lock was not created because handoff_id is missing; do not claim serial worker enforcement.");
+    messages.push("stale worker.lock was replaced for this agent; record the previous worker as abandoned before relying on serial enforcement.");
+  } else if (lockStatus === "missing_agent_id") {
+    messages.push("worker.lock was not created because agent_id is missing; do not claim serial worker enforcement.");
   } else if (lockStatus === "failed") {
     messages.push("worker.lock could not be created; do not claim serial worker enforcement.");
   }
@@ -901,6 +983,7 @@ function handlePostCompact(input) {
 async function handleSubagentStop(input) {
   record(input, [], "subagent_completed");
   await releaseWorkerLock(input);
+  recordSubagentStop(input);
   return { continue: true };
 }
 

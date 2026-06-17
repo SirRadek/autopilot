@@ -54,6 +54,14 @@ function readSessionStateFile(stateDirectory: string, file: string): string {
   return readFileSync(join(stateDirectory, "session-state", file), "utf8");
 }
 
+function readSessionStateJsonl<T>(stateDirectory: string, file: string): T[] {
+  return readSessionStateFile(stateDirectory, file)
+    .trim()
+    .split(/\r?\n/)
+    .filter(Boolean)
+    .map((line) => JSON.parse(line) as T);
+}
+
 async function importHookTestInternals(): Promise<HookTestInternals> {
   const hookModule = (await import(pathToFileURL(hookPath).href)) as {
     hookTestInternals: HookTestInternals;
@@ -337,14 +345,158 @@ describe("Codex Autopilot hooks", () => {
     expect(readdirSync(join(stateDirectory, "session-state")).filter((file) => file.endsWith(".tmp"))).toEqual([]);
   }, HOOK_SUBPROCESS_TIMEOUT_MS);
 
-  it("creates and releases worker.lock for matching subagent handoff ids", () => {
+  it("stores a hashed supervisor session identity at session start", () => {
+    const stateDirectory = createStateDirectory();
+    const rawSessionId = "session-raw-supervisor-001";
+
+    runHook(
+      {
+        hook_event_name: "SessionStart",
+        session_id: rawSessionId,
+        source: "startup"
+      },
+      stateDirectory
+    );
+
+    const session = JSON.parse(readSessionStateFile(stateDirectory, "session.json")) as {
+      supervisorSessionHash: string | null;
+    };
+    const sessionText = readSessionStateFile(stateDirectory, "session.json");
+
+    expect(session.supervisorSessionHash).toMatch(/^[a-f0-9]{16}$/);
+    expect(session.supervisorSessionHash).not.toBe(rawSessionId);
+    expect(sessionText).not.toContain(rawSessionId);
+  }, HOOK_SUBPROCESS_TIMEOUT_MS);
+
+  it("records subagent starts in the agent registry with parent session linkage", () => {
+    const stateDirectory = createStateDirectory();
+    runHook(
+      {
+        hook_event_name: "SessionStart",
+        session_id: "session-parent-001",
+        source: "startup"
+      },
+      stateDirectory
+    );
+
+    runHook(
+      {
+        hook_event_name: "SubagentStart",
+        turn_id: "turn-agent-registry-start",
+        agent_id: "agent-registry-001",
+        agent_type: "codex",
+        handoff_id: "hp-20260617-registry"
+      },
+      stateDirectory
+    );
+
+    const entries = readSessionStateJsonl<{
+        schema_version: string;
+        event: string;
+        agent_id: string | null;
+        agent_type: string | null;
+        parent_session_hash: string | null;
+        parent_turn_hash: string;
+        started_at: string;
+      }>(stateDirectory, "agent-registry.jsonl");
+    const entry = entries.at(-1);
+
+    expect(entry).toEqual(
+      expect.objectContaining({
+        schema_version: "v1",
+        event: "subagent_start",
+        agent_id: "agent-registry-001",
+        agent_type: "codex"
+      })
+    );
+    expect(entry?.parent_session_hash).toMatch(/^[a-f0-9]{16}$/);
+    expect(entry?.parent_turn_hash).toMatch(/^[a-f0-9]{16}$/);
+    expect(entry?.started_at).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+  }, HOOK_SUBPROCESS_TIMEOUT_MS);
+
+  it("records subagent stops in the agent registry", () => {
+    const stateDirectory = createStateDirectory();
+
+    runHook(
+      {
+        hook_event_name: "SubagentStop",
+        turn_id: "turn-agent-registry-stop",
+        agent_id: "agent-registry-002"
+      },
+      stateDirectory
+    );
+
+    const entries = readSessionStateJsonl<{
+        schema_version: string;
+        event: string;
+        agent_id: string | null;
+        stopped_at: string;
+      }>(stateDirectory, "agent-registry.jsonl");
+    const entry = entries.at(-1);
+
+    expect(entry).toEqual(
+      expect.objectContaining({
+        schema_version: "v1",
+        event: "subagent_stop",
+        agent_id: "agent-registry-002"
+      })
+    );
+    expect(entry?.stopped_at).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+  }, HOOK_SUBPROCESS_TIMEOUT_MS);
+
+  it("records null parent session hash when subagents start before session state exists", () => {
+    const stateDirectory = createStateDirectory();
+
+    runHook(
+      {
+        hook_event_name: "SubagentStart",
+        turn_id: "turn-agent-registry-no-parent",
+        agent_id: "agent-registry-003",
+        agent_type: "codex"
+      },
+      stateDirectory
+    );
+
+    const entries = readSessionStateJsonl<{ parent_session_hash: string | null }>(
+      stateDirectory,
+      "agent-registry.jsonl"
+    );
+    expect(entries.at(-1)?.parent_session_hash).toBeNull();
+  }, HOOK_SUBPROCESS_TIMEOUT_MS);
+
+  it("records subagent stops even when agent_id is missing", () => {
+    const stateDirectory = createStateDirectory();
+
+    runHook(
+      {
+        hook_event_name: "SubagentStop",
+        turn_id: "turn-agent-registry-stop-missing"
+      },
+      stateDirectory
+    );
+
+    const entries = readSessionStateJsonl<{ event: string; agent_id: string | null }>(
+      stateDirectory,
+      "agent-registry.jsonl"
+    );
+    expect(entries.at(-1)).toEqual(
+      expect.objectContaining({
+        event: "subagent_stop",
+        agent_id: null
+      })
+    );
+  }, HOOK_SUBPROCESS_TIMEOUT_MS);
+
+  it("creates and releases worker.lock for matching subagent agent ids", () => {
     const stateDirectory = createStateDirectory();
     const handoffId = "hp-20260617-hook-lock";
+    const agentId = "agent-test-lock-001";
 
     runHook(
       {
         hook_event_name: "SubagentStart",
         turn_id: "turn-lock",
+        agent_id: agentId,
         handoff_id: handoffId
       },
       stateDirectory
@@ -352,13 +504,14 @@ describe("Codex Autopilot hooks", () => {
 
     const lockPath = join(stateDirectory, "session-state", "worker.lock");
     const lock = JSON.parse(readFileSync(lockPath, "utf8")) as { lockedBy: string; lockedAt: string };
-    expect(lock.lockedBy).toBe(handoffId);
+    expect(lock.lockedBy).toBe(agentId);
     expect(lock.lockedAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
 
     runHook(
       {
         hook_event_name: "SubagentStop",
         turn_id: "turn-lock",
+        agent_id: agentId,
         handoff_id: handoffId
       },
       stateDirectory
@@ -367,14 +520,14 @@ describe("Codex Autopilot hooks", () => {
     expect(existsSync(lockPath)).toBe(false);
   }, HOOK_SUBPROCESS_TIMEOUT_MS);
 
-  it("does not silently acquire worker.lock when another handoff is active", () => {
+  it("does not silently acquire worker.lock when another agent holds it", () => {
     const stateDirectory = createStateDirectory();
     const sessionStateDirectory = join(stateDirectory, "session-state");
     mkdirSync(sessionStateDirectory, { recursive: true });
     const lockPath = join(sessionStateDirectory, "worker.lock");
     writeFileSync(
       lockPath,
-      `${JSON.stringify({ lockedBy: "hp-20260617-existing", lockedAt: new Date().toISOString() })}\n`,
+      `${JSON.stringify({ lockedBy: "agent-existing-001", lockedAt: new Date().toISOString() })}\n`,
       "utf8"
     );
 
@@ -382,6 +535,7 @@ describe("Codex Autopilot hooks", () => {
       {
         hook_event_name: "SubagentStart",
         turn_id: "turn-lock-existing",
+        agent_id: "agent-new-001",
         handoff_id: "hp-20260617-new"
       },
       stateDirectory
@@ -389,22 +543,22 @@ describe("Codex Autopilot hooks", () => {
     const response = JSON.parse(output) as { hookSpecificOutput: { additionalContext: string } };
     const lock = JSON.parse(readFileSync(lockPath, "utf8")) as { lockedBy: string };
 
-    expect(lock.lockedBy).toBe("hp-20260617-existing");
+    expect(lock.lockedBy).toBe("agent-existing-001");
     expect(response.hookSpecificOutput.additionalContext).toContain("worker.lock already present");
   }, HOOK_SUBPROCESS_TIMEOUT_MS);
 
-  it("reports missing handoff ids instead of silently skipping worker.lock", () => {
+  it("reports missing agent ids instead of silently skipping worker.lock", () => {
     const stateDirectory = createStateDirectory();
     const output = runHook(
       {
         hook_event_name: "SubagentStart",
-        turn_id: "turn-lock-missing-handoff"
+        turn_id: "turn-lock-missing-agent"
       },
       stateDirectory
     );
     const response = JSON.parse(output) as { hookSpecificOutput: { additionalContext: string } };
 
-    expect(response.hookSpecificOutput.additionalContext).toContain("handoff_id is missing");
+    expect(response.hookSpecificOutput.additionalContext).toContain("agent_id is missing");
     expect(existsSync(join(stateDirectory, "session-state", "worker.lock"))).toBe(false);
   }, HOOK_SUBPROCESS_TIMEOUT_MS);
 
@@ -415,7 +569,7 @@ describe("Codex Autopilot hooks", () => {
     const lockPath = join(sessionStateDirectory, "worker.lock");
     writeFileSync(
       lockPath,
-      `${JSON.stringify({ lockedBy: "hp-20260617-abandoned", lockedAt: "2020-01-01T00:00:00.000Z" })}\n`,
+      `${JSON.stringify({ lockedBy: "agent-abandoned-001", lockedAt: "2020-01-01T00:00:00.000Z" })}\n`,
       "utf8"
     );
 
@@ -423,6 +577,7 @@ describe("Codex Autopilot hooks", () => {
       {
         hook_event_name: "SubagentStart",
         turn_id: "turn-lock-stale",
+        agent_id: "agent-new-stale-001",
         handoff_id: "hp-20260617-new"
       },
       stateDirectory
@@ -430,8 +585,45 @@ describe("Codex Autopilot hooks", () => {
     const response = JSON.parse(output) as { hookSpecificOutput: { additionalContext: string } };
     const lock = JSON.parse(readFileSync(lockPath, "utf8")) as { lockedBy: string };
 
-    expect(lock.lockedBy).toBe("hp-20260617-new");
+    expect(lock.lockedBy).toBe("agent-new-stale-001");
     expect(response.hookSpecificOutput.additionalContext).toContain("stale worker.lock was replaced");
+  }, HOOK_SUBPROCESS_TIMEOUT_MS);
+
+  it("creates worker.lock without a handoff id when agent id is present", () => {
+    const stateDirectory = createStateDirectory();
+
+    const output = runHook(
+      {
+        hook_event_name: "SubagentStart",
+        turn_id: "turn-agent-without-handoff",
+        agent_id: "agent-audit-001"
+      },
+      stateDirectory
+    );
+    const response = JSON.parse(output) as { hookSpecificOutput: { additionalContext: string } };
+    const lockPath = join(stateDirectory, "session-state", "worker.lock");
+    const lock = JSON.parse(readFileSync(lockPath, "utf8")) as { lockedBy: string };
+
+    expect(lock.lockedBy).toBe("agent-audit-001");
+    expect(response.hookSpecificOutput.additionalContext).not.toContain("missing");
+  }, HOOK_SUBPROCESS_TIMEOUT_MS);
+
+  it("keeps structured handoff ids from changing worker.lock ownership", () => {
+    const stateDirectory = createStateDirectory();
+
+    runHook(
+      {
+        hook_event_name: "SubagentStart",
+        turn_id: "turn-agent-with-handoff",
+        agent_id: "agent-audit-002",
+        handoff_id: "hp-20260617-audit"
+      },
+      stateDirectory
+    );
+
+    const lockPath = join(stateDirectory, "session-state", "worker.lock");
+    const lock = JSON.parse(readFileSync(lockPath, "utf8")) as { lockedBy: string };
+    expect(lock.lockedBy).toBe("agent-audit-002");
   }, HOOK_SUBPROCESS_TIMEOUT_MS);
 
   it("trims session history to the most recent 50 entries", () => {
