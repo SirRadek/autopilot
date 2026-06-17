@@ -1,0 +1,157 @@
+{
+  "record_version": "v0.1",
+  "eval_id": "radeq-lead-email-notification-deploy-2026-06-12",
+  "created": "2026-06-12",
+  "project": {
+    "slug": "radeq",
+    "name": "Radeq.cz",
+    "control_plane": false
+  },
+  "task": {
+    "task_type": "development",
+    "summary": "Evaluate the owner-approved lead notification deployment using Cloudflare Email Sending plus the mobile cat overlap guard on the live radeq.cz Worker.",
+    "risk_level": "high"
+  },
+  "phase": "learning_immediate_loop",
+  "state": "accepted_with_followup",
+  "model_or_worker": {
+    "provider": "openai",
+    "name": "Codex GPT-5",
+    "role": "implementation, deployment, verifier, and governance updater"
+  },
+  "reasoning_profile": {
+    "route": "subscription_interactive",
+    "reasoning_effort": "medium",
+    "change_policy": "Owner approved preserving the contact form, implementing forwarding/notification behavior, pushing the product branch, and deploying to radeq.cz. DNS/mailbox provider settings were not mutated."
+  },
+  "input_packet_summary": {
+    "summary": "Keep Fastmail as mailbox hosting, keep DMARC p=none, preserve the existing form, implement server-side form notification forwarding, and start cat mascot design work without replacing the asset.",
+    "allowed_context": [
+      "Radeq product checkout",
+      "Cloudflare Wrangler authenticated OAuth state",
+      "Cloudflare Worker deploy output",
+      "public URL checks",
+      "local governance records"
+    ],
+    "forbidden_context": [
+      "secrets",
+      "raw API token values",
+      "DNS authentication changes",
+      "mailbox provider mutation",
+      "checkout/payment or model-backed chatbot changes"
+    ],
+    "source_pointers": [
+      "C:/Users/sirok/Documents/Projects/radeq/functions/api/leads.ts",
+      "C:/Users/sirok/Documents/Projects/radeq/src/lib/leadNotificationEmail.ts",
+      "C:/Users/sirok/Documents/Projects/radeq/src/lib/catMascot.ts",
+      "docs/projects/radeq/work-log.md"
+    ]
+  },
+  "output_pointer": {
+    "kind": "deployment",
+    "pointer": "Cloudflare Worker radeq version d075d10a-fa6e-4b19-9ede-9a717543edce",
+    "summary": "Live Worker has ASSETS, LEADS_DB, and EMAIL bindings; a synthetic production lead returned 201."
+  },
+  "score_by_dimension": {
+    "task_fit": 94,
+    "instruction_following": 93,
+    "source_grounding": 88,
+    "format_contract": 91,
+    "verification_readiness": 92,
+    "privacy_safety": 92,
+    "handoff_clarity": 94,
+    "token_efficiency": 84,
+    "workflow_compatibility": 90
+  },
+  "failure_labels": [
+    "cloudflare_email_cli_read_commands_returned_2036"
+  ],
+  "prompt_or_input_delta": {
+    "changed": true,
+    "summary": "The owner moved email from research/provider selection to implementation of form notifications, while keeping Fastmail as mailbox provider and keeping the contact form.",
+    "changed_fields": [
+      "lead notification binding",
+      "Cloudflare Worker EMAIL binding",
+      "cat mobile overlap guard",
+      "cat redesign design slice",
+      "synthetic production form test"
+    ],
+    "rollback_path": "Redeploy Worker version 747d1ab3-ff49-497b-8cb8-917c67d0153d or revert product commit 731231b and redeploy Worker radeq."
+  },
+  "rerun_count": 1,
+  "accepted_state": "accepted_with_followup",
+  "verification_evidence": [
+    {
+      "type": "command",
+      "status": "passed",
+      "evidence": "npm.cmd run typecheck passed with 0 errors, warnings, or hints.",
+      "source_pointer": "C:/Users/sirok/Documents/Projects/radeq"
+    },
+    {
+      "type": "command",
+      "status": "passed",
+      "evidence": "npm.cmd test passed: 9 files and 50 tests.",
+      "source_pointer": "C:/Users/sirok/Documents/Projects/radeq"
+    },
+    {
+      "type": "command",
+      "status": "passed",
+      "evidence": "npm.cmd run build and DEPLOY_TARGET=github-pages npm.cmd run build both passed; existing Vite chunk-size warning remained.",
+      "source_pointer": "C:/Users/sirok/Documents/Projects/radeq"
+    },
+    {
+      "type": "command",
+      "status": "passed",
+      "evidence": "npm.cmd run test:e2e passed: 15 Playwright tests.",
+      "source_pointer": "C:/Users/sirok/Documents/Projects/radeq"
+    },
+    {
+      "type": "command",
+      "status": "passed",
+      "evidence": "npx.cmd wrangler@latest deploy --dry-run passed and showed EMAIL, LEADS_DB, and ASSETS bindings.",
+      "source_pointer": "C:/Users/sirok/Documents/Projects/radeq"
+    },
+    {
+      "type": "command",
+      "status": "passed",
+      "evidence": "npx.cmd wrangler@latest deploy with OAuth deployed Worker radeq version d075d10a-fa6e-4b19-9ede-9a717543edce.",
+      "source_pointer": "Cloudflare Worker radeq"
+    },
+    {
+      "type": "manual_review",
+      "status": "passed",
+      "evidence": "Public GET checks returned 200 for /, /en/, and /ukazky/; OPTIONS /api/leads returned 204.",
+      "source_pointer": "https://radeq.cz/"
+    },
+    {
+      "type": "manual_review",
+      "status": "partial",
+      "evidence": "Synthetic POST /api/leads returned 201 with lead_mqb2u5q6_b91abd77. Mailbox delivery must be confirmed in poptavky@radeq.cz because the API intentionally hides email delivery state.",
+      "source_pointer": "https://radeq.cz/api/leads"
+    },
+    {
+      "type": "command",
+      "status": "failed_non_blocking",
+      "evidence": "Wrangler Email Sending beta list/settings commands returned Unauthorized [code: 2036] under OAuth. Worker deploy still accepted the EMAIL binding.",
+      "source_pointer": "Cloudflare Wrangler email sending beta"
+    }
+  ],
+  "source_pointers": [
+    "docs/projects/radeq/work-log.md",
+    "docs/projects/radeq/architecture.md",
+    "docs/projects/radeq/decision-mesh/rules.yaml",
+    "docs/superpowers/specs/2026-06-12-radeq-cat-mascot-next-design.md",
+    "C:/Users/sirok/Documents/Projects/radeq/src/lib/leadNotificationEmail.ts",
+    "C:/Users/sirok/Documents/Projects/radeq/functions/api/leads.ts",
+    "C:/Users/sirok/Documents/Projects/radeq/src/lib/catMascot.ts"
+  ],
+  "privacy_review": {
+    "redacted_context_only": true,
+    "raw_output_stored": false,
+    "raw_prompt_stored": false,
+    "raw_logs_stored": false,
+    "secrets_or_customer_data_stored": false,
+    "synthetic_test_lead_only": true,
+    "reviewer": "codex-supervisor"
+  }
+}

@@ -18,15 +18,20 @@ related_agents:
   - qa
 related_files:
   - docs/projects/radeq/architecture.md
+  - C:/Users/sirok/Documents/Projects/radeq/functions/api/leads.ts
+  - C:/Users/sirok/Documents/Projects/radeq/src/lib/leadNotificationEmail.ts
 required_checks:
   - client_validation
   - server_validation
   - privacy_minimization
   - d1_binding_check
   - controlled_error_response
+  - notification_failure_does_not_block_storage
 stop_conditions:
   - missing_server_validation
   - privacy_minimization_removed
   - d1_binding_unknown
+  - email_notification_blocks_successful_d1_storage
 objective:
   - Keep lead capture private, validated, and recoverable.
+  - Send owner notifications only after successful storage and keep email sending fail-soft.

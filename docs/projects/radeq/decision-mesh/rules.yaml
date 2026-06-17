@@ -86,3 +86,47 @@ rules:
       - runtime_observability_boundary
     instruction: "Before claiming a Radeq preview refinement is ready, record the public preview URL or commit, mobile viewport evidence, overflow state, console state, metadata/indexability state, performance note, and rollback path."
     severity: major
+  - id: RAD-SHOWCASE-001
+    title: Public showcases stay static and secondary
+    applies_to:
+      - public_showcase_examples
+      - static_public_site
+      - offer_positioning_conversion
+    instruction: "The Czech /ukazky hub and detail pages may present public-safe examples for chatbot, automation, and offer/e-shop inquiry paths, but they must stay secondary to the complete-website homepage offer and must not replace or redirect old /demo routes without a separate owner decision."
+    severity: major
+  - id: RAD-SHOWCASE-002
+    title: Static chatbot is not AI or model-backed
+    applies_to:
+      - public_showcase_examples
+      - lead_capture_pipeline
+    instruction: "The /ukazky/chatbot page must remain a static rule-based guide over prepared data. It must not use LLM, RAG, model APIs, network calls, localStorage, analytics, backend inference, or hidden lead submission. AI may be mentioned only as a later optional layer after sources, boundaries, data protection, and human handoff are clear."
+    severity: blocker
+  - id: RAD-SHOWCASE-003
+    title: E-shop showcase is inquiry only
+    applies_to:
+      - public_showcase_examples
+      - lead_capture_pipeline
+    instruction: "The /ukazky/nabidka-eshop page may explain clearer offers and inquiry paths, but it must not implement checkout, payment, binding order flow, delivery data collection, or payment-data prompts."
+    severity: blocker
+  - id: RAD-EMAIL-001
+    title: Fastmail is selected for human mailbox hosting
+    applies_to:
+      - domain_email_research
+      - lead_capture_pipeline
+    instruction: "Fastmail is the owner-confirmed human mailbox provider for radeq.cz, with siroky@radeq.cz, info@radeq.cz, and poptavky@radeq.cz working. Keep Cloudflare as DNS/control surface, keep DMARC at p=none during initial monitoring, and still distinguish mailbox hosting from forwarding, transactional email, and future form backend work. Do not change production deploy, lead API, or provider configuration without an explicit owner decision."
+    severity: blocker
+  - id: RAD-EMAIL-002
+    title: Lead notification email is transactional and fail-soft
+    applies_to:
+      - domain_email_research
+      - lead_capture_pipeline
+    instruction: "The contact form may send a server-side Cloudflare Email Sending notification to poptavky@radeq.cz only after successful D1 storage. Email sending failures must be logged without exposing lead details and must not turn a successful stored lead into a visitor-facing error."
+    severity: blocker
+  - id: RAD-DEPLOY-001
+    title: GitHub-first staging before Cloudflare deploy
+    applies_to:
+      - static_public_site
+      - lead_capture_pipeline
+      - runtime_observability_boundary
+    instruction: "Stage Radeq website changes through GitHub branches and PR review first. Do not deploy Cloudflare Worker radeq, Cloudflare Pages radeq-cz, or production-domain changes without explicit owner approval in the current turn."
+    severity: blocker

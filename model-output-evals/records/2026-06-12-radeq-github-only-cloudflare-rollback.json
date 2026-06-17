@@ -1,0 +1,108 @@
+{
+  "record_version": "v0.1",
+  "eval_id": "radeq-github-only-cloudflare-rollback-2026-06-12",
+  "created": "2026-06-12",
+  "project": {
+    "slug": "radeq",
+    "name": "Radeq.cz",
+    "control_plane": false
+  },
+  "task": {
+    "task_type": "deployment_control",
+    "summary": "Evaluate owner-requested rollback of the latest Cloudflare Worker deployment so the lead notification branch remains GitHub-only for now.",
+    "risk_level": "medium"
+  },
+  "phase": "learning_immediate_loop",
+  "state": "accepted",
+  "model_or_worker": {
+    "provider": "openai",
+    "name": "Codex GPT-5",
+    "role": "deployment rollback operator and governance updater"
+  },
+  "reasoning_profile": {
+    "route": "subscription_interactive",
+    "reasoning_effort": "low",
+    "change_policy": "Owner asked to keep the latest work only on GitHub to avoid unnecessary Cloudflare Free-plan usage. A Worker rollback was performed; product code stayed pushed on GitHub."
+  },
+  "input_packet_summary": {
+    "summary": "Roll back the Cloudflare deployment of the lead notification branch while keeping commits on GitHub.",
+    "allowed_context": [
+      "Radeq product branch status",
+      "Cloudflare Wrangler deployment history",
+      "public GET/OPTIONS checks",
+      "local governance records"
+    ],
+    "forbidden_context": [
+      "secrets",
+      "DNS mutations",
+      "mailbox provider changes",
+      "additional production lead POST submissions"
+    ],
+    "source_pointers": [
+      "C:/Users/sirok/Documents/Projects/radeq",
+      "docs/projects/radeq/work-log.md",
+      "docs/projects/radeq/architecture.md"
+    ]
+  },
+  "output_pointer": {
+    "kind": "deployment",
+    "pointer": "Cloudflare Worker radeq version 747d1ab3-ff49-497b-8cb8-917c67d0153d",
+    "summary": "Live Worker was rolled back to the previous version; GitHub branch codex/radeq-ab-c-preview still contains commit 731231b."
+  },
+  "score_by_dimension": {
+    "task_fit": 96,
+    "instruction_following": 96,
+    "source_grounding": 90,
+    "format_contract": 92,
+    "verification_readiness": 92,
+    "privacy_safety": 96,
+    "handoff_clarity": 95,
+    "token_efficiency": 88,
+    "workflow_compatibility": 93
+  },
+  "failure_labels": [],
+  "prompt_or_input_delta": {
+    "changed": true,
+    "summary": "The owner changed deployment policy from live Cloudflare deploy to GitHub-only staging for the latest branch.",
+    "changed_fields": [
+      "Cloudflare active Worker version",
+      "deployment policy for latest branch",
+      "architecture note for active production versus GitHub branch"
+    ],
+    "rollback_path": "Redeploy Radeq product commit 731231b or newer with the local production Wrangler configuration."
+  },
+  "verification_evidence": [
+    {
+      "type": "command",
+      "status": "passed",
+      "evidence": "wrangler rollback deployed Worker version 747d1ab3-ff49-497b-8cb8-917c67d0153d to 100% of traffic.",
+      "source_pointer": "Cloudflare Worker radeq"
+    },
+    {
+      "type": "manual_review",
+      "status": "passed",
+      "evidence": "Public checks returned 200 for / and /ukazky/; OPTIONS /api/leads returned 204 with POST, OPTIONS.",
+      "source_pointer": "https://radeq.cz/"
+    },
+    {
+      "type": "command",
+      "status": "passed",
+      "evidence": "Radeq and Autopilot git branches were clean before the rollback governance update; Radeq commit 731231b remained pushed to GitHub.",
+      "source_pointer": "C:/Users/sirok/Documents/Projects/radeq"
+    }
+  ],
+  "source_pointers": [
+    "docs/projects/radeq/work-log.md",
+    "docs/projects/radeq/architecture.md",
+    "https://developers.cloudflare.com/workers/platform/limits/",
+    "https://developers.cloudflare.com/workers/static-assets/billing-and-limitations/"
+  ],
+  "privacy_review": {
+    "redacted_context_only": true,
+    "raw_output_stored": false,
+    "raw_prompt_stored": false,
+    "raw_logs_stored": false,
+    "secrets_or_customer_data_stored": false,
+    "reviewer": "codex-supervisor"
+  }
+}

@@ -1,0 +1,42 @@
+id: public_showcase_examples
+type: public_content_surface
+name: Static public showcase examples
+question: "Do public /ukazky examples stay static, Czech-first, public-safe, and secondary to the complete-website homepage offer?"
+why: "The owner approved a first Czech wave of static public examples for chatbot, automation, and offer/e-shop inquiry paths, while keeping old /demo routes separate and avoiding fake client evidence."
+signals:
+  - ukazky
+  - examples
+  - chatbot
+  - automation
+  - offer
+  - ecommerce
+  - public proof
+related_agents:
+  - frontend
+  - content
+  - security
+  - seo_performance
+  - qa
+related_files:
+  - C:/Users/sirok/Documents/Projects/radeq/src/pages/ukazky/
+  - C:/Users/sirok/Documents/Projects/radeq/src/data/showcaseExamples.ts
+  - C:/Users/sirok/Documents/Projects/radeq/src/data/chatbotGuide.ts
+required_checks:
+  - static_content_readable
+  - no_client_or_private_data
+  - no_demo_matrix_leakage
+  - no_checkout_or_payment_flow
+  - no_model_backed_chatbot_claim
+  - explicit_handoff
+  - sitemap_entry_check
+  - mobile_overflow_check
+stop_conditions:
+  - showcase_replaces_homepage_offer
+  - chatbot_requires_model_or_api
+  - checkout_or_payment_added
+  - client_case_study_claim_without_public_evidence
+  - demo_routes_redirected_without_owner_decision
+objective:
+  - "Expose safe public proof through /ukazky without changing the homepage's primary complete-website offer."
+  - "Keep chatbot examples rule-based over prepared data, with AI mentioned only as a later optional layer after sources, boundaries, privacy, and human handoff are clear."
+  - "Keep /ukazky/nabidka-eshop as an inquiry/offer path, not checkout or payment."

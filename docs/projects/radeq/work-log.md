@@ -1,5 +1,303 @@
 # Radeq.cz Website Work Log
 
+## 2026-06-12 Public Trust Route Pages Implemented
+
+Date: 2026-06-12
+Request or trigger: owner confirmed real Czech route pages, no public phone, deferred personal photo, later Cloudflare Web Analytics, and GitHub-only staging before any Cloudflare deployment.
+Mode: WRITE_ALLOWED for Radeq product source and Autopilot governance records. No Cloudflare deploy, DNS change, mailbox change, D1 migration, or production lead submission was performed.
+
+Product outcome:
+
+- Pushed Radeq product commit `dbb59d5` (`Add public trust route pages`) to GitHub branch `codex/radeq-ab-c-preview`.
+- Updated draft PR `https://github.com/SirRadek/radeq/pull/2` with the current scope, verification evidence, review notes, and explicit Cloudflare not-deployed status.
+- Added real static Czech pages `/kontakt/`, `/sluzby/`, `/portfolio/`, and `/soukromi/`.
+- Reduced Czech contact form options to six website-focused choices: new website, redesign, audit, quick fix, web care, and not-sure/advice.
+- Added a no-network measurement contract and React tracker that emits local `radeq:measurement` events only. Event payloads contain event name and route, not e-mail, message, or project details.
+- Added `withBaseHref()` and applied it to new route and showcase links so GitHub Pages builds under `/radeq` do not escape the base path.
+- Updated sitemap coverage and tests for the new public routes.
+
+Verification:
+
+- `npm.cmd run typecheck`: passed, 0 errors, 0 warnings, 0 hints.
+- `npm.cmd test`: passed, 11 files and 58 tests.
+- `npm.cmd run build`: passed; known Vite large chunk warning remains.
+- `DEPLOY_TARGET=github-pages npm.cmd run build`: passed; known Vite large chunk warning remains.
+- Static GitHub Pages href checks passed for `/radeq/ukazky/`, `/radeq/#pricing`, `/radeq/sluzby/`, and `/radeq/ukazky/chatbot/`.
+- `npm.cmd run test:e2e`: passed, 21 Playwright tests.
+- `git diff --check`: passed; Git reported only LF-to-CRLF working-copy notices.
+- Subagent code review found two issues before final commit: GitHub Pages base-path escaping and declared click measurement events not emitted. Both were fixed and re-reviewed with no remaining blockers.
+
+Risk notes:
+
+- The branch is GitHub-only. The live Cloudflare Worker/site was not deployed from this commit.
+- Measurement remains a local event contract. Cloudflare Web Analytics is still a later owner-approved integration.
+- Personal photo remains deferred until the owner supplies an approved asset.
+- No public phone number was added.
+- English route equivalents for `/kontakt/`, `/sluzby/`, `/portfolio/`, and `/soukromi/` are not implemented in this slice.
+
+Rollback:
+
+- Revert product commit `dbb59d5` on branch `codex/radeq-ab-c-preview`, or reset the GitHub preview branch to prior product commit `731231b`.
+
+## 2026-06-12 Homepage Trust Owner Decisions Locked
+
+Date: 2026-06-12
+Request or trigger: owner answered the open implementation decisions from the homepage trust and route-unification plan.
+Mode: GOVERNANCE_UPDATE_ONLY for Autopilot records. No Radeq product source change, Cloudflare deploy, DNS change, mailbox change, D1 migration, or production lead submission was performed.
+
+Locked decisions:
+
+- `/kontakt/`, `/sluzby/`, `/portfolio/`, and `/soukromi/` will be real static pages.
+- The proposed contact form project options are `Nový firemní web`, `Redesign staršího webu`, `Audit webu s plánem`, `Rychlá oprava webu`, `Webová péče a rozvoj`, and `Nejsem si jistý, potřebuji poradit`.
+- No public phone number in this wave.
+- Personal photo is deferred until an approved asset is provided.
+- Measurement remains no-network for the implementation branch; Cloudflare Web Analytics is the later preferred backend.
+- Cloudflare deployment remains blocked until GitHub approval and a later explicit deploy instruction.
+
+Plan impact:
+
+- Updated `docs/superpowers/plans/2026-06-12-radeq-homepage-trust-route-unification.md` so the implementation plan no longer treats those items as blockers.
+- Removed the planned `phone_click` measurement event because phone will not be public.
+
+Recommended next work slice: start the GitHub-only Radeq product implementation for the content contract, real route pages, and form option update. Do not deploy to Cloudflare during that slice.
+
+## 2026-06-12 Homepage Trust Strategy Advisory And Deployment Plan
+
+Date: 2026-06-12
+Request or trigger: owner provided `C:/Users/sirok/Desktop/prompt.txt` and asked for multi-model brainstorming, Decision Mesh/MCP use, evaluation, and a deployment plan with latest-model and workflow notes.
+Mode: PLAN_ONLY for Radeq product runtime. No product source change, Cloudflare deploy, DNS change, mailbox/provider change, D1 migration, or production lead submission was performed.
+
+Inputs:
+
+- Proposal strategy: Radeq.cz should sell websites/redesign/audit/repair first; automation, analytics, AI, and agentic systems stay as follow-on value and internal production advantage.
+- Owner deployment preference: keep current work GitHub-first and avoid unnecessary Cloudflare Free-plan usage.
+
+Tools and advisory results:
+
+- Decision Mesh `find_risks` highlighted tool inventory, reasoning/model-spend policy, public API, project mesh lifecycle, model output evaluation, and production mutation stop conditions.
+- Claude Code 2.1.172 was available. Fable and Opus health checks passed, but full-context/max advisory runs timed out; a shorter Fable run then hit a session limit until 22:20 Europe/Prague. No Claude advisory content was accepted as output.
+- Gemini CLI 0.44.1 was available. `gemini-3.1-pro-preview` timed out in this environment; Gemini default/auto returned a usable advisory review. Gemini MCP list showed no MCP servers configured.
+- Codex CLI 0.106.0 was available but unusable for separate advisory: explicit `gpt-5` is unsupported with the current ChatGPT account and default `gpt-5.5` requires a newer Codex CLI.
+
+Plan output:
+
+- Added `docs/superpowers/plans/2026-06-12-radeq-homepage-trust-route-unification.md`.
+- Added mesh rule `RAD-DEPLOY-001` for GitHub-first staging before Cloudflare deployment.
+
+Recommended implementation order:
+
+1. Confirm owner decisions for route pages vs redirects, six form options, public phone, photo asset, measurement backend, English showcase scope, and Cloudflare deploy timing.
+2. Tighten homepage content contract and form options.
+3. Add unified public pages for `/kontakt/`, `/sluzby/`, `/portfolio/`, and `/soukromi/`.
+4. Move trust proof and route consistency ahead of new visual effects.
+5. Add a privacy-safe measurement event contract without external analytics first.
+6. Push through GitHub/PR only.
+7. Use Cloudflare dry-run and live deploy only after explicit owner approval.
+
+Workflow tuning:
+
+- For Claude, use smaller advisory packets and `--fallback-model` before attempting full-context `max`.
+- For Gemini, verify model access interactively via `/model`; do not label default/auto as Gemini 3.1.
+- For Codex CLI, upgrade or repair the CLI before using it as a separate advisory runner.
+- Continue treating model outputs as advisory only; local repo checks and official docs remain source of truth.
+
+Risk notes:
+
+- The attached proposal is strategically aligned with existing Radeq mesh, but implementation should not add all route, copy, measurement, proof, and mascot work in one branch.
+- Privacy-safe measurement needs an owner decision before any external analytics network call.
+- A public phone number and personal photo require owner-provided exact values/assets.
+- Existing `/demo/*` routes should remain public unless a separate URL migration decision is approved.
+
+Rollback:
+
+- This slice created only governance/plan artifacts. Revert the Autopilot commit that added the plan and `RAD-DEPLOY-001` if the owner changes deployment workflow.
+
+## 2026-06-12 GitHub-Only Rollback For Lead Notification Branch
+
+Date: 2026-06-12
+Request or trigger: owner asked to keep the latest lead notification and cat-mobile-guard work only on GitHub for now to avoid unnecessary Cloudflare Free-plan usage.
+Mode: WRITE_ALLOWED for Cloudflare Worker rollback and local governance records. No product source changes, no DNS change, no mailbox/provider change, no D1 migration, and no additional lead POST test.
+
+Outcome:
+
+- Kept Radeq product commit `731231b` pushed on GitHub branch `codex/radeq-ab-c-preview`.
+- Rolled Cloudflare Worker `radeq` back from version `d075d10a-fa6e-4b19-9ede-9a717543edce` to previous version `747d1ab3-ff49-497b-8cb8-917c67d0153d`.
+- Rollback message: `Owner requested GitHub-only staging to avoid Cloudflare free-tier usage`.
+- The live `radeq.cz` site still serves the approved `/ukazky` implementation, but the lead notification branch is not currently active on Cloudflare production.
+
+Verification:
+
+- `https://radeq.cz/`: 200.
+- `https://radeq.cz/ukazky/`: 200.
+- `OPTIONS https://radeq.cz/api/leads`: 204 with `POST, OPTIONS`.
+- `wrangler deployments list --name radeq` showed the rollback deployment at `2026-06-12T15:42:01.548Z` with 100% traffic on version `747d1ab3-ff49-497b-8cb8-917c67d0153d`.
+
+Cloudflare limit note:
+
+- Official Cloudflare Workers docs list a Workers Free daily request limit of 100,000 requests that resets at 00:00 UTC.
+- Official Workers Static Assets billing docs state requests to static assets are free and unlimited, while requests to the Worker script are billed or limited according to Workers pricing.
+- Practical policy after this owner decision: keep iterative work on GitHub/PR first, and deploy to Cloudflare only when the owner explicitly asks for a Cloudflare preview or production check.
+
+Rollback:
+
+- To put the GitHub branch back on Cloudflare later, redeploy Radeq product commit `731231b` or newer with the local production `wrangler.toml`.
+
+## 2026-06-12 Lead Email Notification Deploy And Cat Mobile Guard
+
+Date: 2026-06-12
+Request or trigger: owner confirmed Fastmail as the final mailbox provider, asked to keep the contact form, start the cat design work, implement form forwarding/notifications, push the product branch, and put the change directly on `radeq.cz`.
+Mode: WRITE_ALLOWED for the Radeq product checkout, Cloudflare Worker `radeq`, local governance records, and local git commits/pushes. No DNS MX/SPF/DKIM/DMARC mutation, mailbox provider change, checkout/payment flow, model API, RAG, or replacement 3D model asset was introduced.
+
+Product implementation:
+
+- Added `src/lib/leadNotificationEmail.ts` with a server-side Cloudflare Email Sending message for new stored leads.
+- Updated `functions/api/leads.ts` so `/api/leads` sends the notification only after successful D1 storage and keeps the visitor response successful if email sending fails.
+- Updated `worker/index.ts`, local ignored `wrangler.toml`, and committed `wrangler.worker.example.toml` to include the `EMAIL` send binding shape.
+- Added tests proving notification send on success and fail-soft behavior on email errors.
+- Added a mobile lower safe rail for the platform-roaming cat and clamps the final mobile `screenY` so jump interpolation cannot overlap hero text/CTA.
+- Added a mobile header E2E assertion that the English language switch remains visible.
+- Added `.superpowers/` to `.gitignore`.
+
+Cat design follow-up:
+
+- Added `docs/superpowers/specs/2026-06-12-radeq-cat-mascot-next-design.md`.
+- The approved immediate implementation is only mobile overlap protection. Deeper work on a smoother body, texture, behavior logic, or replacement GLB remains a separate asset/design pipeline with license, rig, optimization, reduced-motion, and mobile evidence gates.
+
+Project mesh and architecture impact:
+
+- Updated `domain_email_research`, `lead_capture_pipeline`, mesh edge `domain_email_research -> lead_capture_pipeline`, and rules with `RAD-EMAIL-002`.
+- Updated `docs/projects/radeq/architecture.md` so email notifications are now in scope as a fail-soft transactional Worker binding, while Fastmail remains the human mailbox provider.
+
+Deployment outcome:
+
+- Product commit `731231b` was pushed to `codex/radeq-ab-c-preview`.
+- Initial `wrangler deploy` failed because an environment `CLOUDFLARE_API_TOKEN` overrode OAuth and lacked Worker service access (`Authentication error [code: 10000]`).
+- Retried deploy with that env token removed for the command, using the existing OAuth login with `workers`, `d1`, and `email_sending` permissions.
+- Deployed Worker `radeq` with `ASSETS`, `LEADS_DB`, and `EMAIL` bindings. Current deployed Worker version ID: `d075d10a-fa6e-4b19-9ede-9a717543edce`.
+
+Verification:
+
+- `npm.cmd run typecheck`: passed with 0 errors, warnings, or hints.
+- `npm.cmd test`: passed, 9 files and 50 tests.
+- `npm.cmd run build`: passed, 14 pages generated; existing Vite chunk-size warning remained.
+- `DEPLOY_TARGET=github-pages npm.cmd run build`: passed, 14 pages generated; existing Vite chunk-size warning remained.
+- `npm.cmd run test:e2e`: passed, 15 Playwright tests.
+- `git diff --check`: passed; Git reported only LF-to-CRLF working-copy warnings.
+- `npx.cmd wrangler@latest deploy --dry-run`: passed and confirmed `EMAIL`, `LEADS_DB`, and `ASSETS` bindings.
+- Public checks after deploy: `https://radeq.cz/` 200, `https://radeq.cz/en/` 200, `https://radeq.cz/ukazky/` 200, `OPTIONS https://radeq.cz/api/leads` 204.
+- Synthetic production lead test submitted to `POST https://radeq.cz/api/leads` with `TEST - Codex deploy verification`; API returned 201 and lead ID `lead_mqb2u5q6_b91abd77`.
+
+Risk notes:
+
+- The public API test confirms live D1/API path. Email delivery confirmation still requires checking the Fastmail mailbox `poptavky@radeq.cz` for the test notification because the API intentionally does not expose email delivery state.
+- Wrangler Email Sending beta `list` and `settings` commands returned Cloudflare API `Unauthorized [code: 2036]` under OAuth, despite the deploy accepting the `EMAIL` binding. Treat Cloudflare Dashboard mailbox/log checks as the current delivery evidence path.
+- Email notification is fail-soft: a future Cloudflare Email Sending failure logs an error and does not lose a stored lead.
+- The deeper cat redesign is not implemented in this slice; only mobile overlap containment is live.
+
+Rollback:
+
+- Redeploy previous Worker version `747d1ab3-ff49-497b-8cb8-917c67d0153d`, or revert product commit `731231b` and redeploy Worker `radeq`.
+
+## 2026-06-12 Production Worker Deploy To Radeq.cz
+
+Date: 2026-06-12
+Request or trigger: owner explicitly asked to put the approved `/ukazky` implementation directly on `radeq.cz` after reviewing the GitHub/Cloudflare preview direction.
+Mode: WRITE_ALLOWED for the Radeq product checkout, Cloudflare Worker `radeq`, Cloudflare Pages project `radeq-cz`, local governance records, and local git commits. No GitHub production merge, GitHub Pages release push, DNS MX/DKIM/SPF/DMARC mutation, mailbox provider change, checkout/payment flow, model API, RAG, or lead data submission was performed.
+
+Deployment outcome:
+
+- Ran a fresh production Astro build.
+- Uploaded the static build to Cloudflare Pages project `radeq-cz` first. Branch `new` created preview deployment `https://e7070554.radeq-cz.pages.dev`; branch `profi` created production Pages deployment `https://787534f2.radeq-cz.pages.dev`.
+- Verified the Pages production deployment had the new `/ukazky/*` pages, but `https://radeq.cz` still served old content because the apex domain is routed through Worker `radeq`.
+- Added a Worker entrypoint in the Radeq repo that routes `/api/leads` to the existing lead handler and serves all other paths from Worker static assets.
+- Deployed Worker `radeq` with Cloudflare Workers static assets and existing `LEADS_DB` binding. Current deployed Worker version ID: `747d1ab3-ff49-497b-8cb8-917c67d0153d`.
+- Kept the real local `wrangler.toml` ignored so the production D1 database ID is not committed; added a safe example Worker config with a placeholder database ID.
+
+Public verification:
+
+- `https://radeq.cz/`: 200 and new homepage title/content.
+- `https://radeq.cz/ukazky/`: 200.
+- `https://radeq.cz/ukazky/chatbot/`: 200.
+- `https://radeq.cz/ukazky/automatizace/`: 200.
+- `https://radeq.cz/ukazky/nabidka-eshop/`: 200.
+- `https://radeq.cz/sitemap.xml`: 200 and contains `/ukazky` routes.
+- `OPTIONS https://radeq.cz/api/leads`: 204 with `POST, OPTIONS`; no real lead payload was submitted.
+
+Verification:
+
+- `npm.cmd run typecheck`: passed with 0 errors, warnings, or hints.
+- `npx.cmd wrangler@latest deploy --dry-run`: passed and confirmed `LEADS_DB` plus `ASSETS` bindings.
+- `npm.cmd test`: passed, 9 files and 47 tests.
+- `npm.cmd run build`: passed, 14 pages generated; existing Vite chunk-size warning remained.
+- `DEPLOY_TARGET=github-pages npm.cmd run build`: passed, 14 pages generated; existing Vite chunk-size warning remained.
+- `npm.cmd run test:e2e`: passed, 15 Playwright tests.
+- `git diff --check`: passed; Git reported only LF-to-CRLF working-copy warnings.
+
+Risk notes:
+
+- Production currently depends on Worker `radeq`, not only Cloudflare Pages custom domains. The Pages custom domains existed but were pending because the apex domain was still routed through the Worker.
+- Future deploy handoffs must name the target explicitly: Worker `radeq` for `radeq.cz`, Pages `radeq-cz` for Pages preview/secondary deployments, and GitHub Pages for PR preview.
+- The local ignored `wrangler.toml` contains production binding details and must not be committed.
+
+Rollback:
+
+- Redeploy the previous Worker version from Cloudflare Workers deploy history, or deploy the previous Radeq build to Worker `radeq`. Pages deployment `f0eded6a` remains the previous Cloudflare Pages production build, but it did not control the apex route during this run.
+
+## 2026-06-12 Static Ukazky Implementation
+
+Date: 2026-06-12
+Request or trigger: owner approved the Czech first wave of static public `/ukazky` examples and asked to implement `/ukazky/`, `/ukazky/chatbot/`, `/ukazky/automatizace/`, and `/ukazky/nabidka-eshop/`, while keeping e-mail provider research separate from the static implementation.
+Mode: WRITE_ALLOWED for the Radeq product checkout, local governance mesh, work log, architecture mirror, and model-output eval record. No production Cloudflare deploy, GitHub deploy, push, PR, D1, migrations, lead API, package files, checkout/payment flow, model API, RAG, analytics, or provider/DNS configuration was changed.
+
+Product implementation:
+
+- Added typed static showcase content in `src/data/showcaseExamples.ts`.
+- Added a typed local decision tree in `src/data/chatbotGuide.ts`.
+- Added `src/components/RuleChatbotGuide.tsx` as a React island for visible choice state only. It does not use network calls, backend inference, analytics, localStorage, or hidden submission.
+- Added `src/pages/ukazky/index.astro` and `src/pages/ukazky/[example].astro`.
+- Made `BaseLayout` and `CommandHeader` tolerate Czech-only pages without false English alternate links.
+- Added `/ukazky/` and detail pages to `sitemap.xml.ts`.
+- Added showcase styles under `.showcase-*` and `.rule-chatbot*` selectors without new A/B/C/D showcase variant selectors.
+- Added Czech header link `Ukázky` after the pages, targeted tests, and initial build were passing.
+- Left old `/demo/*` public and separate.
+
+Verification:
+
+- `npm.cmd run typecheck`: passed with 0 errors, warnings, or hints.
+- `npm.cmd test`: passed, 9 files and 47 tests.
+- `npm.cmd run build`: passed, 14 pages generated including `/ukazky/*`; existing Vite chunk-size warning remained.
+- `DEPLOY_TARGET=github-pages npm.cmd run build`: passed, 14 pages generated; existing Vite chunk-size warning remained.
+- `npm.cmd run test:e2e`: passed, 15 Playwright tests.
+- `git diff --check`: passed; Git reported only LF-to-CRLF working-copy warnings.
+- Local dev sanity check at `http://127.0.0.1:4321` verified all four `/ukazky` routes have expected H1 text, no `.style-toggle`, no desktop or 390px mobile horizontal overflow, and chatbot handoff panel appears only after explicit click.
+
+E-mail research:
+
+- Public DNS read-only check found Cloudflare nameservers `anton.ns.cloudflare.com` and `sharon.ns.cloudflare.com`; no public MX, SPF TXT, or `_dmarc` TXT records were returned by `Resolve-DnsName` during this run.
+- Current official sources were checked for Cloudflare Email Service, Fastmail, Google Workspace, Microsoft Exchange Online, Zoho Mail, Proton Mail, Resend, Formspree, and Basin.
+- Recommendation: use mailbox hosting for human mail and replies as `@radeq.cz`; keep Cloudflare Email Routing as a temporary receive-only forwarding option; use Workers plus Cloudflare Email Service or Resend later for transactional form notifications only.
+- No DNS, mailbox, provider, Worker, or form backend configuration was changed.
+
+Project mesh impact:
+
+- Added `public_showcase_examples` and `domain_email_research` nodes.
+- Added edges from public showcase examples to static site, offer positioning, SEO/performance, and lead capture.
+- Added e-mail research edge to lead capture as future integration.
+- Added rules `RAD-SHOWCASE-001` through `RAD-SHOWCASE-003` and `RAD-EMAIL-001`.
+
+Known limitations and owner decisions:
+
+- No commit, push, PR, GitHub Pages preview, or Cloudflare production deploy was performed.
+- Owner confirmed Fastmail as the final human mailbox provider for `radeq.cz`.
+- Owner confirmed `siroky@radeq.cz`, `info@radeq.cz`, and `poptavky@radeq.cz` work.
+- Owner confirmed DMARC should remain `p=none` during initial monitoring.
+- Owner approved adding Czech contact-form options for `Jednoduchý chatbot / průvodce`, `Automatizace poptávek`, and `Nabídka / e-shop úprava`.
+- English `/ukazky` pages remain out of scope.
+
+Rollback:
+
+- Revert the Radeq product checkout changes in the `/ukazky` files, layout/header/sitemap/style/test updates, and remove the governance mesh/work-log/eval additions if the owner rejects public showcase publishing.
+
 ## 2026-06-12 Static Ukazky Implementation Planning
 
 Date: 2026-06-12

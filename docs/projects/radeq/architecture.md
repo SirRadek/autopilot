@@ -1,6 +1,6 @@
 # Radeq.cz Website Architecture
 
-Last updated: 2026-06-11
+Last updated: 2026-06-12
 Next review: 2026-06-18
 Status: active
 Slug: `radeq`
@@ -11,7 +11,7 @@ Visibility: public repository, with private reference assets excluded by policy
 
 ## Purpose And Scope
 
-Radeq.cz is a public static website for selling complete websites and redesigns for small businesses, with supporting proof, pricing, handoff, and lead capture. The current product surface is the Czech route `/`, the English route `/en/`, a fixed public homepage offer, a static three-step primary service path, a separate secondary-services block, a pricing section, optional compatibility/demo routes under `/demo/<module>/` and `/en/demo/<module>/`, a light/dark visual mode toggle, an optional 3D mascot enhancement, and a Cloudflare D1-backed lead capture endpoint.
+Radeq.cz is a public static website for selling complete websites and redesigns for small businesses, with supporting proof, pricing, handoff, and lead capture. The current product surface is the Czech route `/`, the English route `/en/`, Czech static public showcase routes under `/ukazky/`, a fixed public homepage offer, a static three-step primary service path, a separate secondary-services block, a pricing section, optional compatibility/demo routes under `/demo/<module>/` and `/en/demo/<module>/`, a light/dark visual mode toggle, an optional 3D mascot enhancement, and a Cloudflare D1-backed lead capture endpoint.
 
 Business positioning lock, implemented locally on 2026-06-11: the public homepage focuses on complete websites and redesigns for small businesses, not WordPress/WooCommerce repairs. The primary offer covers structure, content, design, implementation, performance/SEO basics, testing, and clear handoff. WordPress, WooCommerce, Shopify, SEO, automation, AI helpers, PC support, migrations, and custom development may remain as secondary or implementation-specific paths, but they must not dominate the first viewport or CTA hierarchy. The paid entry product is `Audit webu s plánem` / `Website audit with a plan`, and the primary CTA starts a website conversation at `#terminal`.
 
@@ -19,7 +19,6 @@ Out of scope for the current architecture:
 
 - user accounts or authentication
 - payments
-- email notification delivery
 - autonomous agent execution
 - public exposure of private project inventory
 - remote mutation from the UI
@@ -32,15 +31,20 @@ In this project:
 - React islands for interactive UI
 - typed content and style matrix data
 - optional Three.js mascot runtime
-- Cloudflare Pages Function at `/api/leads`
+- Cloudflare Worker `radeq` serving production static assets for `radeq.cz`
+- Cloudflare Pages Function-compatible lead handler at `/api/leads`
+- Worker adapter at `worker/index.ts` routing `/api/leads` to the existing lead handler and all other requests to static assets
 - Cloudflare D1 schema and local integration gate
+- Cloudflare Email Sending Worker binding for fail-soft lead notifications to `poptavky@radeq.cz` on the GitHub branch; not active on the current Cloudflare production rollback
 - Playwright and Vitest verification
 
 External to this project:
 
 - Cloudflare account configuration and real production D1 database ID
+- Cloudflare Email Sending account/zone configuration and dashboard-level delivery logs
 - GitHub repository hosting and GitHub Pages deployment environment
-- future email notification provider
+- Fastmail human mailbox hosting for `siroky@radeq.cz`, `info@radeq.cz`, and `poptavky@radeq.cz`
+- future non-Cloudflare transactional email provider/backend, if the owner changes scope
 - future Autopilot dashboard or project inventory system
 
 ## Repository Boundary
@@ -68,6 +72,8 @@ Current mesh coverage:
 
 - primary offer positioning, first paid product, CTA hierarchy, and homepage conversion scope
 - static public site boundary
+- Czech static showcase examples for public-safe proof, rule-based chatbot boundaries, and inquiry-only offer/e-shop examples
+- domain email provider research boundary for forwarding, mailbox hosting, transactional mail, and form backend separation
 - lead capture and D1 data flow
 - optional 3D mascot add-on
 - SEO and performance surface
@@ -81,6 +87,7 @@ Static page shell:
 
 - `src/pages/index.astro` renders the Czech route.
 - `src/pages/en/index.astro` renders the English route.
+- `src/pages/ukazky/index.astro` and `src/pages/ukazky/[example].astro` render the Czech-first static showcase hub and detail pages for chatbot, automation, and offer/e-shop inquiry examples. The chatbot detail uses prepared decision-tree data and a local React island only for visible choice state; it is not a model-backed AI chat and does not submit data before explicit contact.
 - `src/pages/demo/[module].astro` renders Czech interactive demo pages. Demo routes are directly addressable compatibility/review surfaces and are not linked from the main homepage decision path. `/demo/service-landing/` remains a shop-only showcase for QA and direct review; `/demo/eshop-offers/`, blog/docs, and team-overview modules remain directly addressable compatibility routes until a separate URL migration removes or redirects them.
 - `src/pages/en/demo/[module].astro` renders the English equivalents.
 - `src/layouts/BaseLayout.astro` sets global metadata, canonical URLs, alternate links, Open Graph URL metadata, language, global CSS, `MotionOrchestrator`, and the route-level style-source boundary. Public homepage routes use fixed `variant-a`; demo routes opt into stored A/B/C/D style state.
@@ -100,7 +107,9 @@ Interactive islands:
 Lead API:
 
 - `functions/api/leads.ts` handles `POST /api/leads` and `OPTIONS`.
+- `worker/index.ts` adapts the same lead handler for the production Worker runtime and serves static assets through the Worker `ASSETS` binding.
 - `src/lib/leads.ts` owns payload creation, validation, field limits, context minimization, and lead IDs.
+- `src/lib/leadNotificationEmail.ts` owns the server-side email notification message sent after successful D1 storage when the GitHub branch is deployed with an `EMAIL` binding.
 - `migrations/0001_create_leads.sql` defines the D1 `leads` table and indexes.
 
 ## Data Flow
@@ -118,8 +127,17 @@ Visitor
   -> minimizeLeadContext()
   -> LEADS_DB.prepare(...).bind(...).run()
   -> D1 table `leads`
+  -> EMAIL.send(...) notification to poptavky@radeq.cz when the GitHub branch is deployed with an EMAIL binding
   -> manual export or future dashboard review
 ```
+
+Lead notification behavior:
+
+- Email is sent only after successful D1 storage.
+- The visitor-facing API response remains successful if the email notification fails.
+- Email failures are logged with lead ID, error code, and generic message only; customer details are not printed to runtime logs.
+- The notification uses `poptavky@radeq.cz` as sender and destination, with `replyTo` set to the visitor's submitted email.
+- Owner requested GitHub-only staging on 2026-06-12, so the current Cloudflare Worker production deployment was rolled back to version `747d1ab3-ff49-497b-8cb8-917c67d0153d` and does not currently run the notification code.
 
 Required lead fields:
 
@@ -145,8 +163,10 @@ GitHub:
 
 Cloudflare:
 
-- target platform is Cloudflare Pages
-- `wrangler.example.toml` defines `pages_build_output_dir = "./dist"`
+- production `https://radeq.cz` is served by Cloudflare Worker `radeq` with Workers static assets
+- Cloudflare Pages project `radeq-cz` remains available for Pages deployments and preview URLs
+- `wrangler.worker.example.toml` documents the Worker static-assets deployment shape with a placeholder D1 database ID
+- `wrangler.example.toml` remains a Pages-oriented template
 - D1 binding name is `LEADS_DB`
 - local runtime gate uses `npm run cf:pages:dev`
 
@@ -189,16 +209,26 @@ GitHub Pages path behavior:
 - GitHub Pages build uses base `/radeq`
 - Preview branch `codex/radeq-ab-c-preview` was temporarily allowed to deploy to the `github-pages` environment for draft PR preview `https://github.com/SirRadek/radeq/pull/2`.
 
-Cloudflare Pages path behavior:
+Cloudflare Worker production behavior:
 
 - production site is configured as `https://radeq.cz`
 - base path is `/`
+- `wrangler.toml` is ignored locally because it contains environment-specific production binding details
+- safe committed Worker config lives in `wrangler.worker.example.toml`
+- current Worker production rollback uses the previous `ASSETS` and `LEADS_DB` shape; the pushed GitHub branch additionally expects `EMAIL` when deployed
+
+Cloudflare Pages path behavior:
+
+- project name is `radeq-cz`
+- latest verified production Pages deployment during the 2026-06-12 deploy was `https://787534f2.radeq-cz.pages.dev`, but the apex route was controlled by Worker `radeq`
 
 ## Security And Privacy Controls
 
 - No secrets or real D1 database IDs belong in the repository.
+- `wrangler.toml` must remain untracked/ignored when it contains production binding IDs.
 - `wrangler.example.toml` is a template only.
 - D1 binding is required at runtime; missing binding returns a controlled setup error.
+- EMAIL binding is optional at code level so a missing or failing email binding cannot lose a stored lead when the notification branch is deployed.
 - API responses use JSON, `cache-control: no-store`, and CORS headers for POST/OPTIONS.
 - `public/_headers` defines security headers and immutable caching for hashed Astro assets.
 - Private original reference assets must not be shipped or sent to external models.
@@ -234,13 +264,14 @@ git diff --check
 
 ## Known Gaps And Risks
 
-- Cloudflare lead pipeline proof is local happy-path proof, not remote deployment proof.
+- Cloudflare lead API remote proof included a single synthetic production test lead submitted during the brief notification deployment on 2026-06-12: `lead_mqb2u5q6_b91abd77`. The Worker was then rolled back at owner request to keep the change GitHub-only for now.
+- Wrangler Email Sending beta `list` and `settings` commands returned Cloudflare API `Unauthorized [code: 2036]` under OAuth even though the Worker deploy accepted the `EMAIL` binding. Dashboard mailbox/log review remains the delivery confirmation path.
 - No official `@cloudflare/vitest-pool-workers` or Miniflare coverage exists yet.
 - Performance budget checks are not automated.
 - Automated accessibility checks for `ContactTerminal` and `StyleMatrixSimulator` are not yet expanded.
 - The `/autopilot` dashboard route and typed project inventory do not exist yet.
-- GitHub Pages workflow and Cloudflare Pages target coexist, so deployment target must be named explicitly in handoffs.
-- The business positioning lock is now reflected in the local product runtime, but it has not been deployed or pushed in this supervisor run.
+- GitHub Pages workflow, Cloudflare Pages project `radeq-cz`, and Cloudflare Worker `radeq` coexist, so deployment target must be named explicitly in handoffs.
+- The business positioning lock and `/ukazky` implementation are reflected in the production Worker runtime as of 2026-06-12.
 - The prior WordPress/WooCommerce repair niche from the addendum is explicitly not the selected primary direction after owner correction; complete websites are the selected direction.
 - A/B/C/D preview variants are now treated as internal review or portfolio-proof mechanisms unless the owner explicitly approves them as a public homepage control.
 

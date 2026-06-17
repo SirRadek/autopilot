@@ -59,3 +59,28 @@ edges:
     relation: diagnoses_optional_layer
     weight: 0.7
     why: "WebGL and 3D issues must remain optional-layer diagnostics and cannot block core content."
+  - from: public_showcase_examples
+    to: static_public_site
+    relation: extends
+    weight: 0.9
+    why: "The /ukazky pages extend the public static site and must remain SEO-readable without client-only primary content."
+  - from: public_showcase_examples
+    to: offer_positioning_conversion
+    relation: constrained_by
+    weight: 0.86
+    why: "Public examples can prove capability but must not replace the homepage's complete-website offer or CTA hierarchy."
+  - from: public_showcase_examples
+    to: seo_performance_surface
+    relation: requires
+    weight: 0.82
+    why: "The examples are public indexed pages and need canonical URLs, sitemap coverage, static copy, and mobile checks."
+  - from: public_showcase_examples
+    to: lead_capture_pipeline
+    relation: hands_off_to
+    weight: 0.72
+    why: "Showcase CTAs may point to the existing contact form but must not add hidden submission, prefill, or new lead API behavior."
+  - from: domain_email_research
+    to: lead_capture_pipeline
+    relation: enables_transactional_notification
+    weight: 0.78
+    why: "Lead notifications may use Cloudflare Email Sending into the Fastmail-hosted poptavky@radeq.cz mailbox, but storage and validation remain the primary form contract."
