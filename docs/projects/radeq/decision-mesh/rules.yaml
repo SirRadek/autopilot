@@ -135,5 +135,5 @@ rules:
     applies_to:
       - preview_publishing
       - static_public_site
-    instruction: "After every web implementation run, push the branch to GitHub and return a shareable preview URL in the process report. Acceptable targets: workers.dev subdomain via wrangler deploy --env preview, or Cloudflare Pages branch preview. Do not use the production radeq.cz domain as a preview target. If preview deployment fails, report the failure mode (see preview_publishing.yaml failure_modes) and the exact owner action required — do not silently omit the URL from the report."
+    instruction: "After every web implementation run, push the branch to GitHub and return a shareable preview URL in the process report. Use GitHub Pages as the standard mechanism: push triggers .github/workflows/preview-deploy.yml (withastro/action + deploy-pages), URL format is https://sirradek.github.io/radeq/?v=<short-commit>. Do not use radeq.cz as preview target. Do not use Cloudflare Workers/Pages preview (nežere Cloudflare limity). If preview deployment fails, report the failure mode from preview_publishing.yaml and the exact owner action required — do not silently omit the URL from the report. Prerequisite: repo Settings → Pages → Source must be 'GitHub Actions'."
     severity: major
