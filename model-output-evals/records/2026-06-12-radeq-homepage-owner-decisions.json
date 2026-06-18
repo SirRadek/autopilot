@@ -8,7 +8,7 @@
     "control_plane": false
   },
   "task": {
-    "task_type": "governance_update",
+    "task_type": "governance",
     "summary": "Record owner decisions that unblock the GitHub-only homepage trust, route-unification, and contact-form implementation plan.",
     "risk_level": "low"
   },
@@ -20,10 +20,16 @@
     "role": "governance recorder and implementation planner"
   },
   "reasoning_profile": {
-    "route": "decision_record_update",
+    "route": "subscription_interactive",
     "reasoning_effort": "medium",
     "change_policy": "Autopilot governance artifacts only. No Radeq product runtime, Cloudflare, DNS, mailbox, or D1 changes."
   },
+  "token_efficiency_profile": {
+    "mode": "relevant_subgraph",
+    "context_scope": "Homepage trust plan, work-log, and owner chat decisions only.",
+    "caveman_applied": false
+  },
+  "provider_best_practice_sources": ["openai-prompt-engineering"],
   "input_packet_summary": {
     "summary": "Owner confirmed real static public pages, no public phone, deferred personal photo, later Cloudflare Web Analytics, and Cloudflare deploy only after GitHub approval. Owner asked Codex to propose the final six contact-form options.",
     "allowed_context": [
@@ -36,27 +42,11 @@
       "production lead data",
       "Cloudflare mutation",
       "DNS mutation"
+    ],
+    "source_pointers": [
+      "docs/projects/radeq/work-log.md",
+      "docs/superpowers/plans/2026-06-12-radeq-homepage-trust-route-unification.md"
     ]
-  },
-  "accepted_decisions": {
-    "real_static_pages": [
-      "/kontakt/",
-      "/sluzby/",
-      "/portfolio/",
-      "/soukromi/"
-    ],
-    "contact_form_options": [
-      "Nový firemní web",
-      "Redesign staršího webu",
-      "Audit webu s plánem",
-      "Rychlá oprava webu",
-      "Webová péče a rozvoj",
-      "Nejsem si jistý, potřebuji poradit"
-    ],
-    "public_phone": false,
-    "personal_photo": "deferred_until_owner_asset",
-    "measurement_backend": "no_network_now_cloudflare_web_analytics_later",
-    "cloudflare_deploy": "blocked_until_github_approval_and_explicit_later_instruction"
   },
   "output_pointer": {
     "kind": "local_file",
@@ -86,12 +76,14 @@
     ],
     "rollback_path": "Revert this eval record and the corresponding plan/work-log update commit."
   },
+  "rerun_count": 0,
+  "accepted_state": "accepted",
   "verification_evidence": [
     {
-      "type": "local_review",
+      "type": "manual_review",
       "status": "passed",
       "evidence": "Owner decisions were applied to the plan and work-log without touching product runtime files.",
-      "source_pointer": "chat owner decisions on 2026-06-12"
+      "source_pointer": "docs/projects/radeq/work-log.md"
     }
   ],
   "source_pointers": [

@@ -39,21 +39,11 @@ objective:
   - URL includes ?v=<short-commit> for cache-busting and version identification.
   - Production deploy to radeq.cz requires explicit owner approval in a separate turn.
 failure_modes:
-  - id: PREV-FAIL-001
-    condition: push_rejected_or_no_remote
-    action: "Report push failure. Do not claim preview URL exists. Check branch protection rules and remote access."
-  - id: PREV-FAIL-002
-    condition: pages_source_not_set_to_workflow
-    action: "Owner must enable: GitHub repo → Settings → Pages → Source = 'GitHub Actions'. One-time setup. build_type must equal 'workflow'."
-  - id: PREV-FAIL-003
-    condition: base_path_wrong_assets_broken
-    action: "Build must use DEPLOY_TARGET=github-pages env var so astro.config.mjs sets base='/radeq'. Without this, all asset paths are broken (404 on CSS/JS). withastro/action workflow already sets this env var."
-  - id: PREV-FAIL-004
-    condition: deploy_job_failed_in_ci
-    action: "Link to the failed Actions run URL. Do not report a preview URL. Fix the build locally first (npm run build with DEPLOY_TARGET=github-pages), then re-push."
-  - id: PREV-FAIL-005
-    condition: d1_form_not_functional_in_preview
-    action: "Expected and documented. GitHub Pages serves only static files — D1/Cloudflare Worker is not available. Contact form submissions will fail. This is a visual preview only. Do not block deploy for this."
+  - "PREV-FAIL-001: push_rejected_or_no_remote — Report push failure. Do not claim preview URL exists. Check branch protection rules and remote access."
+  - "PREV-FAIL-002: pages_source_not_set_to_workflow — Owner must enable: GitHub repo → Settings → Pages → Source = 'GitHub Actions'. One-time setup. build_type must equal 'workflow'."
+  - "PREV-FAIL-003: base_path_wrong_assets_broken — Build must use DEPLOY_TARGET=github-pages env var so astro.config.mjs sets base='/radeq'. Without this, all asset paths are broken (404 on CSS/JS). withastro/action workflow already sets this env var."
+  - "PREV-FAIL-004: deploy_job_failed_in_ci — Link to the failed Actions run URL. Do not report a preview URL. Fix the build locally first (npm run build with DEPLOY_TARGET=github-pages), then re-push."
+  - "PREV-FAIL-005: d1_form_not_functional_in_preview — Expected and documented. GitHub Pages serves only static files — D1/Cloudflare Worker is not available. Contact form submissions will fail. This is a visual preview only. Do not block deploy for this."
 governance_note: >
   Owner has approved preview deploy to sirradek.github.io (GitHub Pages).
   This overwrites the current Pages deployment for the duration of review.

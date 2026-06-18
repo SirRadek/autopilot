@@ -8,7 +8,7 @@
     "control_plane": false
   },
   "task": {
-    "task_type": "deployment_control",
+    "task_type": "governance",
     "summary": "Evaluate owner-requested rollback of the latest Cloudflare Worker deployment so the lead notification branch remains GitHub-only for now.",
     "risk_level": "medium"
   },
@@ -24,6 +24,12 @@
     "reasoning_effort": "low",
     "change_policy": "Owner asked to keep the latest work only on GitHub to avoid unnecessary Cloudflare Free-plan usage. A Worker rollback was performed; product code stayed pushed on GitHub."
   },
+  "token_efficiency_profile": {
+    "mode": "relevant_subgraph",
+    "context_scope": "Work-log, architecture, and Cloudflare deployment history only.",
+    "caveman_applied": false
+  },
+  "provider_best_practice_sources": ["openai-prompt-engineering"],
   "input_packet_summary": {
     "summary": "Roll back the Cloudflare deployment of the lead notification branch while keeping commits on GitHub.",
     "allowed_context": [
@@ -39,14 +45,13 @@
       "additional production lead POST submissions"
     ],
     "source_pointers": [
-      "C:/Users/sirok/Documents/Projects/radeq",
       "docs/projects/radeq/work-log.md",
       "docs/projects/radeq/architecture.md"
     ]
   },
   "output_pointer": {
-    "kind": "deployment",
-    "pointer": "Cloudflare Worker radeq version 747d1ab3-ff49-497b-8cb8-917c67d0153d",
+    "kind": "work_log_entry",
+    "pointer": "docs/projects/radeq/work-log.md",
     "summary": "Live Worker was rolled back to the previous version; GitHub branch codex/radeq-ab-c-preview still contains commit 731231b."
   },
   "score_by_dimension": {
@@ -71,6 +76,8 @@
     ],
     "rollback_path": "Redeploy Radeq product commit 731231b or newer with the local production Wrangler configuration."
   },
+  "rerun_count": 0,
+  "accepted_state": "accepted",
   "verification_evidence": [
     {
       "type": "command",
@@ -88,7 +95,7 @@
       "type": "command",
       "status": "passed",
       "evidence": "Radeq and Autopilot git branches were clean before the rollback governance update; Radeq commit 731231b remained pushed to GitHub.",
-      "source_pointer": "C:/Users/sirok/Documents/Projects/radeq"
+      "source_pointer": "docs/projects/radeq/work-log.md"
     }
   ],
   "source_pointers": [

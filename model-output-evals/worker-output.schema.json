@@ -68,7 +68,7 @@
     },
     "worker_id": {
       "type": "string",
-      "enum": ["openai_gpt", "qwen_local"]
+      "enum": ["openai_gpt", "qwen_local", "codex_cli", "agy_cli"]
     },
     "created": {
       "type": "string",

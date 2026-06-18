@@ -210,6 +210,27 @@ export const layerProviderMapping = {
   copywriter: "openai_gpt"
 } as const satisfies Record<ModelPolicyLayer, ReasoningProviderId>;
 
+export type CliVendorSelection = "codex_cli" | "agy_cli" | null;
+
+// Maps each orchestration layer to the CLI vendor dispatched via runCliWorker().
+// null = Claude handles this layer directly (orchestrator, memory_summarizer).
+// codex_cli = bounded implementation/code/tests (OpenAI Codex CLI).
+// agy_cli   = analysis/brainstorming/critique (agy CLI).
+export const supervisorCliVendorMap = {
+  orchestrator: null,
+  architect: "agy_cli",
+  reviewer: "agy_cli",
+  tester: "codex_cli",
+  micro_worker: "codex_cli",
+  bounded_coding: "codex_cli",
+  memory_summarizer: null,
+  copywriter: "agy_cli"
+} as const satisfies Record<ModelPolicyLayer, CliVendorSelection>;
+
+export function resolveCliVendorForLayer(layer: ModelPolicyLayer): CliVendorSelection {
+  return supervisorCliVendorMap[layer];
+}
+
 export const reasoningEscalationPolicy = {
   defaultWorkerLayer: "local_swarm",
   strategicLayer: "frontier_reasoning",

@@ -79,6 +79,26 @@ Before sending work to Codex:
 4. Confirm `worker.lock` is absent or explicitly resolved.
 5. Provide only bounded, redacted context.
 
+## Worker CLI Delegation
+
+When delegating a bounded task to an external worker, call `runCliWorker()` from
+`src/data/delivery-system/cliWorker.ts`. Select the vendor by task type:
+
+- **`codex_cli`** — implementation, code, tests, bugfix, refactor (`bounded_coding`,
+  `micro_worker`, `tester` layers)
+- **`agy_cli`** — analysis, brainstorming, critique, architecture advisory (`architect`,
+  `reviewer`, `copywriter` layers)
+- **`null` (no CLI worker)** — orchestrator planning and memory summarization stay with
+  Claude directly
+
+Never instruct a Claude agent to produce output *as if* it were Codex or agy. A
+Claude-impersonating vendor creates unverified output with no worker lock, no evidence
+record, and no subagent trace — this is the `claude_agent_roleplay_as_vendor_worker`
+stop condition in the `supervisor_execution_loop` mesh node (rule WORKER-CLI-001).
+
+Use `resolveCliVendorForLayer(layer)` from `modelPolicy.ts` to look up the vendor
+programmatically when building a routing decision.
+
 ## Worker Output Review
 
 Worker output must validate against:

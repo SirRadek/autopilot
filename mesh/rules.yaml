@@ -226,3 +226,13 @@ rules:
       - three_d_experience_addon
     instruction: "Use 3D only when it improves product, process, data, or system understanding; keep SEO content in HTML and require performance, mobile, and reduced-motion fallbacks."
     severity: major
+  - id: WORKER-CLI-001
+    title: Worker CLI delegation requires runCliWorker
+    applies_to:
+      - supervisor_execution_loop
+      - subscription_worker_boundary
+    instruction: "Delegate bounded worker tasks by calling runCliWorker() with the correct vendor: codex_cli for implementation/code/tests, agy_cli for analysis/brainstorming. Never use a Claude agent to roleplay as a vendor worker. A Claude-impersonating vendor produces unverified output with no evidence record, no worker lock, and no subagent trace."
+    severity: blocker
+    must_not_assume:
+      - Do not assume Claude can act as codex_cli or agy_cli.
+      - Do not skip runCliWorker() for a vendor task because it is small or fast.

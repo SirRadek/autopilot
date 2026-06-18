@@ -45,6 +45,7 @@ export interface SubagentEvidenceArtifacts {
 
 export type LockStatus =
   | "acquired"
+  | "acquired_supervisor_spawn"
   | "already_locked"
   | "stale_replaced"
   | "missing_agent_id"

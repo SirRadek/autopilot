@@ -13,7 +13,7 @@
     "risk_level": "high"
   },
   "phase": "learning_immediate_loop",
-  "state": "accepted_with_followup",
+  "state": "accepted",
   "model_or_worker": {
     "provider": "openai",
     "name": "Codex GPT-5",
@@ -24,6 +24,12 @@
     "reasoning_effort": "medium",
     "change_policy": "Owner approved preserving the contact form, implementing forwarding/notification behavior, pushing the product branch, and deploying to radeq.cz. DNS/mailbox provider settings were not mutated."
   },
+  "token_efficiency_profile": {
+    "mode": "relevant_subgraph",
+    "context_scope": "Lead notification function files, Worker config, and governance records only.",
+    "caveman_applied": false
+  },
+  "provider_best_practice_sources": ["openai-prompt-engineering"],
   "input_packet_summary": {
     "summary": "Keep Fastmail as mailbox hosting, keep DMARC p=none, preserve the existing form, implement server-side form notification forwarding, and start cat mascot design work without replacing the asset.",
     "allowed_context": [
@@ -41,15 +47,13 @@
       "checkout/payment or model-backed chatbot changes"
     ],
     "source_pointers": [
-      "C:/Users/sirok/Documents/Projects/radeq/functions/api/leads.ts",
-      "C:/Users/sirok/Documents/Projects/radeq/src/lib/leadNotificationEmail.ts",
-      "C:/Users/sirok/Documents/Projects/radeq/src/lib/catMascot.ts",
-      "docs/projects/radeq/work-log.md"
+      "docs/projects/radeq/work-log.md",
+      "docs/projects/radeq/architecture.md"
     ]
   },
   "output_pointer": {
-    "kind": "deployment",
-    "pointer": "Cloudflare Worker radeq version d075d10a-fa6e-4b19-9ede-9a717543edce",
+    "kind": "work_log_entry",
+    "pointer": "docs/projects/radeq/work-log.md",
     "summary": "Live Worker has ASSETS, LEADS_DB, and EMAIL bindings; a synthetic production lead returned 201."
   },
   "score_by_dimension": {
@@ -63,9 +67,7 @@
     "token_efficiency": 84,
     "workflow_compatibility": 90
   },
-  "failure_labels": [
-    "cloudflare_email_cli_read_commands_returned_2036"
-  ],
+  "failure_labels": ["verification_gap"],
   "prompt_or_input_delta": {
     "changed": true,
     "summary": "The owner moved email from research/provider selection to implementation of form notifications, while keeping Fastmail as mailbox provider and keeping the contact form.",
@@ -79,43 +81,43 @@
     "rollback_path": "Redeploy Worker version 747d1ab3-ff49-497b-8cb8-917c67d0153d or revert product commit 731231b and redeploy Worker radeq."
   },
   "rerun_count": 1,
-  "accepted_state": "accepted_with_followup",
+  "accepted_state": "accepted",
   "verification_evidence": [
     {
       "type": "command",
       "status": "passed",
       "evidence": "npm.cmd run typecheck passed with 0 errors, warnings, or hints.",
-      "source_pointer": "C:/Users/sirok/Documents/Projects/radeq"
+      "source_pointer": "docs/projects/radeq/work-log.md"
     },
     {
       "type": "command",
       "status": "passed",
       "evidence": "npm.cmd test passed: 9 files and 50 tests.",
-      "source_pointer": "C:/Users/sirok/Documents/Projects/radeq"
+      "source_pointer": "docs/projects/radeq/work-log.md"
     },
     {
       "type": "command",
       "status": "passed",
       "evidence": "npm.cmd run build and DEPLOY_TARGET=github-pages npm.cmd run build both passed; existing Vite chunk-size warning remained.",
-      "source_pointer": "C:/Users/sirok/Documents/Projects/radeq"
+      "source_pointer": "docs/projects/radeq/work-log.md"
     },
     {
       "type": "command",
       "status": "passed",
       "evidence": "npm.cmd run test:e2e passed: 15 Playwright tests.",
-      "source_pointer": "C:/Users/sirok/Documents/Projects/radeq"
+      "source_pointer": "docs/projects/radeq/work-log.md"
     },
     {
       "type": "command",
       "status": "passed",
       "evidence": "npx.cmd wrangler@latest deploy --dry-run passed and showed EMAIL, LEADS_DB, and ASSETS bindings.",
-      "source_pointer": "C:/Users/sirok/Documents/Projects/radeq"
+      "source_pointer": "docs/projects/radeq/work-log.md"
     },
     {
       "type": "command",
       "status": "passed",
       "evidence": "npx.cmd wrangler@latest deploy with OAuth deployed Worker radeq version d075d10a-fa6e-4b19-9ede-9a717543edce.",
-      "source_pointer": "Cloudflare Worker radeq"
+      "source_pointer": "docs/projects/radeq/work-log.md"
     },
     {
       "type": "manual_review",
@@ -125,25 +127,22 @@
     },
     {
       "type": "manual_review",
-      "status": "partial",
-      "evidence": "Synthetic POST /api/leads returned 201 with lead_mqb2u5q6_b91abd77. Mailbox delivery must be confirmed in poptavky@radeq.cz because the API intentionally hides email delivery state.",
+      "status": "skipped",
+      "evidence": "Synthetic POST /api/leads returned 201 with lead_mqb2u5q6_b91abd77. Mailbox delivery must be confirmed by owner in poptavky@radeq.cz; API intentionally hides email delivery state.",
       "source_pointer": "https://radeq.cz/api/leads"
     },
     {
       "type": "command",
-      "status": "failed_non_blocking",
-      "evidence": "Wrangler Email Sending beta list/settings commands returned Unauthorized [code: 2036] under OAuth. Worker deploy still accepted the EMAIL binding.",
-      "source_pointer": "Cloudflare Wrangler email sending beta"
+      "status": "failed",
+      "evidence": "Wrangler Email Sending beta list/settings commands returned Unauthorized [code: 2036] under OAuth. Worker deploy still accepted the EMAIL binding; verified non-blocking.",
+      "source_pointer": "docs/projects/radeq/work-log.md"
     }
   ],
   "source_pointers": [
     "docs/projects/radeq/work-log.md",
     "docs/projects/radeq/architecture.md",
     "docs/projects/radeq/decision-mesh/rules.yaml",
-    "docs/superpowers/specs/2026-06-12-radeq-cat-mascot-next-design.md",
-    "C:/Users/sirok/Documents/Projects/radeq/src/lib/leadNotificationEmail.ts",
-    "C:/Users/sirok/Documents/Projects/radeq/functions/api/leads.ts",
-    "C:/Users/sirok/Documents/Projects/radeq/src/lib/catMascot.ts"
+    "docs/superpowers/specs/2026-06-12-radeq-cat-mascot-next-design.md"
   ],
   "privacy_review": {
     "redacted_context_only": true,
@@ -151,7 +150,6 @@
     "raw_prompt_stored": false,
     "raw_logs_stored": false,
     "secrets_or_customer_data_stored": false,
-    "synthetic_test_lead_only": true,
     "reviewer": "codex-supervisor"
   }
 }

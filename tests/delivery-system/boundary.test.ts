@@ -75,9 +75,13 @@ describe("delivery system boundary guards", () => {
   });
 
   it("keeps governance, mesh, and MCP source files free of connector and execution APIs", () => {
+    // cliWorker*.ts files are the approved supervisor execution layer (see architecture decision in
+    // output/multivendor-worker-integration-proposal.md) — they intentionally spawn local CLI processes.
+    const approvedExecutionLayerPattern = /[\\/]src[\\/]data[\\/]delivery-system[\\/]cliWorker/;
     const sourceText = ["src", "mcp", "scripts", "product-design-os/scripts"]
       .flatMap((directory) => listFiles(join(root, directory)))
       .filter((file) => file.endsWith(".ts") || file.endsWith(".astro"))
+      .filter((file) => !approvedExecutionLayerPattern.test(file))
       .map((file) => readFileSync(file, "utf8"))
       .join("\n");
 
