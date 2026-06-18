@@ -1,0 +1,52 @@
+id: preview_publishing
+type: delivery_gate
+name: Preview publishing
+question: "Does this implementation run produce a shareable preview URL before owner review?"
+why: "Every web implementation run must produce a link visible from anywhere — not just local screenshots — so the owner can review the full page on any device before approving a production deploy."
+signals:
+  - preview
+  - deploy
+  - staging
+  - branch deploy
+  - review link
+  - workers.dev
+  - pages.dev
+related_agents:
+  - worker
+  - supervisor
+related_files:
+  - .github/workflows/preview-deploy.yml
+  - wrangler.toml
+required_checks:
+  - branch_pushed_to_github
+  - preview_url_returned_in_process_report
+  - preview_url_not_production_domain
+  - no_production_deploy_without_owner_approval
+stop_conditions:
+  - preview_url_missing_from_process_report
+  - production_domain_used_as_preview
+  - d1_production_db_bound_to_preview_without_owner_approval
+objective:
+  - Every implementation run on a web project returns a shareable preview URL.
+  - Preview targets non-production Workers env or Cloudflare Pages branch preview.
+  - Production deploy requires explicit owner approval in the same turn or a later session.
+failure_modes:
+  - id: PREV-FAIL-001
+    condition: push_rejected_or_no_remote
+    action: "Report push failure. Do not claim preview URL exists. Owner must check remote access and branch protection rules."
+  - id: PREV-FAIL-002
+    condition: github_actions_missing_secrets
+    action: "Workflow exists but secrets (CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_ACCOUNT_SUBDOMAIN) are not set. Report exact secret names. Owner must add them in GitHub repo Settings → Secrets → Actions."
+  - id: PREV-FAIL-003
+    condition: preview_build_failed_in_ci
+    action: "Link to the failed Actions run. Do not report a preview URL. Fix the build locally first, then re-push."
+  - id: PREV-FAIL-004
+    condition: preview_url_not_resolvable
+    action: "Workers preview deploy may take 30–60 s to propagate. Report the expected URL and note propagation delay. If still unavailable after 5 min, check Cloudflare dashboard for deploy errors."
+  - id: PREV-FAIL-005
+    condition: d1_form_not_functional_in_preview
+    action: "Expected and documented. D1 (LEADS_DB) is not bound to the preview environment — form submissions fail gracefully. Owner acknowledges this is a visual preview only. Do not block deploy for this."
+governance_note: >
+  Owner has approved preview deploy to non-production environment (workers.dev subdomain).
+  Production deploy to radeq.cz requires a separate explicit owner approval turn.
+  This node does not override RAD-DEPLOY-001; it adds a mandatory pre-approval step.

@@ -84,3 +84,18 @@ edges:
     relation: enables_transactional_notification
     weight: 0.78
     why: "Lead notifications may use Cloudflare Email Sending into the Fastmail-hosted poptavky@radeq.cz mailbox, but storage and validation remain the primary form contract."
+  - from: preview_publishing
+    to: static_public_site
+    relation: gates_owner_review
+    weight: 0.95
+    why: "Every implementation run on the public site must produce a shareable preview URL before owner review. Preview is a required delivery gate, not optional documentation."
+  - from: preview_publishing
+    to: lead_capture_pipeline
+    relation: does_not_include
+    weight: 0.70
+    why: "Preview environment does not bind D1 or email — form submissions fail gracefully in preview. This is expected and does not block the preview gate."
+  - from: preview_publishing
+    to: runtime_observability_boundary
+    relation: precedes
+    weight: 0.80
+    why: "Preview URL enables owner and QA to observe the real rendered site on any device before production deploy — a prerequisite for meaningful runtime observation."

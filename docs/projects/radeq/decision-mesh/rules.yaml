@@ -130,3 +130,10 @@ rules:
       - runtime_observability_boundary
     instruction: "Stage Radeq website changes through GitHub branches and PR review first. Do not deploy Cloudflare Worker radeq, Cloudflare Pages radeq-cz, or production-domain changes without explicit owner approval in the current turn."
     severity: blocker
+  - id: RAD-PREVIEW-001
+    title: Every implementation run produces a shareable preview URL
+    applies_to:
+      - preview_publishing
+      - static_public_site
+    instruction: "After every web implementation run, push the branch to GitHub and return a shareable preview URL in the process report. Acceptable targets: workers.dev subdomain via wrangler deploy --env preview, or Cloudflare Pages branch preview. Do not use the production radeq.cz domain as a preview target. If preview deployment fails, report the failure mode (see preview_publishing.yaml failure_modes) and the exact owner action required — do not silently omit the URL from the report."
+    severity: major
