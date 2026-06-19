@@ -22,6 +22,15 @@ from [`mcp_config.example.json`](mcp_config.example.json):
 
 Then start a fresh `agy` session and confirm the server loads before trusting it.
 
+### Verified working (2026-06-19)
+
+After applying the above, `agy` registers the `context7` MCP server with tools
+`resolve-library-id` and `query-docs`. **Call them by their bare names** —
+`resolve-library-id`, `query-docs` — not namespaced variants; the namespaced form is
+what previously failed. Verified end-to-end: Next.js → `/vercel/next.js` →
+`query-docs revalidateTag` returned the current signature with a source URL. Treat the
+result as advisory until cross-checked against official docs for load-bearing claims.
+
 ### Pinned local alternative (stronger supply-chain posture)
 
 ```jsonc
