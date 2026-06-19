@@ -53,10 +53,31 @@ added, it goes through `@/lib/advisory-boundary`. Design hardened by a 3-vendor 
 - **Privacy.** Only the durable `prompt_path` and routing metadata are recorded — never the
   raw prompt.
 
-Follow-ups surfaced by the review (not in this PR): a credential-owning `execute`
-wrapper that makes isolation enforced rather than conventional; budget *reservation* for
-concurrent workers; HITL routing for blocked/low-confidence consults; and admin-friendly
-event labels/Payload rendering.
+### Enforced choke point (`src/server/advisory/executor.ts`)
+
+The first review follow-up, itself run through a Codex + Gemini opponent pass (Codex:
+"build the enforced choke point, not a platform"; Gemini: "don't build a reservation
+table / admin UI for code that doesn't run yet"). Opus took the intersection — the
+enforcement foundation that is *not* speculative:
+
+- **One server-only choke point.** `runAdvisoryConsultation(port, request)` is the only
+  place a model is invoked; the model client + credentials live only in
+  `src/server/advisory/**`. A model SDK import or a model `*_API_KEY` access anywhere else
+  fails `tests/advisory-isolation-guard` (model keys only — ClientOps' own
+  `MESH_SERVICE_TOKEN` / `WORKFLOW_MUTATION_TOKEN` are not matched). The model is injected
+  as an `AdvisoryModelPort` — no real provider/credentials yet.
+- **Opaque result + decision contract.** The executor returns a phantom-branded
+  `AdvisoryResult` (`@/lib/advisory-result`). Canonical mutators call `assertNotAdvisory`
+  and accept only an explicit `CanonicalDecision { decision_event_id, decided_by,
+  source_advisory_id, canonical_patch }` — the decision event is the single conversion
+  point from advisory to canonical state.
+- It orchestrates the boundary: `prepare` gate (no model call if blocked) → port →
+  `recordAdvisoryOutcome`, emitting the paired prepared/completed events.
+
+**Deferred** (Gemini — premature without a model call site): Postgres `budget_reservations`
+(`SELECT … FOR UPDATE`) for concurrent workers; a Payload `advisory-consults` collection +
+admin "control center"; HITL draft-publish UX for applying advisory content. These land
+with the first real provider integration.
 
 ## Rules
 
