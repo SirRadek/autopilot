@@ -29,3 +29,27 @@ target and a capacity traffic light per provider; lane recommendation in
   budget is a late-stage gate only.
 
 The `*.example.*` files are committed templates; live ledgers are git-ignored.
+
+## `.agent/skills-core/` + `.agent/adapters/` — vendor-neutral skills
+
+A skill's **process** (when to use, required steps, never-do, output contract) lives once
+in `skills-core/<skill>/SKILL.md` + `contract.json`; each provider gets only a **thin
+adapter** (`adapters/<vendor>/<skill>.md` + `<skill>.manifest.json`) that maps the steps
+to that provider's tools — no policy of its own.
+
+`npm run skills:validate` (`scripts/validate-skills.ts`, also covered by `npm test`)
+enforces no drift: adapter `skill_id`/`core_version` must match, every `required_steps`
+must be mapped, every `forbidden_actions` must be preserved, and an adapter may not
+restate governance language (`source of truth`, `stop condition`, ALL-CAPS `MUST`/`NEVER`).
+Skills: `safe-refactor`, `repo-review` with `codex` / `claude` / `antigravity` adapters.
+
+## `.agent/lessons/` — issue-ledger memory
+
+`issues.jsonl` is a curated, redacted issue store (`@/lib/issue-ledger`); `npm run
+lessons:digest` aggregates it by failure category.
+
+## `.agent/antigravity/` — Context7 wiring for the Gemini lane
+
+A reviewable template + owner-apply instructions for adding Context7 to the owner's global
+`~/.gemini/config/mcp_config.json` (outside this repo). See
+[`.agent/antigravity/README.md`](antigravity/README.md).

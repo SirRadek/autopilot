@@ -12,7 +12,8 @@
     "test": "node --import tsx --test tests/*.test.ts",
     "seed": "tsx scripts/seed.ts",
     "usage:dashboard": "tsx scripts/usage-dashboard.ts",
-    "lessons:digest": "tsx scripts/lessons-digest.ts"
+    "lessons:digest": "tsx scripts/lessons-digest.ts",
+    "skills:validate": "tsx scripts/validate-skills.ts"
   },
   "dependencies": {
     "@payloadcms/db-postgres": "3.85.1",

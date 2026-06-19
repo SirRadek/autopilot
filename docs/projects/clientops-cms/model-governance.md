@@ -37,8 +37,13 @@ curated issue store committed, live ledgers git-ignored). See `.agent/README.md`
 - All model output stays **advisory** until local code, tests, or a human decision adopts
   it (ClientOps core rule).
 
-## Follow-ups (staged)
+## Agent skills & Context7
 
-- Vendor-neutral skills + `skills:validate` drift check.
-- Context7 wiring for the Gemini lane (already applied to the owner's global Antigravity
-  config; repo template to follow).
+- Vendor-neutral skills + thin per-vendor adapters under `.agent/skills-core/` +
+  `.agent/adapters/`, with a drift check (`npm run skills:validate`,
+  `scripts/validate-skills.ts`; also run by `npm test`). Skills: `safe-refactor`,
+  `repo-review`.
+- Context7 wiring for the Gemini lane: reviewable template + owner-apply instructions in
+  `.agent/antigravity/` (the global `~/.gemini` config is an owner step; already applied).
+
+The control-plane learning loop is now fully migrated to ClientOps.
