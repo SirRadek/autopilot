@@ -1,0 +1,23 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["skill_id", "files_reviewed", "findings"],
+  "properties": {
+    "skill_id": { "type": "string" },
+    "files_reviewed": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["severity", "confidence", "summary"],
+        "properties": {
+          "severity": { "type": "string", "enum": ["blocker", "major", "minor", "nit"] },
+          "confidence": { "type": "string", "enum": ["high", "medium", "low"] },
+          "summary": { "type": "string" }
+        }
+      }
+    },
+    "approved": { "type": "boolean" }
+  }
+}
