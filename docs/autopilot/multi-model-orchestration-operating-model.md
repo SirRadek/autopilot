@@ -197,6 +197,14 @@ committed templates under [`.agent/usage/`](../../.agent/usage/); tests in
 `tests/delivery-system/usage-ledger.test.ts`. `remaining_pct` is a 0..1 fraction;
 unmetered surfaces classify as `yellow` (never a fabricated green).
 
+The dashboard is rendered by
+[`scripts/usage-dashboard.ts`](../../scripts/usage-dashboard.ts) (`npm run
+usage:dashboard`, `--format json|markdown`, `--project`, `--phase`): it shows
+**work-share vs target** and the **capacity traffic light** per provider — two numbers
+kept deliberately separate — plus rebalance corrections (within-fit only) and
+red-capacity warnings. Falls back to the committed `*.example.*` templates when no live
+ledger exists.
+
 **Degradation states** (a missing lane is never silent): `ready`,
 `provider_unavailable`, `quota_unknown`, `quota_exhausted`, `blocked_owner`. The
 orchestrator records the state; it does not fabricate a result for an absent lane

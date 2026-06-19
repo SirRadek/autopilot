@@ -19,6 +19,7 @@
     "pdos:reader:document": "tsx product-design-os/reader/document-reader-adapter.ts",
     "pdos:library:projects": "tsx product-design-os/scripts/update-project-library.ts",
     "prompt:validate": "tsx scripts/validate-prompt-library.ts",
+    "usage:dashboard": "tsx scripts/usage-dashboard.ts",
     "mesh:generate": "tsx scripts/generate-decision-mesh.ts",
     "mesh:check": "tsx scripts/generate-decision-mesh.ts --check",
     "mcp:mesh": "tsx mcp/server.ts",
