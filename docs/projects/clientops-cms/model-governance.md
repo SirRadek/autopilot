@@ -29,21 +29,34 @@ curated issue store committed, live ledgers git-ignored). See `.agent/README.md`
 ## Runtime wiring — the advisory boundary
 
 ClientOps has no advisory-model call site yet (the runtime is deterministic). When one is
-added, it must go through **one sanctioned boundary**, `prepareAdvisoryConsultation`
-(`@/lib/advisory-boundary`), which expresses the governance in ClientOps' own vocabulary:
+added, it goes through `@/lib/advisory-boundary`. Design hardened by a 3-vendor review
+(Opus + Codex + Gemini), which flagged two real issues in the first draft.
 
-- **Guard + budget gate.** Runs `validateAgentDispatchPacket` (never an empty/lost prompt)
-  and `classifyBudgetState`; a red budget blocks unless `allow_red_budget` is set.
-- **Isolation.** Returns `advisory_only: true`, a redacted `UsageLedgerEntry`, and an
-  `audit` record — it never mutates canonical state and never returns a decision; the
-  caller executes the model and decides.
-- **Audit trail.** The `audit` is a structural subset of `AppendWorkflowEventInput` with
-  `eventType: 'advisory_model_consulted'` (added to `workflowEventTypes`, so the Payload
-  `workflow-events` select auto-includes it), `actorType: 'mesh'`, ClientOps
-  `correlationId` / `idempotencyKey` / `projectSlug`. Pass it straight to
-  `appendWorkflowEvent`.
+- **Policy primitive, not a hard boundary (honest framing).** `prepareAdvisoryConsultation`
+  is pure — it *cannot* stop a caller from executing a model or writing canonical state.
+  Real isolation also requires the model client + credentials to live only behind a
+  sanctioned executor (a follow-up). What it guarantees is a guarded, budget-gated
+  decision plus honest evidence.
+- **Guard + budget gate.** `validateAgentDispatchPacket` (never an empty/lost prompt) +
+  `classifyBudgetState`; a red budget blocks unless `allow_red_budget` is set.
+- **Two-phase audit (the key fix).** A prepared event is not a model call. The boundary
+  emits `advisory_consult_prepared`; after the caller runs the model it MUST emit the
+  paired `advisory_consult_completed` via `recordAdvisoryOutcome` with the **actual**
+  tokens, latency, provider txn id, and remaining budget — reconciling the pre-flight
+  estimate with reality. Both event types are in `workflowEventTypes` (auto-propagated to
+  the Payload `workflow-events` select); `actorType: 'mesh'` with `initiated_by` in the
+  payload so accountability is not laundered.
+- **Deterministic dedupe.** `consultation_key` is a hash over the durable inputs
+  (correlationId, dispatch_id, lane, provider, model, task_type, prompt_path) and links the
+  prepared and completed events; idempotency keys are `advisory:prepared:<key>` /
+  `advisory:completed:<key>`.
 - **Privacy.** Only the durable `prompt_path` and routing metadata are recorded — never the
   raw prompt.
+
+Follow-ups surfaced by the review (not in this PR): a credential-owning `execute`
+wrapper that makes isolation enforced rather than conventional; budget *reservation* for
+concurrent workers; HITL routing for blocked/low-confidence consults; and admin-friendly
+event labels/Payload rendering.
 
 ## Rules
 
