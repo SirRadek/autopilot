@@ -21,9 +21,29 @@ into the active ClientOps structure per `archive/README.md`.
 | `@/lib/failure-taxonomy` | fixed failure category set (`failure_tags`) |
 | `@/lib/issue-ledger` | redacted issue entry + `lesson_learned` + validator |
 | `@/lib/lessons-digest` | normalizes lessons into a routable digest, aggregated `by_category` (`npm run lessons:digest`) |
+| `@/lib/advisory-boundary` | the wired entry point: guards + budget-gates an advisory consult and emits a workflow event |
 
 Evidence lives under `.agent/usage/` and `.agent/lessons/` (redacted; templates and the
 curated issue store committed, live ledgers git-ignored). See `.agent/README.md`.
+
+## Runtime wiring — the advisory boundary
+
+ClientOps has no advisory-model call site yet (the runtime is deterministic). When one is
+added, it must go through **one sanctioned boundary**, `prepareAdvisoryConsultation`
+(`@/lib/advisory-boundary`), which expresses the governance in ClientOps' own vocabulary:
+
+- **Guard + budget gate.** Runs `validateAgentDispatchPacket` (never an empty/lost prompt)
+  and `classifyBudgetState`; a red budget blocks unless `allow_red_budget` is set.
+- **Isolation.** Returns `advisory_only: true`, a redacted `UsageLedgerEntry`, and an
+  `audit` record — it never mutates canonical state and never returns a decision; the
+  caller executes the model and decides.
+- **Audit trail.** The `audit` is a structural subset of `AppendWorkflowEventInput` with
+  `eventType: 'advisory_model_consulted'` (added to `workflowEventTypes`, so the Payload
+  `workflow-events` select auto-includes it), `actorType: 'mesh'`, ClientOps
+  `correlationId` / `idempotencyKey` / `projectSlug`. Pass it straight to
+  `appendWorkflowEvent`.
+- **Privacy.** Only the durable `prompt_path` and routing metadata are recorded — never the
+  raw prompt.
 
 ## Rules
 
@@ -46,4 +66,5 @@ curated issue store committed, live ledgers git-ignored). See `.agent/README.md`
 - Context7 wiring for the Gemini lane: reviewable template + owner-apply instructions in
   `.agent/antigravity/` (the global `~/.gemini` config is an owner step; already applied).
 
-The control-plane learning loop is now fully migrated to ClientOps.
+The control-plane learning loop is fully migrated to ClientOps and wired to the workflow
+event model through the advisory boundary.

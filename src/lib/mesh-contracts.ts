@@ -18,6 +18,7 @@ export const workflowEventTypes = [
   'task_blocked',
   'manual_override_applied',
   'mesh_policy_checked',
+  'advisory_model_consulted',
   'opportunity_import_run_started',
   'opportunity_imported',
   'opportunity_duplicate_skipped',
