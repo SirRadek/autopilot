@@ -277,7 +277,7 @@ the single most important thing to close before "autopilot" can claim it *learns
 
 | # | Finding | Severity | Evidence |
 |---|---|---|---|
-| G1 | Taste memory written but never read by the scorer (open loop) | **High** | `score-product-design-os.ts:206` `inferTasteMatch` ignores `taste/*.json` |
+| G1 | ~~Taste memory written but never read by the scorer (open loop)~~ **RESOLVED 2026-06-19** — `inferTasteMatch` now reads `style_tags` from `taste/global-liked.json` / `global-disliked.json`; flip test proves it. | ~~High~~ done | `score-product-design-os.ts` `loadTasteMemory` + `tests/delivery-system/product-design-os-taste.test.ts` |
 | G2 | Decision/Issue ledgers have schema + validators but **no data store** | **High** | no JSON/JSONL ledger files in repo; `ledgers.ts` is types only |
 | G3 | No automated eval execution; `evals` only checked for file existence | **Medium** | `validate-prompt-library.ts › validateEvals` |
 | G4 | Routing weights are static; no learning from outcomes | **Medium** | `query.ts › scoreNode` constants |
@@ -292,10 +292,12 @@ the single most important thing to close before "autopilot" can claim it *learns
 These respect the existing "read-only first, deterministic, no parallel runtime"
 posture. Each is additive and reversible.
 
-1. **Close the taste loop (G1).** Make `score-product-design-os.ts` read
-   `pattern-scores.json` and `global-liked/disliked.json` as a bounded prior into
-   `taste_match` (clamped, with the static heuristic as fallback). Pure function,
-   fully testable, no runtime. *Highest leverage, smallest change.*
+1. ~~**Close the taste loop (G1).**~~ **DONE 2026-06-19.** `score-product-design-os.ts`
+   now derives `taste_match` from `style_tags` in `global-liked/disliked.json` via
+   `loadTasteMemory` (bounded membership, `DEFAULT_TASTE_MEMORY` fallback = no
+   regression). The flip test (swap the memory → ranking flips) proves the loop is
+   closed. *Was the highest-leverage, smallest change — all three vendor lanes put it
+   first.*
 2. **Give ledgers a store (G2).** Add `docs/projects/<slug>/ledgers/decisions.jsonl`
    and `issues.jsonl` with the existing validators wired into `npm run verify`.
    Storage only — still human-written.

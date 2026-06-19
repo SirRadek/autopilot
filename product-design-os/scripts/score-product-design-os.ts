@@ -53,11 +53,29 @@ export interface PdosAssetCandidate {
   readonly template_risk: number;
 }
 
+/**
+ * Style preferences read from the taste memory (`taste/global-liked.json`,
+ * `taste/global-disliked.json`). Closing mesh-map gap G1: `taste_match` is now derived
+ * from this memory instead of hard-coded keyword lists, so editing the taste files
+ * actually changes scoring.
+ */
+export interface PdosTasteMemory {
+  readonly likedStyles: ReadonlySet<string>;
+  readonly dislikedStyles: ReadonlySet<string>;
+}
+
+/** Fallback used when the taste files are missing or carry no style tags (no regression). */
+export const DEFAULT_TASTE_MEMORY: PdosTasteMemory = {
+  likedStyles: new Set(["editorial", "playful", "motion", "creative"]),
+  dislikedStyles: new Set(["generic", "saas-gradient", "dark-neon"])
+};
+
 export interface PdosScoreInput extends PdosIntakeInput {
   readonly route?: PdosIntakeRoute;
   readonly recipes?: readonly PdosRecipeCandidate[];
   readonly patterns?: readonly PdosPatternCandidate[];
   readonly assets?: readonly PdosAssetCandidate[];
+  readonly tasteMemory?: PdosTasteMemory;
   readonly limit?: number;
 }
 
@@ -95,11 +113,12 @@ export function scoreProductDesignOs(input: PdosScoreInput | string, repoRoot = 
   const recipes = normalizedInput.recipes ?? loadRecipes(repoRoot);
   const patterns = normalizedInput.patterns ?? loadPatternManifest(repoRoot);
   const assets = normalizedInput.assets ?? loadAssetManifest(repoRoot);
+  const tasteMemory = normalizedInput.tasteMemory ?? loadTasteMemory(repoRoot);
   const limit = clampLimit(normalizedInput.limit);
 
   const scoredRecipes = rankItems(recipes.map((recipe) => scoreRecipe(recipe, route)));
   const scoredPatterns = rankItems(patterns.map((pattern) => scorePattern(pattern, route, scoredRecipes)));
-  const scoredAssets = rankItems(assets.map((asset) => scoreAsset(asset, route, scoredRecipes)));
+  const scoredAssets = rankItems(assets.map((asset) => scoreAsset(asset, route, scoredRecipes, tasteMemory)));
   const warnings = [
     ...(patterns.length === 0 ? ["pattern_manifest_empty"] : []),
     ...(assets.length === 0 ? ["asset_manifest_empty"] : [])
@@ -196,14 +215,15 @@ function scorePattern(
 function scoreAsset(
   asset: PdosAssetCandidate,
   route: PdosIntakeRoute,
-  scoredRecipes: readonly PdosScoredItem[]
+  scoredRecipes: readonly PdosScoredItem[],
+  tasteMemory: PdosTasteMemory
 ): PdosScoredItem {
   const topRecipeId = scoredRecipes[0]?.id ?? route.selected_recipe;
   const purposeFit = asset.use_case.includes(route.project_type) ? 10 : 3;
   const targetFit = route.design_priority >= 7 ? asset.creativity : asset.trust;
   const logicFit = route.logic_priority >= 7 && asset.type === "layout" ? 8 : 5;
   const usability = route.design_priority >= 7 ? Math.max(asset.creativity, asset.trust) : asset.trust;
-  const tasteMatch = inferTasteMatch(asset, route);
+  const tasteMatch = inferTasteMatch(asset, route, tasteMemory);
   const accessibility = asset.mobile_safe ? 8 : 3;
   const mobileFit = asset.mobile_safe ? 10 : 2;
   const styleConflict = inferStyleConflict(asset, route);
@@ -251,13 +271,13 @@ function distanceFit(candidate: number, target: number): number {
   return Math.max(0, 10 - Math.abs(candidate - target));
 }
 
-function inferTasteMatch(asset: PdosAssetCandidate, route: PdosIntakeRoute): number {
-  const creative = asset.style.some((style) => ["editorial", "playful", "motion", "creative"].includes(style));
-  const generic = asset.style.some((style) => ["generic", "saas-gradient", "dark-neon"].includes(style));
-  if (generic) {
+function inferTasteMatch(asset: PdosAssetCandidate, route: PdosIntakeRoute, taste: PdosTasteMemory): number {
+  const disliked = asset.style.some((style) => taste.dislikedStyles.has(style));
+  if (disliked) {
     return 1;
   }
-  if (route.design_priority >= 7 && creative) {
+  const liked = asset.style.some((style) => taste.likedStyles.has(style));
+  if (route.design_priority >= 7 && liked) {
     return 9;
   }
   return 6;
@@ -355,6 +375,34 @@ function loadAssetManifest(repoRoot: string): readonly PdosAssetCandidate[] {
     return [];
   }
   return manifest.assets.filter(isAssetCandidate);
+}
+
+function loadTasteMemory(repoRoot: string): PdosTasteMemory {
+  const tasteRoot = join(repoRoot, "product-design-os", "taste");
+  const liked = readStyleTags(join(tasteRoot, "global-liked.json"));
+  const disliked = readStyleTags(join(tasteRoot, "global-disliked.json"));
+  return {
+    likedStyles: liked.size > 0 ? liked : DEFAULT_TASTE_MEMORY.likedStyles,
+    dislikedStyles: disliked.size > 0 ? disliked : DEFAULT_TASTE_MEMORY.dislikedStyles
+  };
+}
+
+function readStyleTags(file: string): Set<string> {
+  const value = readJson(file);
+  const tags = new Set<string>();
+  if (!isRecord(value) || !Array.isArray(value.items)) {
+    return tags;
+  }
+  for (const item of value.items) {
+    if (isRecord(item) && Array.isArray(item.style_tags)) {
+      for (const tag of item.style_tags) {
+        if (typeof tag === "string" && tag.length > 0) {
+          tags.add(tag);
+        }
+      }
+    }
+  }
+  return tags;
 }
 
 function readJson(file: string): unknown {
