@@ -9,6 +9,11 @@ dist/
 output/document-reader/
 output/playwright/
 test-results/
+
+# live cross-vendor evidence (keep committed *.example.* templates only)
+.agent/usage/usage-ledger.jsonl
+.agent/usage/provider-budget.json
+.agent/outputs/
 docs/autopilot/reference/private-*
 .wrangler/
 .mf/
