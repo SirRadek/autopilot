@@ -73,7 +73,7 @@ export function validatePromptLibrary(repoRoot = process.cwd()): PromptLibraryVa
 
     validateSources(frontmatter, sourceIds, file, repoRoot, errors);
     validateEvals(frontmatter, promptRoot, relativePromptPath, file, repoRoot, errors);
-    validateCandidateStatus(frontmatter, file, repoRoot, errors);
+    validateApprovalGate(frontmatter, promptRoot, file, repoRoot, errors);
   }
 
   return {
@@ -179,17 +179,53 @@ function validateEvals(
   }
 }
 
-function validateCandidateStatus(
+/**
+ * Eval-result gate (G3). A prompt may only become `approved` when it carries machine
+ * evidence — not merely an eval *reference*. The four flags mirror the orchestration
+ * brainstorm: eval_executed, eval passed, human_accepted, regression_passed. Any other
+ * status (draft/candidate/deprecated) is unconstrained, so no existing prompt regresses.
+ */
+export function collectApprovalEvidenceErrors(frontmatter: Record<string, unknown>): string[] {
+  if (frontmatter.status !== "approved") {
+    return [];
+  }
+
+  const results = Array.isArray(frontmatter.eval_results) ? frontmatter.eval_results.filter(isRecord) : [];
+  if (results.length === 0) {
+    return ["Approved prompt has no recorded eval_results (needs executed + passed + human-accepted + regression)."];
+  }
+
+  const errors: string[] = [];
+  const executed = results.some(
+    (result) => (result.status === "passed" || result.status === "failed") && typeof result.last_run === "string"
+  );
+  const passed = results.some((result) => result.status === "passed");
+  const accepted = results.some((result) => typeof result.accepted_by === "string" && result.accepted_by.trim() !== "");
+  const regression = results.some((result) => result.regression_passed === true);
+
+  if (!executed) errors.push("Approved prompt: no executed eval result (needs status + last_run).");
+  if (!passed) errors.push("Approved prompt: no passing eval result recorded.");
+  if (!accepted) errors.push("Approved prompt: no human-accepted eval result (accepted_by).");
+  if (!regression) errors.push("Approved prompt: no regression_passed eval result.");
+  return errors;
+}
+
+function validateApprovalGate(
   frontmatter: Record<string, unknown>,
+  promptRoot: string,
   file: string,
   repoRoot: string,
   errors: PromptLibraryValidationIssue[]
 ): void {
-  if (frontmatter.status === "approved") {
-    errors.push({
-      file: toRepoPath(repoRoot, file),
-      message: "Prompts must stay candidate until real eval results are recorded and reviewed."
-    });
+  const results = Array.isArray(frontmatter.eval_results) ? frontmatter.eval_results.filter(isRecord) : [];
+  for (const result of results) {
+    if (typeof result.eval === "string" && !existsSync(join(promptRoot, result.eval))) {
+      errors.push({ file: toRepoPath(repoRoot, file), message: `eval_results references a missing eval file: ${result.eval}` });
+    }
+  }
+
+  for (const message of collectApprovalEvidenceErrors(frontmatter)) {
+    errors.push({ file: toRepoPath(repoRoot, file), message });
   }
 }
 

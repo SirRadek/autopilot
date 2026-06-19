@@ -99,6 +99,21 @@
       },
       "minItems": 1,
       "uniqueItems": true
+    },
+    "eval_results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["eval", "status", "last_run"],
+        "properties": {
+          "eval": { "type": "string" },
+          "status": { "type": "string", "enum": ["passed", "failed"] },
+          "last_run": { "type": "string", "format": "date" },
+          "accepted_by": { "type": "string", "minLength": 1 },
+          "regression_passed": { "type": "boolean" }
+        }
+      }
     }
   }
 }

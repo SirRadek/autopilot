@@ -279,7 +279,7 @@ the single most important thing to close before "autopilot" can claim it *learns
 |---|---|---|---|
 | G1 | ~~Taste memory written but never read by the scorer (open loop)~~ **RESOLVED 2026-06-19** — `inferTasteMatch` now reads `style_tags` from `taste/global-liked.json` / `global-disliked.json`; flip test proves it. | ~~High~~ done | `score-product-design-os.ts` `loadTasteMemory` + `tests/delivery-system/product-design-os-taste.test.ts` |
 | G2 | Decision/Issue ledgers have schema + validators but **no data store** | **High** | no JSON/JSONL ledger files in repo; `ledgers.ts` is types only |
-| G3 | No automated eval execution; `evals` only checked for file existence | **Medium** | `validate-prompt-library.ts › validateEvals` |
+| G3 | ~~No eval gate; `evals` only checked for file existence~~ **GATED 2026-06-19** — `approved` now requires recorded `eval_results` (executed + passed + human-accepted + regression). Auto-*running* fixtures is still future. | ~~Medium~~ part-done | `validate-prompt-library.ts › collectApprovalEvidenceErrors` + `tests/prompt-approval-gate.test.ts` |
 | G4 | Routing weights are static; no learning from outcomes | **Medium** | `query.ts › scoreNode` constants |
 | G5 | Hook evidence is ephemeral + hash-only → no cross-session learning corpus | **Medium** | `autopilot-hook.mjs` `MAX_LEDGER_ENTRIES=200`, git-ignored state |
 | G6 | "Memory + Optimization + Lessons" layer exists in docs, not in code | **Medium** | architecture §Layered vs absent module |
@@ -305,9 +305,10 @@ posture. Each is additive and reversible.
    taste feedback and emits a compact `lessons-digest.md` per project, surfaced in
    the agent packet's `must_read`. Turns prose lessons into routed context without an
    optimizer.
-4. **Eval execution stub (G3).** Let `prompt:validate` optionally run eval fixtures
-   and record pass/fail into the prompt frontmatter `last_reviewed`/eval-result, so
-   "candidate → reviewed" has machine evidence.
+4. ~~**Eval execution stub (G3).**~~ **GATED 2026-06-19.** `prompt:validate` now blocks
+   `status: approved` unless `eval_results` record executed + passed + human-accepted +
+   regression evidence (`collectApprovalEvidenceErrors`). So "candidate → approved" has
+   machine evidence. Remaining: actually *run* the fixtures to populate `eval_results`.
 5. **Outcome counters (G4/G5).** Persist a small, redacted, *non-ephemeral*
    per-node/per-route success/failure counter (separate from the tripwire ledger) as
    a future routing prior — explicitly gated behind an architecture decision.

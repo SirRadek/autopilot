@@ -192,7 +192,9 @@ A prompt can become a default only when:
 - model family is explicit
 - uncertainty behavior is defined
 - output validation is defined
-- evals exist
+- evals exist, and `status: approved` additionally requires `eval_results` recording
+  executed + passed + human-accepted + regression evidence (enforced by
+  `prompt:validate`; an eval *reference* alone is no longer enough)
 - redaction rules are satisfied
 - provider-specific claims are verified
 - rollback path is available
