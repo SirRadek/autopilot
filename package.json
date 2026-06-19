@@ -10,7 +10,8 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "node --import tsx --test tests/*.test.ts",
-    "seed": "tsx scripts/seed.ts"
+    "seed": "tsx scripts/seed.ts",
+    "usage:dashboard": "tsx scripts/usage-dashboard.ts"
   },
   "dependencies": {
     "@payloadcms/db-postgres": "3.85.1",

@@ -10,3 +10,8 @@ coverage
 *.tsbuildinfo
 payload-types.ts
 backups/
+
+# live cross-vendor evidence (keep committed *.example.* templates only)
+.agent/usage/usage-ledger.jsonl
+.agent/usage/provider-budget.json
+.agent/outputs/

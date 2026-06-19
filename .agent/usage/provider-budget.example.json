@@ -1,0 +1,41 @@
+[
+  {
+    "provider": "anthropic",
+    "surface": "web_ui",
+    "period": "rolling",
+    "capacity_kind": "unknown",
+    "capacity_total": null,
+    "consumed": null,
+    "remaining": null,
+    "remaining_pct": null,
+    "source": "unknown",
+    "confidence": "unknown",
+    "updated_at": "2026-06-19T08:00:00.000Z"
+  },
+  {
+    "provider": "openai",
+    "surface": "cli",
+    "period": "rolling",
+    "capacity_kind": "tokens",
+    "capacity_total": null,
+    "consumed": null,
+    "remaining": null,
+    "remaining_pct": null,
+    "source": "response_usage",
+    "confidence": "low",
+    "updated_at": "2026-06-19T08:00:00.000Z"
+  },
+  {
+    "provider": "google_antigravity",
+    "surface": "cli",
+    "period": "per_5h",
+    "capacity_kind": "messages",
+    "capacity_total": null,
+    "consumed": null,
+    "remaining": null,
+    "remaining_pct": 0.96,
+    "source": "dashboard_manual",
+    "confidence": "high",
+    "updated_at": "2026-06-19T08:00:00.000Z"
+  }
+]
