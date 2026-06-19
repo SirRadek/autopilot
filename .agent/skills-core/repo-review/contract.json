@@ -1,0 +1,16 @@
+{
+  "skill_id": "repo-review",
+  "version": "1.0.0",
+  "required_steps": [
+    "scope_changes",
+    "read_sources",
+    "assess_quality",
+    "prioritize_findings",
+    "write_output"
+  ],
+  "forbidden_actions": [
+    "auto_fix_without_approval",
+    "approve_own_review"
+  ],
+  "output_schema": ".agent/skills-core/repo-review/output.schema.json"
+}

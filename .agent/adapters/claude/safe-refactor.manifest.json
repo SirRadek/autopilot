@@ -1,0 +1,13 @@
+{
+  "skill_id": "safe-refactor",
+  "core_version": "1.0.0",
+  "step_tools": {
+    "read_scoped_files": "Grep/Glob + Read",
+    "identify_behavior": "Read code + tests",
+    "minimal_change": "Edit (+ TodoWrite)",
+    "update_tests": "Edit/Write",
+    "run_tests": "Bash project test runner",
+    "write_output": "Write -> .agent/outputs/safe-refactor-result.json"
+  },
+  "forbidden_actions": ["rewrite_unrelated_files", "change_public_api_without_approval"]
+}

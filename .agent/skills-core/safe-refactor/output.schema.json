@@ -1,0 +1,14 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["skill_id", "scope_files", "behavior_preserved", "tests_run", "tests_passed"],
+  "properties": {
+    "skill_id": { "type": "string" },
+    "scope_files": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+    "behavior_preserved": { "type": "boolean" },
+    "tests_run": { "type": "boolean" },
+    "tests_passed": { "type": "boolean" },
+    "public_api_changed": { "type": "boolean" },
+    "notes": { "type": "string" }
+  }
+}

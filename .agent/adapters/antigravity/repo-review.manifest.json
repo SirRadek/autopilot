@@ -1,0 +1,12 @@
+{
+  "skill_id": "repo-review",
+  "core_version": "1.0.0",
+  "step_tools": {
+    "scope_changes": "project-scoped diff/search",
+    "read_sources": "read changed files + deps",
+    "assess_quality": "inspect correctness/security/conventions",
+    "prioritize_findings": "rank by severity + confidence",
+    "write_output": "agy artifact -> .agent/outputs/repo-review-result.json"
+  },
+  "forbidden_actions": ["auto_fix_without_approval", "approve_own_review"]
+}
