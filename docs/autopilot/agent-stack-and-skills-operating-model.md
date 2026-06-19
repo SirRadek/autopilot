@@ -227,3 +227,11 @@ Recorded, not simulated. Two real lanes: Opus (strategic) + Codex (technical).
 Sequence: land `skills:validate` + one pilot skill (`safe-refactor`) across all three
 adapters first; prove the drift check fails on a planted violation; only then port the
 rest.
+
+**DONE 2026-06-19 (pilot + enforcement):** `scripts/validate-skills.ts`
+(`npm run skills:validate`, wired into `verify`) implements the §4.1 drift check;
+`.agent/skills-core/safe-refactor/` (SKILL.md + contract.json + output.schema.json) with
+`codex`/`claude`/`antigravity` thin adapters; `tests/skills-validate.test.ts` proves the
+check catches unmapped steps, version mismatch, dropped forbidden actions, and smuggled
+governance language. Remaining: port the rest of the skills behind the same gate, and add
+Context7 to `~/.gemini/config/mcp_config.json` (project-scoped) for the Gemini lane.

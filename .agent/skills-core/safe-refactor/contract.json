@@ -1,0 +1,17 @@
+{
+  "skill_id": "safe-refactor",
+  "version": "1.0.0",
+  "required_steps": [
+    "read_scoped_files",
+    "identify_behavior",
+    "minimal_change",
+    "update_tests",
+    "run_tests",
+    "write_output"
+  ],
+  "forbidden_actions": [
+    "rewrite_unrelated_files",
+    "change_public_api_without_approval"
+  ],
+  "output_schema": ".agent/skills-core/safe-refactor/output.schema.json"
+}

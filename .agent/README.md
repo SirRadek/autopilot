@@ -41,3 +41,18 @@ tests in `tests/delivery-system/usage-ledger.test.ts`.
 
 The `*.example.*` files are committed templates. Live per-project ledgers are
 git-ignored (they are evidence, often per supervised project, and can be noisy).
+
+## `.agent/skills-core/` + `.agent/adapters/` — vendor-neutral skills
+
+A skill's **process** (when to use, required steps, never-do, output contract) lives once
+in `skills-core/<skill>/SKILL.md` + `contract.json`; each provider gets only a **thin
+adapter** (`adapters/<vendor>/<skill>.md` + `<skill>.manifest.json`) that maps the steps
+to that provider's tools — no policy of its own.
+
+`npm run skills:validate` (in `verify`,
+[`scripts/validate-skills.ts`](../scripts/validate-skills.ts)) enforces no drift:
+adapter `skill_id`/`core_version` must match, every `required_steps` must be mapped,
+every `forbidden_actions` must be preserved, and an adapter may not restate governance
+language (`source of truth`, `stop condition`, ALL-CAPS `MUST`/`NEVER`). Pilot skill:
+`safe-refactor` with `codex` / `claude` / `antigravity` adapters. Tests (incl. planted
+drift) in `tests/skills-validate.test.ts`.
