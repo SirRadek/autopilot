@@ -282,8 +282,8 @@ the single most important thing to close before "autopilot" can claim it *learns
 | G3 | ~~No eval gate; `evals` only checked for file existence~~ **GATED 2026-06-19** — `approved` now requires recorded `eval_results` (executed + passed + human-accepted + regression). Auto-*running* fixtures is still future. | ~~Medium~~ part-done | `validate-prompt-library.ts › collectApprovalEvidenceErrors` + `tests/prompt-approval-gate.test.ts` |
 | G4 | Routing weights are static; no learning from outcomes | **Medium** | `query.ts › scoreNode` constants |
 | G5 | Hook evidence is ephemeral + hash-only → no cross-session learning corpus | **Medium** | `autopilot-hook.mjs` `MAX_LEDGER_ENTRIES=200`, git-ignored state |
-| G6 | "Memory + Optimization + Lessons" layer exists in docs, not in code | **Medium** | architecture §Layered vs absent module |
-| G7 | Lessons (`lesson_learned`, `rule_updates`) are free text, not machine-actionable | **Low** | `feedback-log.json` `rule_updates` are prose |
+| G6 | ~~"Memory + Optimization + Lessons" layer exists in docs, not in code~~ **DONE 2026-06-19** — `lessons-digest.ts` (`npm run lessons:digest`) renders the lessons layer from real sources. | ~~Medium~~ done | `src/data/delivery-system/lessonsDigest.ts` + `.agent/lessons/issues.jsonl` |
+| G7 | ~~Lessons are free text, not machine-actionable~~ **PARTLY 2026-06-19** — `lesson_learned` + `rule_updates` normalized into a routed digest (still prose actions; fixed taxonomy is future). | ~~Low~~ part-done | `lessons-digest` aggregation |
 
 ---
 
@@ -301,10 +301,11 @@ posture. Each is additive and reversible.
 2. **Give ledgers a store (G2).** Add `docs/projects/<slug>/ledgers/decisions.jsonl`
    and `issues.jsonl` with the existing validators wired into `npm run verify`.
    Storage only — still human-written.
-3. **A lessons digest (G6/G7).** A deterministic script that reads issue ledger +
-   taste feedback and emits a compact `lessons-digest.md` per project, surfaced in
-   the agent packet's `must_read`. Turns prose lessons into routed context without an
-   optimizer.
+3. ~~**A lessons digest (G6/G7).**~~ **DONE 2026-06-19.** `scripts/lessons-digest.ts`
+   (`npm run lessons:digest`, `--project`, `--format json`) reads the design feedback log
+   + `.agent/lessons/issues.jsonl` and emits a compact digest for agent-packet
+   `must_read` — routed context, no optimizer. Remaining: a fixed failure taxonomy (G7)
+   and wiring the digest path into `build_agent_packet`.
 4. ~~**Eval execution stub (G3).**~~ **GATED 2026-06-19.** `prompt:validate` now blocks
    `status: approved` unless `eval_results` record executed + passed + human-accepted +
    regression evidence (`collectApprovalEvidenceErrors`). So "candidate → approved" has

@@ -21,6 +21,7 @@
     "prompt:validate": "tsx scripts/validate-prompt-library.ts",
     "skills:validate": "tsx scripts/validate-skills.ts",
     "usage:dashboard": "tsx scripts/usage-dashboard.ts",
+    "lessons:digest": "tsx scripts/lessons-digest.ts",
     "mesh:generate": "tsx scripts/generate-decision-mesh.ts",
     "mesh:check": "tsx scripts/generate-decision-mesh.ts --check",
     "mcp:mesh": "tsx mcp/server.ts",
