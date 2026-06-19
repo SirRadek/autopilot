@@ -18,9 +18,12 @@ into the active ClientOps structure per `archive/README.md`.
 | `@/lib/lane-selector` | `selectLane` — fit-dominant routing, budget as a late gate |
 | `@/lib/usage-dashboard` | work-share vs target + capacity dashboard (`npm run usage:dashboard`) |
 | `@/lib/agent-dispatch` | guard: never dispatch a lost/empty prompt from a volatile path |
+| `@/lib/failure-taxonomy` | fixed failure category set (`failure_tags`) |
+| `@/lib/issue-ledger` | redacted issue entry + `lesson_learned` + validator |
+| `@/lib/lessons-digest` | normalizes lessons into a routable digest, aggregated `by_category` (`npm run lessons:digest`) |
 
-Evidence lives under `.agent/usage/` (redacted templates committed; live ledgers
-git-ignored). See `.agent/README.md`.
+Evidence lives under `.agent/usage/` and `.agent/lessons/` (redacted; templates and the
+curated issue store committed, live ledgers git-ignored). See `.agent/README.md`.
 
 ## Rules
 
@@ -34,9 +37,8 @@ git-ignored). See `.agent/README.md`.
 - All model output stays **advisory** until local code, tests, or a human decision adopts
   it (ClientOps core rule).
 
-## Follow-ups (staged, not in this PR)
+## Follow-ups (staged)
 
-- Lessons digest + fixed failure taxonomy (issue-ledger memory).
 - Vendor-neutral skills + `skills:validate` drift check.
 - Context7 wiring for the Gemini lane (already applied to the owner's global Antigravity
   config; repo template to follow).
