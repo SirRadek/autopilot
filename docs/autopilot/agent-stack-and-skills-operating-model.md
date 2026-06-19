@@ -233,5 +233,9 @@ rest.
 `.agent/skills-core/safe-refactor/` (SKILL.md + contract.json + output.schema.json) with
 `codex`/`claude`/`antigravity` thin adapters; `tests/skills-validate.test.ts` proves the
 check catches unmapped steps, version mismatch, dropped forbidden actions, and smuggled
-governance language. Remaining: port the rest of the skills behind the same gate, and add
-Context7 to `~/.gemini/config/mcp_config.json` (project-scoped) for the Gemini lane.
+governance language. Ported so far: `safe-refactor`, `repo-review` (codex/claude/antigravity). Context7 for
+the Gemini lane is prepared as a reviewable template + owner-apply instructions in
+[`.agent/antigravity/`](../../.agent/antigravity/README.md) — applying it edits the
+owner's global `~/.gemini/config/mcp_config.json` (outside this repo), so it is an
+explicit owner step, not auto-applied. Remaining: port the rest of the skills behind the
+same gate.
