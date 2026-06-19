@@ -280,10 +280,10 @@ the single most important thing to close before "autopilot" can claim it *learns
 | G1 | ~~Taste memory written but never read by the scorer (open loop)~~ **RESOLVED 2026-06-19** — `inferTasteMatch` now reads `style_tags` from `taste/global-liked.json` / `global-disliked.json`; flip test proves it. | ~~High~~ done | `score-product-design-os.ts` `loadTasteMemory` + `tests/delivery-system/product-design-os-taste.test.ts` |
 | G2 | Decision/Issue ledgers have schema + validators but **no data store** | **High** | no JSON/JSONL ledger files in repo; `ledgers.ts` is types only |
 | G3 | ~~No eval gate; `evals` only checked for file existence~~ **GATED 2026-06-19** — `approved` now requires recorded `eval_results` (executed + passed + human-accepted + regression). Auto-*running* fixtures is still future. | ~~Medium~~ part-done | `validate-prompt-library.ts › collectApprovalEvidenceErrors` + `tests/prompt-approval-gate.test.ts` |
-| G4 | Routing weights are static; no learning from outcomes | **Medium** | `query.ts › scoreNode` constants |
+| G4 | ~~Routing weights are static; no learning from outcomes~~ **PARTLY 2026-06-19** — `selectLane` now routes by fit + budget + recent-quality (the actionable part); mesh *edge* weights remain static (future: offline `mesh_overrides`). | ~~Medium~~ part-done | `src/data/delivery-system/laneSelector.ts` + `tests/delivery-system/lane-selector.test.ts` |
 | G5 | Hook evidence is ephemeral + hash-only → no cross-session learning corpus | **Medium** | `autopilot-hook.mjs` `MAX_LEDGER_ENTRIES=200`, git-ignored state |
 | G6 | ~~"Memory + Optimization + Lessons" layer exists in docs, not in code~~ **DONE 2026-06-19** — `lessons-digest.ts` (`npm run lessons:digest`) renders the lessons layer from real sources. | ~~Medium~~ done | `src/data/delivery-system/lessonsDigest.ts` + `.agent/lessons/issues.jsonl` |
-| G7 | ~~Lessons are free text, not machine-actionable~~ **PARTLY 2026-06-19** — `lesson_learned` + `rule_updates` normalized into a routed digest (still prose actions; fixed taxonomy is future). | ~~Low~~ part-done | `lessons-digest` aggregation |
+| G7 | ~~Lessons are free text, not machine-actionable~~ **DONE 2026-06-19** — fixed `failureTaxonomy` + `failure_tags`; the digest aggregates `by_category` and flags unknown tags. | ~~Low~~ done | `src/data/delivery-system/failureTaxonomy.ts` + `lessonsDigest` `by_category` |
 
 ---
 

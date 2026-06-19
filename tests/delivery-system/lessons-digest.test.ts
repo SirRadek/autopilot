@@ -55,6 +55,20 @@ describe("lessons digest", () => {
     expect(digest.report_markdown).toContain("# Lessons Digest");
     expect(digest.report_markdown).toContain("never dispatch an empty prompt");
   });
+
+  it("aggregates by fixed failure taxonomy and flags unknown tags", () => {
+    const tagged = { ...issue, failure_tags: ["missing_context", "not_a_real_category"] };
+    const digest = buildLessonsDigest({ issues: [tagged as typeof issue] });
+    expect(digest.by_category.missing_context).toBe(1);
+    expect(digest.uncategorized).toBe(0);
+    expect(digest.unknown_tags).toContain("not_a_real_category");
+  });
+
+  it("counts an untagged lesson as uncategorized", () => {
+    const digest = buildLessonsDigest({ issues: [issue] });
+    expect(digest.uncategorized).toBe(1);
+    expect(Object.keys(digest.by_category)).toHaveLength(0);
+  });
 });
 
 describe("lessons digest CLI over committed sources", () => {
