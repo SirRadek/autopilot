@@ -10,6 +10,9 @@ Default order:
 4. Gemini advisory review for alternative failure modes and broad brainstorming.
 5. Other providers only after provider status, privacy, and cost approval checks pass.
 
+See `role-taxonomy.md` for the decision-owner plus opponent roles each selected
+model is asked to own, and the capability-plus-data-privacy two-axis rule.
+
 Before routing:
 
 - classify whether the task belongs to Autopilot control-plane or a supervised project
