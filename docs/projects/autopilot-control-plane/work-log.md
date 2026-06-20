@@ -1,5 +1,56 @@
 # Autopilot Control Plane Work Log
 
+## 2026-06-20 Expanded-Domain Prompt Lanes Integrated
+
+Date: 2026-06-20
+Request or trigger: owner asked to establish the autopilot control plane as a
+usable standalone repo at `C:\Programování\autopilot` and integrate the
+expanded-domain prompt lanes built earlier on `claude/jovial-chaum-276e2e`.
+Mode: WRITE_ALLOWED for prompt-library, domain operating-model docs, governance
+records, and work log. Local only; nothing pushed.
+Scope: bring the canonical control-plane line current, make it usable, and add
+the business/design/analysis/research/copywriting lanes without colliding with
+the existing `07-deepseek` lane.
+Files changed:
+
+- `prompt-library/08-business/`, `09-design/`, `10-analysis/`, `11-research/`,
+  `12-copywriting/` (renumbered from 07-11 to sit after `07-deepseek`)
+- `prompt-library/05-evaluation/{business,design,analysis,research,copywriting}-lane-cases.md`
+- `docs/autopilot/{business,analysis,research}-intelligence-operating-model.md`,
+  `docs/autopilot/copywriting-operating-model.md`, `docs/autopilot/handoffs/`
+- `prompt-library/prompt.schema.json` (`copywriting` task_type)
+- `prompt-library/source-catalog.json`, `source-catalog.md` (5 operating-model sources)
+- `prompt-library/README.md` (lane index + domain governance)
+- `product-design-os/rules/multi-agent-routing.md` (Opus = architect; Codex =
+  implementer/logic/technical opponent, per the 2026-06-19 decision)
+
+Architecture impact: the standalone autopilot repo now carries the full expanded
+domain governance (one Opus decision-owner plus model-specific opponents, the
+capability-plus-data-privacy axis) alongside the canonical worker-loop runtime.
+Domain lanes are numbered 08-12 to coexist with the model lanes 01-04/07 and the
+process lane 06.
+Decisions:
+
+- Renumber the domain lanes 08-12 rather than collide with `07-deepseek`.
+- Keep all expanded prompts at `candidate`/`draft`; the validator `approved`
+  guard stays in place.
+- Apply the 2026-06-19 role taxonomy to `multi-agent-routing.md`.
+Verification:
+
+- `npm run prompt:validate`: 54 files, 0 errors.
+- `npm run pdos:validate`: 64 files, 0 errors, 0 warnings.
+- `npm run mesh:check`: in sync.
+- `npm run typecheck`: clean (node-pty installed for the CLI worker loop).
+- `npm run test`: 41 files, 299 tests passed.
+- `npm run diff:check`: only LF/CRLF normalization notices.
+Risks:
+
+- `npm run build` and `npm run test:e2e` were not run in this pass (heavy);
+  core verify chain is green.
+- The 4 prior local radeq-artifact commits are preserved on
+  `backup/local-radeq-artifacts-9c8685e`; per the repository-separation rule they
+  belong in the radeq repo (follow-up).
+
 ## 2026-06-17 S1 Hook Verification Instruction Follow-Up
 
 Date: 2026-06-17

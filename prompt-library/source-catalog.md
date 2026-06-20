@@ -152,6 +152,19 @@ Graphic Agent Operating Model:
 Use for plugin, asset, library, motion, canvas, WebGL, free-cloud, paid-tool,
 license, usage-rights, and fallback rules for visual production prompts.
 
+Domain Operating Models (08-12 lanes):
+
+- `docs/autopilot/business-intelligence-operating-model.md`
+- `docs/autopilot/design-intelligence-operating-model.md`
+- `docs/autopilot/analysis-intelligence-operating-model.md`
+- `docs/autopilot/research-intelligence-operating-model.md`
+- `docs/autopilot/copywriting-operating-model.md`
+
+Use for the role taxonomy (Opus decision-owner plus model-specific opponents),
+the capability-plus-data-privacy axis, rubrics, and stop conditions for the
+`08-business`, `09-design`, `10-analysis`, `11-research`, and `12-copywriting`
+prompt lanes.
+
 Product & Design OS:
 
 - `product-design-os/`

@@ -32,10 +32,26 @@ prompt-library/
   05-evaluation/
   06-supervisor/
   07-deepseek/
+  08-business/
+  09-design/
+  10-analysis/
+  11-research/
+  12-copywriting/
   prompt.schema.json
   source-catalog.md
   source-catalog.json
 ```
+
+Lanes `01`-`04` and `07-deepseek` are grouped by model. Lanes `08`-`12` are
+domain lanes (work spans several models): each pairs an Opus decision-owner with
+model-specific opponents per the 2026-06-19 role taxonomy.
+
+- `08-business/` — `docs/autopilot/business-intelligence-operating-model.md`
+- `09-design/` — `docs/autopilot/graphic-agent-operating-model.md` and
+  `docs/autopilot/design-intelligence-operating-model.md`
+- `10-analysis/` — `docs/autopilot/analysis-intelligence-operating-model.md`
+- `11-research/` — `docs/autopilot/research-intelligence-operating-model.md`
+- `12-copywriting/` — `docs/autopilot/copywriting-operating-model.md`
 
 ## Required Metadata
 

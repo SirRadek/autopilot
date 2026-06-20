@@ -1,7 +1,37 @@
 {
   "version": 1,
-  "updated": "2026-06-11",
+  "updated": "2026-06-20",
   "sources": [
+    {
+      "id": "business-intelligence-operating-model",
+      "kind": "local_docs",
+      "location": "docs/autopilot/business-intelligence-operating-model.md",
+      "authority": "local-contract"
+    },
+    {
+      "id": "analysis-intelligence-operating-model",
+      "kind": "local_docs",
+      "location": "docs/autopilot/analysis-intelligence-operating-model.md",
+      "authority": "local-contract"
+    },
+    {
+      "id": "research-intelligence-operating-model",
+      "kind": "local_docs",
+      "location": "docs/autopilot/research-intelligence-operating-model.md",
+      "authority": "local-contract"
+    },
+    {
+      "id": "copywriting-operating-model",
+      "kind": "local_docs",
+      "location": "docs/autopilot/copywriting-operating-model.md",
+      "authority": "local-contract"
+    },
+    {
+      "id": "design-intelligence-operating-model",
+      "kind": "local_docs",
+      "location": "docs/autopilot/design-intelligence-operating-model.md",
+      "authority": "local-contract"
+    },
     {
       "id": "anthropic-prompting-best-practices",
       "kind": "official_docs",
