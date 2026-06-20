@@ -10,11 +10,13 @@ migrate only the portable concepts into the active structure.
 Mode: WRITE_ALLOWED for active Decision Mesh governance docs only. No runtime,
 schema, connector, or archive dependency changed.
 Scope: add the role taxonomy and the capability-plus-data-privacy two-axis rule
-as an explicit layer over the existing routing policy and lane selector.
+as an explicit layer over the existing routing policy and lane selector, and
+re-home the repository-separation convention into active governance.
 Files changed:
 
 - `docs/autopilot/decision-mesh/role-taxonomy.md` (new)
-- `docs/autopilot/decision-mesh/README.md` (primary-docs index)
+- `docs/autopilot/repository-separation.md` (new)
+- `docs/autopilot/decision-mesh/README.md` (primary-docs index + separation link)
 - `docs/autopilot/decision-mesh/routing-policy.md` (cross-link)
 - `docs/projects/clientops-cms/work-log.md`
 
@@ -33,6 +35,12 @@ Decisions:
   control-plane reference snapshot.
 - New work verified against `origin/main` before building (the recorded
   `pr-targeted-frozen-archive` lesson).
+- Repository-separation convention re-homed to active governance: each managed
+  project owns its repo; project state lives in the project repo; the control
+  plane keeps only reusable material plus a thin per-project registry. On
+  `origin/main` the radeq artifacts are already archived (0 active); the apparent
+  "64 radeq files in control-plane" is the working tree of the divergent
+  `codex/autopilot-safe-move-20260612` branch, not canonical main.
 
 Verification:
 

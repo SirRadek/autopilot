@@ -20,6 +20,8 @@ Out of scope:
 
 Project meshes remain separate. A supervised project must keep its own mesh under `docs/projects/<project-slug>/decision-mesh/` and may reference this root mesh only for advisory-provider governance.
 
+Project code and project state live in the project's own repo, not in the control plane. See `docs/autopilot/repository-separation.md`.
+
 Current project mesh:
 
 - `docs/projects/clientops-cms/decision-mesh/`
