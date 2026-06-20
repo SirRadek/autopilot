@@ -94,6 +94,46 @@ Graphic Agent Operating Model:
 Use for plugin, asset, library, motion, canvas, WebGL, free-cloud, paid-tool,
 license, usage-rights, and fallback rules for visual production prompts.
 
+Business Intelligence Operating Model:
+
+- `docs/autopilot/business-intelligence-operating-model.md`
+
+Use for the business-reasoning role model (Opus decision analyst, Codex
+feasibility opponent, Gemini strategic/SEO opponent, Qwen local data worker), the
+data-privacy routing axis, the business rubric, and stop conditions for the
+`07-business/` prompt lane.
+
+Design Intelligence Operating Model:
+
+- `docs/autopilot/design-intelligence-operating-model.md`
+
+Use for the Visual Analyst and Design Critic roles, the visual rubric, the
+research-provider order, and stop conditions for the `08-design/` critique lane.
+
+Analysis Intelligence Operating Model:
+
+- `docs/autopilot/analysis-intelligence-operating-model.md`
+
+Use for the impact/risk analyst, technical opponent, and independent-reviewer
+roles, the ownership boundary, the analysis rubric, and stop conditions for the
+`09-analysis/` lane.
+
+Research Intelligence Operating Model:
+
+- `docs/autopilot/research-intelligence-operating-model.md`
+
+Use for the research synthesist, corpus scanner, technical verifier, and local
+retriever roles, the source classification, the research-provider order, the
+verification lane, and stop conditions for the `10-research/` lane.
+
+Copywriting Operating Model:
+
+- `docs/autopilot/copywriting-operating-model.md`
+
+Use for the copywriter, technical writer, brand-voice reviewer, and localization
+roles, the claims gate, the copy rubric, and stop conditions for the
+`11-copywriting/` lane.
+
 Product & Design OS:
 
 - `product-design-os/`

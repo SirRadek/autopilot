@@ -26,14 +26,14 @@ Models cannot:
 
 | Layer | Preferred Capability | Allowed Model Class | Forbidden Use |
 | --- | --- | --- | --- |
-| Business | product reasoning, prioritization | strong reasoning model with product context | hidden scope expansion |
+| Business | product reasoning, prioritization | strong reasoning model with product context (see Business Intelligence Operating Model) | hidden scope expansion |
 | Orchestrator | dependency planning, routing | strong reasoning model | self-approval |
 | Architecture | system design, tradeoffs | senior reasoning/coding model | rubber-stamping implementation |
-| Analysis | impact and risk discovery | reasoning model or specialist reviewer | implementation without approval |
+| Analysis | impact and risk discovery (see Analysis Intelligence Operating Model) | reasoning model or specialist reviewer | implementation without approval |
 | Execution | bounded code changes | coding model matched to scope | architecture or business decisions |
 | Testing | test design and failure analysis | reasoning or testing specialist | changing business scope |
 | Review | critique and risk finding | independent reviewer model | reviewing own output |
-| Copywriting | language, tone, localization | language-strong model | product approval |
+| Copywriting | language, tone, localization (see Copywriting Operating Model) | language-strong model | product approval |
 | Governance | evidence checking | supervisor model plus deterministic checks | approving missing evidence |
 | Autopilot Supervisor | monitoring and recovery proposals | supervisor model | product steering or delivery approval |
 | Memory | summarization and retrieval | lower-cost summarizer when safe | overwriting source artifacts |

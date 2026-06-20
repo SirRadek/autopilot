@@ -1,5 +1,248 @@
 # Autopilot Control Plane Work Log
 
+## 2026-06-20 Opus Review Sign-Off: Expanded-Domain Lane Eval Evidence
+
+Date: 2026-06-20
+Request or trigger: Codex completed
+`docs/autopilot/handoffs/2026-06-19-codex-expanded-lanes-finish.md` (exit 0) and
+left the prior entry at `needs_review`. Opus performs the independent review and
+check-off, since the implementer cannot be its own final approver.
+Mode: INSPECT_ONLY for the review; WRITE_ALLOWED only for this work-log sign-off.
+No prompt, fixture, or operating-model content was changed during review.
+Scope: independently verify the Codex eval-evidence slice and record the verdict.
+Review findings:
+
+- Re-ran all checks independently: `npm run prompt:validate` 50 files/0 errors,
+  `npx vitest run prompt` 3 files/12 tests, `npm run pdos:validate` 64/0/0,
+  `git diff --check` clean.
+- Read all five lane fixtures. They are substantive and faithfully encode each
+  operating model's rubric and stop conditions: DOM-first and producer/critic
+  split (design), ownership-before-logs and raw-log block (analysis),
+  Context7/official-docs verification and hypotheses-vs-facts (research), claims
+  gate and local-only localization (copywriting), and the feasibility
+  signal/confidence split (business).
+- Spot-checked the five prompts whose diffs were omitted (`10-research/*`,
+  `11-copywriting/*`) via grep: all `status: candidate`, wired to the correct
+  lane fixture, `## Eval Results` appended, and governance lines (redacted-only,
+  forbidden actions) intact. Codex appended evidence without altering contracts.
+- `business-feasibility-opposition` correctly moved `draft -> candidate` with a
+  recorded consult outcome.
+- No prompt was set to `approved`; the validator guard is intact and verified. No
+  operating-model or mesh decision was changed; Codex correctly deferred the
+  optional `confidence_by_signal` field to owner review instead of applying it.
+Verdict: PASS. Governance scaffolding for the five expanded-domain lanes
+(business, design, analysis, research, copywriting) is complete with recorded
+eval evidence.
+Progress state: `needs_review` -> `done` for the lane scaffolding. Prompts
+intentionally remain `candidate`.
+Open owner decisions (not blockers):
+
+- Whether to relax the `approved` guard in `scripts/validate-prompt-library.ts`
+  so evidence-backed prompts can be promoted past `candidate`.
+- Whether to add the optional `confidence_by_signal` field to the business
+  operating model packet.
+- The working tree is uncommitted; the owner decides when to commit or open a PR.
+Note: same-actor rule satisfied (Codex implemented, Opus reviewed); the owner
+remains the delivery approver.
+
+## 2026-06-20 Expanded-Domain Prompt Lane Eval Evidence
+
+Date: 2026-06-20
+Request or trigger: owner asked Codex to execute
+`docs/autopilot/handoffs/2026-06-19-codex-expanded-lanes-finish.md`, staying
+inside Scope, Allowed Files, and Stop Conditions, and running
+`npm run prompt:validate` after each change.
+Mode: WRITE_ALLOWED for `prompt-library/05-evaluation/`, feasibility prompt
+promotion/refinement, expanded-lane `evals:` and recorded eval results, and this
+Autopilot control-plane work log. INSPECT_ONLY for operating models and
+validator logic. No remote mutation, deployment, connector, runtime queue, or
+paid dependency was used.
+Scope: finish expanded-domain lane eval evidence for business, design, analysis,
+research, and copywriting; complete the Codex feasibility-opposition consult;
+keep all prompts at `candidate`; record verification and review state.
+Files changed:
+
+- `prompt-library/05-evaluation/business-lane-cases.md`
+- `prompt-library/05-evaluation/design-lane-cases.md`
+- `prompt-library/05-evaluation/analysis-lane-cases.md`
+- `prompt-library/05-evaluation/research-lane-cases.md`
+- `prompt-library/05-evaluation/copywriting-lane-cases.md`
+- `prompt-library/07-business/strategy-analysis.md`
+- `prompt-library/07-business/strategic-opposition.md`
+- `prompt-library/07-business/feasibility-opposition.md`
+- `prompt-library/08-design/visual-build.md`
+- `prompt-library/08-design/critique-from-render.md`
+- `prompt-library/09-analysis/impact-risk.md`
+- `prompt-library/09-analysis/independent-review.md`
+- `prompt-library/10-research/research-synthesis.md`
+- `prompt-library/10-research/corpus-scan.md`
+- `prompt-library/11-copywriting/copywriting.md`
+- `prompt-library/11-copywriting/voice-variants.md`
+- `prompt-library/11-copywriting/localization.md`
+- `docs/projects/autopilot-control-plane/work-log.md`
+
+Consult outcome:
+
+- Promoted `business-feasibility-opposition` from `draft` to `candidate` after
+  the Codex consult.
+- Reliable feasibility signals are implementation-shape signals: explicit
+  dependencies, integration count, state transitions, data availability,
+  security/payment/public API surfaces, rollback, testability, and operational
+  ownership.
+- Low-confidence feasibility guesses are absolute time or currency, hidden repo
+  complexity, team velocity, market demand, provider pricing, and uninspected
+  runtime behavior.
+- Cost-to-build should use relative sizing (`small`, `medium`, `large`) with
+  drivers and confidence unless current repo/team/provider evidence exists.
+- The verdict separates "business idea is wrong" from "business idea may be
+  valid but is not feasible as scoped".
+- Minimum inputs are target plan, constraints, decision owner, allowed data
+  boundary, affected surfaces, dependencies, and success criteria.
+- No operating-model packet field was changed. A future optional
+  `confidence_by_signal` field is only a proposal if repeated evals show the
+  current packet is hard to audit.
+
+Eval evidence:
+
+- Business lane now has confirmed feasibility cases plus recorded results for
+  strategy analysis, strategic opposition, and feasibility opposition.
+- Added design, analysis, research, and copywriting lane fixtures under
+  `prompt-library/05-evaluation/`, each with representative normal and failure
+  cases plus good/bad reference outputs.
+- Wired each prompt in `07-business/`, `08-design/`, `09-analysis/`,
+  `10-research/`, and `11-copywriting/` to its lane fixture and recorded manual
+  2026-06-20 eval results in the prompt body.
+- All expanded-domain prompts remain `candidate`. None were promoted to
+  `approved`; the validator guard remains in place.
+
+Architecture and mesh impact: this completes prompt-library evidence for the
+existing expanded-domain control-plane lanes. It does not add a runtime,
+connector client, deployment path, product repository access, or new source of
+truth. No operating-model or project-mesh file was changed; the work stays
+inside the existing `prompt_library_boundary` and Protective Supervision review
+rules.
+Progress state: `needs_review`. Independent Opus or owner review is still
+required before the lanes are marked done or any future `approved` promotion is
+considered.
+Verification:
+
+- `npm.cmd run prompt:validate` passed before edits: 46 checked files, 0 errors.
+- `npm.cmd run prompt:validate` passed after the business-lane change: 46 checked
+  files, 0 errors.
+- `npm.cmd run prompt:validate` passed after expanded fixture and prompt changes:
+  50 checked files, 0 errors.
+- `npx.cmd vitest run prompt` passed: 3 files, 12 tests.
+- `npm.cmd run pdos:validate` passed: 64 checked files, 0 errors, 0 warnings.
+- `git diff --check` passed before this work-log entry.
+
+## 2026-06-19 Business Intelligence Layer
+
+Date: 2026-06-19
+Request or trigger: owner asked to expand Autopilot beyond a development-only
+focus to also cover design, analysis, research, and business, to brainstorm how
+each subscription model is best used, and chose "Business lane + operating model"
+as the first formalization step. Constraints: subscription models only, no API
+billing, no paid design-generation provider, design programmed in 3D.
+Mode: WRITE_ALLOWED for control-plane governance documentation, prompt-library
+contracts, source catalog, and architecture/work-log records only. No product
+runtime, remote mutation, deployment, connector, or paid dependency was changed.
+Scope: add a governed Business Intelligence layer and a `07-business/` prompt
+lane, and record the owner's expanded model role taxonomy.
+Files changed:
+
+- `docs/autopilot/business-intelligence-operating-model.md`
+- `prompt-library/07-business/strategy-analysis.md`
+- `prompt-library/07-business/strategic-opposition.md`
+- `prompt-library/07-business/feasibility-opposition.md`
+- `prompt-library/05-evaluation/business-lane-cases.md`
+- `docs/autopilot/handoffs/2026-06-19-codex-feasibility-opposition-consult.md`
+- `prompt-library/08-design/visual-build.md`
+- `prompt-library/08-design/critique-from-render.md`
+- `prompt-library/09-analysis/impact-risk.md`
+- `prompt-library/09-analysis/independent-review.md`
+- `prompt-library/10-research/research-synthesis.md`
+- `prompt-library/10-research/corpus-scan.md`
+- `docs/autopilot/analysis-intelligence-operating-model.md`
+- `docs/autopilot/research-intelligence-operating-model.md`
+- `docs/autopilot/copywriting-operating-model.md`
+- `prompt-library/11-copywriting/copywriting.md`
+- `prompt-library/11-copywriting/voice-variants.md`
+- `prompt-library/11-copywriting/localization.md`
+- `prompt-library/prompt.schema.json`
+- `prompt-library/source-catalog.json`
+- `prompt-library/source-catalog.md`
+- `prompt-library/README.md`
+- `docs/autopilot/delivery-system-model-policy.md`
+- `product-design-os/rules/multi-agent-routing.md`
+- `docs/projects/autopilot-control-plane/work-log.md`
+- `CHANGELOG.md`
+
+Architecture impact: Autopilot now has a Business Intelligence operating model
+that complements the existing Design Intelligence and Graphic Production layers.
+It records the owner's 2026-06-19 model role taxonomy: Opus is architect,
+supervisor, and decision-owning analyst; Codex is worker, logic analyst, and
+technical opponent; Gemini is creative analyst, strategic opponent, and SEO
+optimizer on redacted context only; Qwen local is the private bounded data
+worker. The layer adds a two-axis routing rule (capability plus data-privacy) so
+real financial and customer data stay with owner-subscription or local models
+while free-cloud models stay advisory and redacted. The prompt-library gains a
+domain-grouped `07-business/` lane alongside the model-grouped lanes.
+Decisions:
+
+- Extend the existing mesh/model-policy/Product & Design OS layer rather than
+  build a separate business analytics runtime.
+- Keep one decision-owner (Opus) plus two opponents from different angles (Codex
+  technical, Gemini strategic/SEO); map onto existing P0-P4 risk routing.
+- Route real business numbers only to Opus, Codex, or local Qwen; Gemini and
+  other free-cloud models receive a redacted baseline only.
+- Keep the Codex feasibility-opposition prompt at `status: draft` pending a deep
+  Codex consult, per the owner rule that Codex worker logic is not specified
+  superficially in isolation.
+- Keep all prompts at `candidate` or `draft`; none promoted to `approved` until
+  real eval results are recorded.
+Verification:
+
+- `npm run prompt:validate` passed: 36 checked files, 0 errors.
+- `npx vitest run prompt` passed: 3 files, 12 tests
+  (prompt-library validation, prompt-library policy, prompt-pack policy).
+Risks:
+
+- The Business layer is governance scaffolding; prompts need real eval fixtures
+  before promotion past `candidate`.
+- The Codex feasibility role is intentionally a draft until the Codex consult.
+Follow-up:
+
+- Prepared: the Codex consult handoff packet
+  (`docs/autopilot/handoffs/2026-06-19-codex-feasibility-opposition-consult.md`)
+  and the `05-evaluation/business-lane-cases.md` eval fixture. Remaining: owner
+  runs the packet with Codex, confirms the feasibility reference outputs, records
+  the consult outcome, then promotes the feasibility prompt `draft -> candidate`.
+- Done: reconciled `product-design-os/rules/multi-agent-routing.md` so Opus is
+  architect/supervisor/decision analyst and Codex is implementer/logic/technical
+  opponent, matching the 2026-06-19 decision.
+- Done: added the `08-design/` lane (Codex `visual-build`, Gemini
+  `critique-from-render`), the `09-analysis/` lane (Opus `impact-risk`, Gemini
+  `independent-review`), and the `10-research/` lane (Opus `research-synthesis`,
+  Gemini `corpus-scan`), each pairing a decision-owner with an opponent.
+- Done: added first-class operating models for the analysis and research layers
+  (`docs/autopilot/analysis-intelligence-operating-model.md`,
+  `docs/autopilot/research-intelligence-operating-model.md`) and wired each
+  09/10 lane prompt to cite its operating model. All four expanded domains
+  (business, design, analysis, research) now have governance parity.
+- Done: added the Copywriting layer to complete the last uncovered model-policy
+  row. New `copywriting` task_type in the prompt schema, a Copywriting Operating
+  Model mapping the existing copywriting roles (copywriter, technical writer,
+  brand-voice reviewer, localization reviewer) to models, and the
+  `11-copywriting/` lane (Opus `copywriting`, Gemini `voice-variants`, Qwen
+  `localization`).
+- Handed off to Codex: consolidated finishing packet
+  `docs/autopilot/handoffs/2026-06-19-codex-expanded-lanes-finish.md` covers the
+  feasibility consult, eval fixtures for the design/analysis/research/copywriting
+  lanes, and recording eval evidence. Codex keeps prompts at `candidate`
+  (validator blocks `approved`); promoting to `approved` is a separate governance
+  decision to relax that guard. Owner runs the packet with `codex_cli`; Opus or
+  owner records the final sign-off.
+
 ## 2026-06-07 Autopilot v0.2.0 Release
 
 Date: 2026-06-07

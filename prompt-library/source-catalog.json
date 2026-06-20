@@ -27,15 +27,45 @@
       "authority": "historical-local"
     },
     {
+      "id": "analysis-intelligence-operating-model",
+      "kind": "local_docs",
+      "location": "docs/autopilot/analysis-intelligence-operating-model.md",
+      "authority": "local-contract"
+    },
+    {
+      "id": "business-intelligence-operating-model",
+      "kind": "local_docs",
+      "location": "docs/autopilot/business-intelligence-operating-model.md",
+      "authority": "local-contract"
+    },
+    {
+      "id": "research-intelligence-operating-model",
+      "kind": "local_docs",
+      "location": "docs/autopilot/research-intelligence-operating-model.md",
+      "authority": "local-contract"
+    },
+    {
       "id": "cat-mascot-asset-provenance",
       "kind": "local_docs",
       "location": "docs/autopilot/cat-mascot-asset-provenance.md",
       "authority": "local-evidence"
     },
     {
+      "id": "copywriting-operating-model",
+      "kind": "local_docs",
+      "location": "docs/autopilot/copywriting-operating-model.md",
+      "authority": "local-contract"
+    },
+    {
       "id": "decision-mesh-policy",
       "kind": "local_mesh",
       "location": "mesh/",
+      "authority": "local-contract"
+    },
+    {
+      "id": "design-intelligence-operating-model",
+      "kind": "local_docs",
+      "location": "docs/autopilot/design-intelligence-operating-model.md",
       "authority": "local-contract"
     },
     {

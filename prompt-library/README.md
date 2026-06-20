@@ -31,10 +31,31 @@ prompt-library/
   04-qwen-local/
   05-evaluation/
   06-supervisor/
+  07-business/
+  08-design/
+  09-analysis/
+  10-research/
+  11-copywriting/
   prompt.schema.json
   source-catalog.md
   source-catalog.json
 ```
+
+Lanes `01`-`04` are grouped by model family. Lanes `06`-`10` are grouped by
+domain because the work spans several models: a domain lane holds prompts for
+each role's model (for example, `07-business/` holds the Opus strategy prompt,
+the Gemini opposition prompt, and the Codex feasibility prompt). Each domain lane
+pairs a decision-owner with one or more opponents per the 2026-06-19 role
+taxonomy.
+
+Domain lane governance:
+
+- `07-business/` — `docs/autopilot/business-intelligence-operating-model.md`
+- `08-design/` — `docs/autopilot/graphic-agent-operating-model.md` and
+  `docs/autopilot/design-intelligence-operating-model.md`
+- `09-analysis/` — `docs/autopilot/analysis-intelligence-operating-model.md`
+- `10-research/` — `docs/autopilot/research-intelligence-operating-model.md`
+- `11-copywriting/` — `docs/autopilot/copywriting-operating-model.md`
 
 ## Required Metadata
 
