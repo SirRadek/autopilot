@@ -60,6 +60,7 @@ Primary docs:
 
 - `provider-status.md`
 - `routing-policy.md`
+- `role-taxonomy.md`
 - `advisory-run-lifecycle.md`
 - `output-quality-gates.md`
 - `stop-conditions.md`

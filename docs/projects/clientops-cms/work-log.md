@@ -1,5 +1,55 @@
 # ClientOps CMS Work Log
 
+## 2026-06-20
+
+Date: 2026-06-20
+Request or trigger: A control-plane branch (`claude/jovial-chaum-276e2e`, PR #13)
+built expanded-domain prompt lanes on the pre-pivot root, which main had frozen
+into `archive/`. Per the repo precedent (#7 -> #8), close the misdirected PR and
+migrate only the portable concepts into the active structure.
+Mode: WRITE_ALLOWED for active Decision Mesh governance docs only. No runtime,
+schema, connector, or archive dependency changed.
+Scope: add the role taxonomy and the capability-plus-data-privacy two-axis rule
+as an explicit layer over the existing routing policy and lane selector.
+Files changed:
+
+- `docs/autopilot/decision-mesh/role-taxonomy.md` (new)
+- `docs/autopilot/decision-mesh/README.md` (primary-docs index)
+- `docs/autopilot/decision-mesh/routing-policy.md` (cross-link)
+- `docs/projects/clientops-cms/work-log.md`
+
+Architecture impact: makes explicit the decision-owner plus opponents pattern
+(Opus decision owner; Codex implementation/technical opponent; Gemini strategic
+opponent, redacted; Qwen local private worker) and the data-privacy axis
+(canonical/private data stays with owner-subscription or local models; free-cloud
+gets redacted packets only). It complements, and does not duplicate,
+`model-governance.md` and `routing-policy.md`. No new runtime or source of truth.
+Decisions:
+
+- Do not bulk-port the archived prompt-library; the active structure stays lean.
+- The broader domain framings (business, design, analysis, research, copywriting)
+  remain archived migration source material, not active ClientOps lanes.
+- PR #13 closed; branch `claude/jovial-chaum-276e2e` preserved as the
+  control-plane reference snapshot.
+- New work verified against `origin/main` before building (the recorded
+  `pr-targeted-frozen-archive` lesson).
+
+Verification:
+
+- Docs-only change (new markdown plus index/cross-link edits); it does not touch
+  the lint, type, test, or build surface.
+- `npm run lint` and `npm run typecheck` were not run here because ClientOps
+  dependencies are not installed in this worktree (`eslint` missing,
+  `@types/node`/`payload` unresolved) — an environment gap, not a change effect.
+  Re-run after `npm install` on a full ClientOps checkout.
+- Manual check: no `archive/**` path is referenced as active source, so the
+  Decision Mesh router source contract in `README.md` is preserved.
+
+Risks:
+
+- Role taxonomy is governance documentation; it has no runtime enforcement until
+  the first real advisory provider integration uses it through the executor.
+
 ## 2026-06-12
 
 Date: 2026-06-12
