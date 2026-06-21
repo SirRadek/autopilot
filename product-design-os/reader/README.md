@@ -8,6 +8,7 @@ implemented layers are deterministic and local:
 ```powershell
 npm.cmd run pdos:visual-qa -- --file product-design-os/reader/visual-qa-sample.json --format markdown
 npm.cmd run pdos:reader:capture -- --html-file product-design-os/reader/capture-sample.html --output-dir output/playwright/product-design-os
+npm.cmd run pdos:reader:element-map -- --html-file product-design-os/reader/capture-sample.html --output-dir output/playwright/product-design-os
 npm.cmd run pdos:reader:document -- --check-only --supervisor-root C:\path\pdf-supervisor
 ```
 
@@ -34,6 +35,11 @@ The Design Reader capture command uses local Playwright to:
 
 It does not yet run OCR, compare screenshots, or mutate project files.
 
+The Visual Element Map capture command emits `element-map.json` with per-element
+passports and supports an offline `xy -> passport` resolver for human-pointed
+preview defects. Source binding is best-effort and falls back to
+`sourceRef: "unknown"` when no local `data-*` source hints exist.
+
 The document-reader adapter can call the separate `pdf-supervisor` repository as
 a local external worker. It verifies runtime readiness, invokes
 `document_supervisor.cli`, and expects reviewable Markdown/JSON artifacts under
@@ -41,6 +47,7 @@ a local external worker. It verifies runtime readiness, invokes
 
 Future modules should be added incrementally:
 
+- `capture-element-map.ts` (implemented VEM MVP)
 - `run-ocr.ts`
 - `analyze-layout.ts`
 - `detect-template-risk.ts`

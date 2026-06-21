@@ -16,6 +16,7 @@
     "pdos:score": "tsx product-design-os/scripts/score-product-design-os.ts",
     "pdos:visual-qa": "tsx product-design-os/scripts/visual-qa-product-design-os.ts",
     "pdos:reader:capture": "tsx product-design-os/scripts/capture-design-reader.ts",
+    "pdos:reader:element-map": "tsx product-design-os/scripts/capture-element-map.ts",
     "pdos:reader:document": "tsx product-design-os/reader/document-reader-adapter.ts",
     "pdos:library:projects": "tsx product-design-os/scripts/update-project-library.ts",
     "prompt:validate": "tsx scripts/validate-prompt-library.ts",
