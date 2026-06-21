@@ -1,5 +1,55 @@
 # Autopilot Control Plane Work Log
 
+## 2026-06-21 VEM Live Capture + AST-Stamp Decision
+
+Date: 2026-06-21
+Request or trigger: owner asked to (1) run the VEM element-map capture against
+the live radeq preview instead of sample HTML, and (2) decide whether to add a
+build-time AST stamp for 100% source:line binding.
+Mode: READ_ONLY verification + architecture decision (Opus). No product runtime
+code, no radeq-repo changes, no commit/push. One read-only target URL load.
+
+Live capture (decision: done):
+
+- Ran `pdos:reader:element-map -- --url https://sirradek.github.io/radeq/`
+  (live Pages deploy, HTTP 200; no PR preview active, so used the stable
+  same-pipeline deploy). Artifacts under `output/playwright/radeq-live/`.
+- `captureElementMap` + pure `resolvePointToPassport` both work on live:
+  `--xy desktop 174 793` resolved to the burgundy `#7a1f2b` "Napsat poptávku"
+  CTA, correctly picking the topmost paint-visible node.
+- SourceRef coverage: `0` real / `100%` `unknown`; `identityConfidence` all
+  `medium`, `0` `high` — the production Astro build ships no `data-source-*`.
+- Determinism caveat: node count varied `92 → 66` across runs; the hero is a
+  Three.js WebGL `<canvas>` captured at different `rAF`-settle states.
+- Stack confirmed via `gh`: Astro 6 + React 19 islands + Tailwind 4 + Three.js.
+
+AST-stamp decision (owner-ratified: DEFER):
+
+- "100% source:line" is architecturally impossible here: (a) the Three.js hero
+  canvas has no DOM sub-elements to stamp; (b) `.astro` has no first-party
+  source-stamp (`jsx-source` is dev-only and React-islands-only); (c) Pages is
+  public, so stamping `data-source-*` into shipped HTML discloses the source tree.
+- Decision: do NOT build a stamp now. Use the existing `medium`-confidence
+  locator (domPath + role + accessibleName + textSnippet + rect + thumbnail crop)
+  as the bounded-fix locator; Codex `rg`s radeq source from it.
+- Phase-2 trigger: only if repeated/generic nodes (e.g. a grid of identical
+  cards) demonstrably fail to disambiguate. If triggered, the mechanism MUST be
+  preview-build-only or a non-shipped sidecar source-map (never production HTML),
+  scoped to `.astro` + React islands, with canvas regions marked unaddressable.
+  That work is a radeq product-repo change requiring its own bounded handoff and
+  owner approval.
+
+Files:
+
+- `output/playwright/radeq-live/` (capture artifacts; gitignored output dir)
+- `docs/projects/autopilot-control-plane/work-log.md`
+
+Verification:
+
+- `npm.cmd run pdos:reader:element-map -- --url https://sirradek.github.io/radeq/ --output-dir output/playwright/radeq-live`
+  produced the map + screenshots; `--xy desktop 174 793` produced the resolved
+  echo payload + thumbnail crop. No repo source files changed.
+
 ## 2026-06-21 Remove Radeq Project State from Control Plane
 
 Date: 2026-06-21
