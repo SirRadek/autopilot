@@ -4,6 +4,7 @@ dist/
 .astro/
 
 # local automation/test artifacts
+.claude/
 .codex-run/
 .codex/state/
 output/document-reader/
