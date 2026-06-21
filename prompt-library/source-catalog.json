@@ -322,19 +322,19 @@
     },
     {
       "id": "radeq-project-architecture",
-      "kind": "project_repo",
+      "kind": "external_reference",
       "location": "SirRadek/radeq:.autopilot/architecture.md",
       "authority": "project-source"
     },
     {
       "id": "radeq-project-mesh",
-      "kind": "project_repo",
+      "kind": "external_reference",
       "location": "SirRadek/radeq:.autopilot/decision-mesh/",
       "authority": "project-source"
     },
     {
       "id": "radeq-work-log",
-      "kind": "project_repo",
+      "kind": "external_reference",
       "location": "SirRadek/radeq:.autopilot/work-log.md",
       "authority": "project-source"
     },
