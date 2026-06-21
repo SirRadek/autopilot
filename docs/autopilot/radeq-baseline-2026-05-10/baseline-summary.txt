@@ -1,6 +1,0 @@
-cs-mobile: status=200 title=Radeq.cz | Technické webové systémy overflow=false width=390/390 screenshot=C:\Users\sirok\Documents\Autopilot\docs\autopilot\radeq-baseline-2026-05-10\cs-mobile.png
-en-mobile: status=200 title=Radeq.cz | High-performance web systems overflow=false width=390/390 screenshot=C:\Users\sirok\Documents\Autopilot\docs\autopilot\radeq-baseline-2026-05-10\en-mobile.png
-cs-tablet: status=200 title=Radeq.cz | Technické webové systémy overflow=false width=768/768 screenshot=C:\Users\sirok\Documents\Autopilot\docs\autopilot\radeq-baseline-2026-05-10\cs-tablet.png
-en-tablet: status=200 title=Radeq.cz | High-performance web systems overflow=false width=768/768 screenshot=C:\Users\sirok\Documents\Autopilot\docs\autopilot\radeq-baseline-2026-05-10\en-tablet.png
-cs-desktop: status=200 title=Radeq.cz | Technické webové systémy overflow=false width=1440/1440 screenshot=C:\Users\sirok\Documents\Autopilot\docs\autopilot\radeq-baseline-2026-05-10\cs-desktop.png
-en-desktop: status=200 title=Radeq.cz | High-performance web systems overflow=false width=1440/1440 screenshot=C:\Users\sirok\Documents\Autopilot\docs\autopilot\radeq-baseline-2026-05-10\en-desktop.png

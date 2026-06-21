@@ -1,5 +1,59 @@
 # Autopilot Control Plane Work Log
 
+## 2026-06-21 Remove Radeq Project State from Control Plane
+
+Date: 2026-06-21
+Request or trigger: owner approved relocating radeq project state to the radeq
+repo (per the repository-separation convention) and removing the control-plane
+copies, choosing the canonical control-plane line as the authoritative radeq mesh.
+Mode: WRITE_ALLOWED for deleting migrated radeq artifacts and fixing the
+resulting references. Cross-repo writes were made in `SirRadek/radeq` (the import
+PRs) and here.
+Scope: delete radeq project state from the control plane after re-validating that
+the radeq repo holds a complete superset.
+Files changed:
+
+- deleted `docs/projects/radeq/**` (13 files: architecture, work log, decision mesh)
+- deleted `model-output-evals/records/*radeq*.json` (14 records)
+- deleted `docs/autopilot/*radeq*` (25 design/baseline assets + mission note)
+- `prompt-library/source-catalog.json` (radeq-project-architecture/mesh/work-log
+  now point to `SirRadek/radeq:.autopilot/...`)
+- `docs/autopilot/project-architecture-registry.md` (radeq record points to the
+  radeq repo; control-plane canonical local root corrected to
+  `C:\Programování\autopilot`)
+
+Cross-repo: migrated to `SirRadek/radeq` `.autopilot/` via PRs #3 (mesh), #4
+(eval records + design assets), and #5 (mesh synced to canonical authoritative
+version). The radeq work log there is the superset (canonical entries plus the
+cat-door entries).
+
+Architecture impact: the control plane no longer stores radeq project state.
+Radeq's architecture, work log, decision mesh, eval records, and design assets
+live in the radeq repo under `.autopilot/`. The control plane keeps only the
+radeq prompt templates (`02-gemini/radeq-design-brainstorming.md`,
+`06-supervisor/radeq-novel-design-supervisor.md`) whose source ids now point to
+the radeq repo.
+Decisions:
+
+- Canonical control-plane line is the authoritative radeq mesh; the radeq repo
+  was synced to it before deletion (re-validated as a complete superset).
+- Keep the 2 radeq prompt templates and their cited source ids in the control
+  plane; only their `location` pointers move to the radeq repo.
+Verification:
+
+- Re-validation confirmed `radeq/.autopilot` is a superset of the control-plane
+  radeq set (mesh content-identical incl. `preview_publishing`; work log 0
+  canonical lines lost; all 14 eval records and 25 design assets covered).
+- After deletion: `npm run prompt:validate` 54/0, `npm run model-output:validate`
+  8 files/1 record/0 errors, `npm run pdos:validate` 64/0/0, `npm run mesh:check`
+  in sync.
+Risks / follow-up:
+
+- Residual radeq references remain as a separate category: 5 `output/` scratch
+  docs and 5 `docs/superpowers/` radeq plans/specs (planning history), plus the 2
+  prompt templates. Decide later whether to migrate or keep.
+- `build` and `test:e2e` not run in this pass.
+
 ## 2026-06-20 Expanded-Domain Prompt Lanes Integrated
 
 Date: 2026-06-20

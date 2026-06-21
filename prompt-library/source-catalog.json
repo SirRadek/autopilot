@@ -322,20 +322,20 @@
     },
     {
       "id": "radeq-project-architecture",
-      "kind": "local_docs",
-      "location": "docs/projects/radeq/architecture.md",
+      "kind": "project_repo",
+      "location": "SirRadek/radeq:.autopilot/architecture.md",
       "authority": "project-source"
     },
     {
       "id": "radeq-project-mesh",
-      "kind": "local_mesh",
-      "location": "docs/projects/radeq/decision-mesh/",
+      "kind": "project_repo",
+      "location": "SirRadek/radeq:.autopilot/decision-mesh/",
       "authority": "project-source"
     },
     {
       "id": "radeq-work-log",
-      "kind": "local_docs",
-      "location": "docs/projects/radeq/work-log.md",
+      "kind": "project_repo",
+      "location": "SirRadek/radeq:.autopilot/work-log.md",
       "authority": "project-source"
     },
     {
