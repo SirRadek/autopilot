@@ -41,3 +41,6 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# agy/codex worker side-channel run artifacts (.agent/runs/<run-id>/{status.jsonl,result.md})
+.agent/

@@ -1,0 +1,49 @@
+{
+  "startWall": "2026-06-22T18:00:21.025Z",
+  "workerRunId": "cli-codex-hp-agy-heartbeat-apply-20260622T180021",
+  "vendor": "codex_cli",
+  "exitCode": 0,
+  "durationSeconds": 68,
+  "lockStatus": "acquired_supervisor_spawn",
+  "errorReason": null,
+  "parsedJson": {
+    "ok": true,
+    "agent": "codex_cli",
+    "fastpath_order_ok": false,
+    "defects": [
+      "decideAgyTerminalState is absent from cliWorkerCapture.ts",
+      "heartbeat result/status/idle ordering is not implemented"
+    ],
+    "notes": "Current file still has old PTY capture with only process exit and flat timeout handling."
+  },
+  "rawOutputHead": "{\"ok\":true,\"agent\":\"codex_cli\",\"fastpath_order_ok\":false,\"defects\":[\"decideAgyTerminalState is absent from cliWorkerCapture.ts\",\"heartbeat result/status/idle ordering is not implemented\"],\"notes\":\"Current file still has old PTY capture with only process exit and flat timeout handling.\"}",
+  "tree": {
+    "parent_session_hash": "opus-agy-heartbeat-apply",
+    "children": [
+      {
+        "agent_id": "cli-codex-hp-agy-heartbeat-apply-20260622T180021",
+        "handoff_id": "hp-agy-heartbeat-apply",
+        "evidence": {
+          "schema_version": "v1",
+          "handoff_id": "hp-agy-heartbeat-apply",
+          "agent_id": "cli-codex-hp-agy-heartbeat-apply-20260622T180021",
+          "agent_type": "codex_cli-external",
+          "parent_session_hash": "opus-agy-heartbeat-apply",
+          "started_at": "2026-06-22T18:00:21.026Z",
+          "stopped_at": "2026-06-22T18:01:29.346Z",
+          "duration_seconds": 68,
+          "artifacts": {
+            "handoff_packet": "C:\\Users\\sirok\\AppData\\Local\\Temp\\autopilot-handoffs\\hp-agy-heartbeat-apply-1782151221026.md",
+            "worker_output": "C:\\Users\\sirok\\AppData\\Local\\Temp\\autopilot-codex-captures\\codex-1782151221029.json",
+            "reviewer_output": null
+          },
+          "lock_status": "acquired_supervisor_spawn",
+          "verified": false,
+          "recorded_at": "2026-06-22T18:01:29.346Z"
+        },
+        "started_at": "2026-06-22T18:00:21.026Z",
+        "stopped_at": "2026-06-22T18:01:29.346Z"
+      }
+    ]
+  }
+}

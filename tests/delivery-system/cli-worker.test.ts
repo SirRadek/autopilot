@@ -14,7 +14,18 @@ import {
   type CliVendor,
   type WorkerLockRecord
 } from "../../src/data/delivery-system/cliWorker";
-import { stripAnsi, extractJsonFromPtyOutput } from "../../src/data/delivery-system/cliWorkerCapture";
+import {
+  stripAnsi,
+  extractJsonFromPtyOutput,
+  decideAgyTerminalState,
+  selectAgyFinalText,
+  readStatusFlags,
+  chooseAgyConversation,
+  buildAgySideChannelPrompt,
+  RETRYABLE_AGY_REASONS,
+  type AgyCompletionSnapshot,
+  type AgyLogSnapshot
+} from "../../src/data/delivery-system/cliWorkerCapture";
 
 const temporaryDirectories: string[] = [];
 
@@ -81,6 +92,210 @@ describe("extractJsonFromPtyOutput", () => {
 
   it("returns null when no JSON object present", () => {
     expect(extractJsonFromPtyOutput("just a sentence")).toBeNull();
+  });
+});
+
+// ─── decideAgyTerminalState (heartbeat completion ladder) ─────────────────────
+
+function snapshot(overrides: Partial<AgyCompletionSnapshot> = {}): AgyCompletionSnapshot {
+  return {
+    now: 10_000,
+    startedAt: 0,
+    exitCodeSeen: null,
+    bound: false,
+    streamCompleted: false,
+    streamCompletedAgeMs: 0,
+    vendorTimedOut: false,
+    statusFinal: false,
+    statusError: false,
+    resultStable: false,
+    resultNonEmpty: false,
+    ptyNonEmpty: false,
+    hasStatusFile: false,
+    msSinceTranscriptGrowth: 0,
+    transcriptIdleMs: 45_000,
+    startupTimeoutMs: 30_000,
+    streamGraceMs: 7_000,
+    timeoutMs: 600_000,
+    ...overrides
+  };
+}
+
+describe("decideAgyTerminalState", () => {
+  it("fast-path: stable result + status final finishes done in ~8-10s (R1), not after idle", () => {
+    // now=9s, well under the 45s transcript-idle fallback.
+    const d = decideAgyTerminalState(snapshot({ now: 9_000, resultStable: true, statusFinal: true }));
+    expect(d).toEqual({ terminal: true, reason: "done_result_md", exitCode: 0 });
+  });
+
+  it("fast-path also fires on stable result + cli-log stream_completed", () => {
+    const d = decideAgyTerminalState(snapshot({ resultStable: true, streamCompleted: true }));
+    expect(d).toEqual({ terminal: true, reason: "done_result_md", exitCode: 0 });
+  });
+
+  it("does NOT fast-path when result is present but not yet stable", () => {
+    const d = decideAgyTerminalState(snapshot({ resultNonEmpty: true, resultStable: false, statusFinal: true }));
+    expect(d).toEqual({ terminal: false });
+  });
+
+  it("status error is a retryable vendor failure", () => {
+    const d = decideAgyTerminalState(snapshot({ statusError: true }));
+    expect(d).toEqual({ terminal: true, reason: "vendor_error", exitCode: 1 });
+    expect(RETRYABLE_AGY_REASONS.has("vendor_error")).toBe(true);
+  });
+
+  it("Print mode timed out maps to vendor_timeout", () => {
+    const d = decideAgyTerminalState(snapshot({ vendorTimedOut: true }));
+    expect(d).toEqual({ terminal: true, reason: "vendor_timeout", exitCode: 1 });
+  });
+
+  it("stream_completed without stable result waits for the grace, then finishes", () => {
+    const pending = decideAgyTerminalState(snapshot({ streamCompleted: true, streamCompletedAgeMs: 3_000 }));
+    expect(pending).toEqual({ terminal: false });
+    const done = decideAgyTerminalState(snapshot({ streamCompleted: true, streamCompletedAgeMs: 8_000 }));
+    expect(done).toEqual({ terminal: true, reason: "stream_completed", exitCode: 0 });
+  });
+
+  it("process exit with output uses the result/PTY ladder", () => {
+    const withResult = decideAgyTerminalState(snapshot({ exitCodeSeen: 0, resultNonEmpty: true }));
+    expect(withResult).toEqual({ terminal: true, reason: "process_exit", exitCode: 0 });
+  });
+
+  it("process exit with no output at all is pty_exit_no_output (→ MISSING path)", () => {
+    const d = decideAgyTerminalState(snapshot({ exitCodeSeen: 3 }));
+    expect(d).toEqual({ terminal: true, reason: "pty_exit_no_output", exitCode: 3 });
+  });
+
+  it("transcript idle while bound degrades to transcript_idle (or idle_with_result if stable)", () => {
+    const idle = decideAgyTerminalState(snapshot({ bound: true, msSinceTranscriptGrowth: 46_000 }));
+    expect(idle).toEqual({ terminal: true, reason: "transcript_idle", exitCode: 1 });
+    const idleWithResult = decideAgyTerminalState(
+      snapshot({ bound: true, msSinceTranscriptGrowth: 46_000, resultStable: true })
+    );
+    // resultStable+statusFinal would have fast-pathed; here only stable, no final/stream.
+    expect(idleWithResult).toEqual({ terminal: true, reason: "idle_with_result", exitCode: 1 });
+  });
+
+  it("startup timeout keys off wall-clock since spawn, not PTY chatter (R7)", () => {
+    const d = decideAgyTerminalState(snapshot({ now: 31_000, bound: false, hasStatusFile: false }));
+    expect(d).toEqual({ terminal: true, reason: "startup_timeout", exitCode: 1 });
+  });
+
+  it("a present status file suppresses startup timeout (agy did start writing)", () => {
+    const d = decideAgyTerminalState(snapshot({ now: 31_000, hasStatusFile: true }));
+    expect(d).toEqual({ terminal: false });
+  });
+
+  it("hard wall-clock cap yields flat_timeout", () => {
+    const d = decideAgyTerminalState(snapshot({ now: 601_000, bound: true, msSinceTranscriptGrowth: 1_000 }));
+    expect(d).toEqual({ terminal: true, reason: "flat_timeout", exitCode: 1 });
+  });
+
+  it("returns non-terminal while still streaming", () => {
+    const d = decideAgyTerminalState(snapshot({ bound: true, msSinceTranscriptGrowth: 2_000 }));
+    expect(d).toEqual({ terminal: false });
+  });
+});
+
+// ─── selectAgyFinalText (fallback ladder) ─────────────────────────────────────
+
+describe("selectAgyFinalText", () => {
+  it("prefers result.md when the reason marks it usable", () => {
+    const dir = createTempDir();
+    const resultPath = join(dir, "result.md");
+    writeFileSync(resultPath, "the authoritative answer", "utf8");
+    const out = selectAgyFinalText({ resultPath, reason: "done_result_md", ptyClean: "pty junk", convId: null });
+    expect(out).toEqual({ source: "result_md", text: "the authoritative answer" });
+  });
+
+  it("ignores result.md on a failure reason and falls back to PTY", () => {
+    const dir = createTempDir();
+    const resultPath = join(dir, "result.md");
+    writeFileSync(resultPath, "stale", "utf8");
+    const out = selectAgyFinalText({ resultPath, reason: "flat_timeout", ptyClean: "pty answer", convId: null });
+    expect(out).toEqual({ source: "pty", text: "pty answer" });
+  });
+
+  it("returns missing when nothing usable exists (no disguise)", () => {
+    const dir = createTempDir();
+    const out = selectAgyFinalText({
+      resultPath: join(dir, "nope.md"),
+      reason: "pty_exit_no_output",
+      ptyClean: "",
+      convId: null
+    });
+    expect(out).toEqual({ source: "missing", text: "" });
+  });
+});
+
+// ─── readStatusFlags ──────────────────────────────────────────────────────────
+
+describe("readStatusFlags", () => {
+  it("detects a final event line in status.jsonl", () => {
+    const dir = createTempDir();
+    const p = join(dir, "status.jsonl");
+    writeFileSync(p, '{"event":"started"}\n{"event":"progress"}\n{"event":"final"}\n', "utf8");
+    expect(readStatusFlags(p)).toEqual({ final: true, error: false });
+  });
+
+  it("detects an error event and tolerates partial trailing lines", () => {
+    const dir = createTempDir();
+    const p = join(dir, "status.jsonl");
+    writeFileSync(p, '{"event":"started"}\n{"event":"error","message":"boom"}\n{bad-json', "utf8");
+    expect(readStatusFlags(p)).toEqual({ final: false, error: true });
+  });
+
+  it("returns all-false when the file is absent", () => {
+    expect(readStatusFlags(join(createTempDir(), "missing.jsonl"))).toEqual({ final: false, error: false });
+  });
+});
+
+// ─── chooseAgyConversation (race-safe binding) ────────────────────────────────
+
+function logSnapshot(pairs: Array<[string, number]>): AgyLogSnapshot {
+  return {
+    candidatePids: new Map(pairs),
+    completedConvIds: new Set(),
+    vendorTimedOut: false
+  };
+}
+
+describe("chooseAgyConversation", () => {
+  const UUID_A = "11111111-1111-1111-1111-111111111111";
+  const UUID_B = "22222222-2222-2222-2222-222222222222";
+
+  it("binds a single PID-matched candidate (score 100)", () => {
+    const id = chooseAgyConversation(logSnapshot([[UUID_A, 4242]]), 0, 4242, "run-x");
+    expect(id).toBe(UUID_A);
+  });
+
+  it("binds the PID-matched winner over a non-matching candidate", () => {
+    const id = chooseAgyConversation(logSnapshot([[UUID_A, 999], [UUID_B, 4242]]), 0, 4242, "run-x");
+    expect(id).toBe(UUID_B);
+  });
+
+  it("refuses to guess when candidates are ambiguous (no clear winner)", () => {
+    const id = chooseAgyConversation(logSnapshot([[UUID_A, 111], [UUID_B, 222]]), 0, 4242, "run-x");
+    expect(id).toBeNull();
+  });
+
+  it("returns null when there are no candidates", () => {
+    expect(chooseAgyConversation(logSnapshot([]), 0, 4242, "run-x")).toBeNull();
+  });
+});
+
+// ─── buildAgySideChannelPrompt (run-id contract) ──────────────────────────────
+
+describe("buildAgySideChannelPrompt", () => {
+  it("injects the run id, the contract, and absolute side-channel paths (R4)", () => {
+    const dir = createTempDir();
+    const out = buildAgySideChannelPrompt("DO THE THING", "cli-agy-hp-x-20260622T000000", dir);
+    expect(out).toContain("DO THE THING");
+    expect(out).toContain("AGY RUN ARTIFACT CONTRACT");
+    expect(out).toContain("cli-agy-hp-x-20260622T000000");
+    expect(out).toContain(join(dir, ".agent", "runs", "cli-agy-hp-x-20260622T000000", "status.jsonl"));
+    expect(out).toContain(join(dir, ".agent", "runs", "cli-agy-hp-x-20260622T000000", "result.md"));
+    expect(out).toContain("result.md is the ONLY authoritative final answer");
   });
 });
 

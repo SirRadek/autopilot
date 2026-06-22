@@ -3,9 +3,11 @@ import { join } from "node:path";
 
 import type { HandoffId } from "./checkCompletionMatrix";
 import {
+  buildAgySideChannelPrompt,
   captureAgyResponse,
   captureCodexResponse,
-  writePromptFile
+  writePromptFile,
+  type AgyResultSource
 } from "./cliWorkerCapture";
 import { SESSION_LOCK_PATH } from "./sessionState";
 import {
@@ -123,6 +125,9 @@ export interface CliWorkerResult {
   readonly lockStatus: "acquired_supervisor_spawn" | "already_locked" | "stale_replaced" | "failed";
   readonly workerOutputPath: string | null;
   readonly errorReason: string | null;
+  readonly resultSource?: AgyResultSource;
+  readonly livenessReason?: string;
+  readonly convId?: string | null;
 }
 
 export async function runCliWorker(
@@ -133,8 +138,15 @@ export async function runCliWorker(
   const workerRunId = buildWorkerRunId(input.vendor, handoffSlug);
   const startedAt = new Date().toISOString();
 
+  // R3/R4: thread ONE cwd + runId so the path agy is told to write and the path
+  // the monitor watches are identical (absolute, no divergence).
+  const workerCwd = process.cwd();
+  const workerPrompt = input.vendor === "agy_cli"
+    ? buildAgySideChannelPrompt(input.prompt, workerRunId, workerCwd)
+    : input.prompt;
+
   // Write handoff prompt to temp file (artifact pointer for evidence)
-  const handoffFilePath = writePromptFile(input.prompt, handoffSlug);
+  const handoffFilePath = writePromptFile(workerPrompt, handoffSlug);
 
   // Acquire lock
   const lockRecord: WorkerLockRecord = {
@@ -185,10 +197,15 @@ export async function runCliWorker(
   let durationSeconds = 0;
   let workerOutputPath: string | null = null;
   let errorReason: string | null = null;
+  let resultSource: AgyResultSource | undefined;
+  let livenessReason: string | undefined;
+  let convId: string | null | undefined;
 
   try {
     if (input.vendor === "agy_cli") {
-      const result = await captureAgyResponse(input.prompt, {
+      const result = await captureAgyResponse(workerPrompt, {
+        runId: workerRunId,
+        cwd: workerCwd,
         ...(input.model !== undefined ? { model: input.model } : {}),
         ...(input.timeoutMs !== undefined ? { timeoutMs: input.timeoutMs } : {})
       });
@@ -196,9 +213,15 @@ export async function runCliWorker(
       rawOutput = result.cleanOutput;
       parsedJson = result.parsedJson;
       durationSeconds = result.durationMs / 1000;
+      resultSource = result.resultSource;
+      livenessReason = result.livenessReason;
+      convId = result.convId;
 
-      // Persist the clean output to a file as the worker_output artifact
-      workerOutputPath = writeResponseFile(result.cleanOutput, workerRunId, stateDir);
+      // result.md is the authoritative artifact when present; otherwise persist
+      // the degraded clean output (PTY/transcript fallback) as worker_output.
+      workerOutputPath = result.resultSource === "result_md"
+        ? result.resultPath
+        : writeResponseFile(result.cleanOutput, workerRunId, stateDir);
     } else {
       const result = await captureCodexResponse(input.prompt, {
         ...(input.model !== undefined ? { model: input.model } : {}),
@@ -212,9 +235,12 @@ export async function runCliWorker(
       workerOutputPath = result.outputFilePath;
     }
 
-    // Detect output errors even on exit 0 (agy exits 0 on model failures)
+    // Detect output errors even on exit 0 (agy exits 0 on model failures).
+    // For agy, MISSING is surfaced honestly with the true liveness reason.
     if (!rawOutput || rawOutput.trim() === "") {
-      errorReason = "empty_output: worker produced no output";
+      errorReason = input.vendor === "agy_cli"
+        ? `agy_missing:${livenessReason ?? "empty_output"}`
+        : "empty_output: worker produced no output";
     }
   } catch (err) {
     errorReason = err instanceof Error ? err.message : String(err);
@@ -280,7 +306,10 @@ export async function runCliWorker(
     durationSeconds,
     lockStatus,
     workerOutputPath,
-    errorReason
+    errorReason,
+    ...(resultSource !== undefined ? { resultSource } : {}),
+    ...(livenessReason !== undefined ? { livenessReason } : {}),
+    ...(convId !== undefined ? { convId } : {})
   };
 }
 
